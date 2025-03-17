@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
-@Entity
+@MappedSuperclass
 public class BaseEntity {
 
     @Id

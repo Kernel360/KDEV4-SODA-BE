@@ -1,9 +1,7 @@
 package com.soda.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.soda.entity.enums.CompanyProjectRole;
+import jakarta.persistence.*;
 import lombok.Getter;
 
 @Getter
@@ -17,5 +15,8 @@ public class CompanyProject extends BaseEntity{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
+
+    @Enumerated(EnumType.STRING)
+    private CompanyProjectRole companyProjectRole;
 
 }

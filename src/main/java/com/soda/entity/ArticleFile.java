@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class ArticleFile {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;
 

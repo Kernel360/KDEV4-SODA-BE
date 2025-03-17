@@ -17,12 +17,6 @@ public class Project extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
-    private String devCompany;
-
-    @Column(nullable = false)
-    private String clientCompany;
-
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;

@@ -19,7 +19,7 @@ public class Notice extends BaseEntity {
     private Boolean isChecked;
 
     @PrePersist
-    public void prePersist() {
+    public void prePersistNotice() {
         if (this.isChecked == null) {
             this.isChecked = false;
         }

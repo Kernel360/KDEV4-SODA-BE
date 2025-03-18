@@ -5,8 +5,10 @@ import lombok.Getter;
 @Getter
 public enum MemberProjectRole {
 
-    MANAGER("담당자"),
-    PARTICIPANT("일반참여자");
+    DEV_MANAGER("개발사담당자"),
+    DEV_PARTICIPANT("개발사일반참여자"),
+    CLI_MANAGER("고객사담당자"),
+    CLI_PARTICIPANT("고객사일반참여자");
 
     private final String description;
 

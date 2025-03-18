@@ -16,6 +16,10 @@ public class Article extends BaseEntity{
 
     private Integer priority;
 
+    private LocalDateTime deadline;
+
+    private ArticleStatus status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;

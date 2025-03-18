@@ -20,6 +20,10 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
+    private String position;
+
+    private String phoneNumber;
+
     @Enumerated(EnumType.STRING)
     private MemberRole role;
 

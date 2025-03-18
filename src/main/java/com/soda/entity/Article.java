@@ -14,6 +14,8 @@ public class Article extends BaseEntity{
 
     private String content;
 
+    private Integer priority;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;

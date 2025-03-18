@@ -12,7 +12,7 @@ public class ProjectStage extends BaseEntity{
 
     private String name;
 
-    private Integer sequence;
+    private Long nextStageId;
 
     private String description;
 

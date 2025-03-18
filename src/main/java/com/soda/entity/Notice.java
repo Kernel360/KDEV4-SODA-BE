@@ -11,9 +11,9 @@ public class Notice extends BaseEntity {
 
     private String content;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "task_id", nullable = false)
-    private StageTask stageTask;
+    private noticeType noticeType;
+
+    private Long relatedEntityId;
 
     @Column(nullable = false)
     private Boolean isChecked;

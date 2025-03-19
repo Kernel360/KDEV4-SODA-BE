@@ -1,5 +1,6 @@
 package com.soda.entity;
 
+import com.soda.entity.enums.NoticeType;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -11,15 +12,16 @@ public class Notice extends BaseEntity {
 
     private String content;
 
-    private noticeType noticeType;
+    @Enumerated(EnumType.STRING)
+    private NoticeType noticeType;
 
     private Long relatedEntityId;
 
     @Column(nullable = false)
     private Boolean isChecked;
 
-    @PrePersist
-    public void prePersistNotice() {
+    @PostLoad
+    private void prePersistNotice() {
         if (this.isChecked == null) {
             this.isChecked = false;
         }

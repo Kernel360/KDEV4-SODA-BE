@@ -24,5 +24,5 @@ public class Stage extends BaseEntity{
     private List<Article> articleList = new ArrayList<>();
 
     @OneToMany(mappedBy = "projectStage", cascade = CascadeType.ALL)
-    private List<Task> stageTaskList = new ArrayList<>();
+    private List<Task> taskList = new ArrayList<>();
 }

@@ -15,12 +15,7 @@ public class Task extends BaseEntity{
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_stage_id", nullable = false)
-    private Stage projectStage;
+    @JoinColumn(name = "stage_id", nullable = false)
+    private Stage stage;
 
-    @OneToMany(mappedBy = "stageTask", cascade = CascadeType.ALL)
-    private List<TaskFile> taskFileList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "stageTask", cascade = CascadeType.ALL)
-    private List<TaskLink> taskLinkList = new ArrayList<>();
 }

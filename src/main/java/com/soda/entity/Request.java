@@ -1,10 +1,9 @@
 package com.soda.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.Getter;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -19,4 +18,10 @@ public class Request extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
+    private List<RequestFile> files;
+
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
+    private List<RequestLink> links;
 }

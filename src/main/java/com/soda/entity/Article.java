@@ -20,6 +20,7 @@ public class Article extends BaseEntity{
 
     private LocalDateTime deadline;
 
+    @Enumerated(EnumType.STRING)
     private ArticleStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)

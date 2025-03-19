@@ -10,7 +10,7 @@ public enum NoticeType {
 
     private final String description;
 
-    ArticleStatus(String description) {
+    NoticeType(String description) {
         this.description = description;
     }
 

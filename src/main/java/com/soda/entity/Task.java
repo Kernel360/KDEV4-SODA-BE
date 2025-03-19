@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @Entity
-public class StageTask extends BaseEntity{
+public class Task extends BaseEntity{
 
     private String title;
 
@@ -16,7 +16,7 @@ public class StageTask extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_stage_id", nullable = false)
-    private ProjectStage projectStage;
+    private Stage projectStage;
 
     @OneToMany(mappedBy = "stageTask", cascade = CascadeType.ALL)
     private List<TaskFile> taskFileList = new ArrayList<>();

@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @Entity
-public class ProjectStage extends BaseEntity{
+public class Stage extends BaseEntity{
 
     private String name;
 
@@ -24,5 +24,5 @@ public class ProjectStage extends BaseEntity{
     private List<Article> articleList = new ArrayList<>();
 
     @OneToMany(mappedBy = "projectStage", cascade = CascadeType.ALL)
-    private List<StageTask> stageTaskList = new ArrayList<>();
+    private List<Task> stageTaskList = new ArrayList<>();
 }

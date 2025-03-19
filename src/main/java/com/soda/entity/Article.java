@@ -26,7 +26,7 @@ public class Article extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_stage_id", nullable = false)
-    private ProjectStage projectStage;
+    private Stage projectStage;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private List<Comment> commentList = new ArrayList<>();

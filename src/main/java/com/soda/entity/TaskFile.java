@@ -20,7 +20,7 @@ public class TaskFile {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
-    private StageTask stageTask;
+    private Task stageTask;
 
     private LocalDateTime uploadedAt;
 }

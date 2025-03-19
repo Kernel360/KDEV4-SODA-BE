@@ -16,6 +16,6 @@ public class TaskLink extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
-    private StageTask stageTask;
+    private Task stageTask;
 
 }

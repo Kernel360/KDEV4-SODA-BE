@@ -1,6 +1,7 @@
 package com.soda.entity;
 
 import com.soda.entity.enums.ArticleStatus;
+import com.soda.entity.enums.PriorityType;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -16,7 +17,8 @@ public class Article extends BaseEntity{
 
     private String content;
 
-    private Integer priority;
+    @Enumerated(EnumType.STRING)
+    private PriorityType priority;
 
     private LocalDateTime deadline;
 

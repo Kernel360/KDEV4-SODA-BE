@@ -20,9 +20,9 @@ public class Stage extends BaseEntity{
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @OneToMany(mappedBy = "projectStage", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "Stage", cascade = CascadeType.ALL)
     private List<Article> articleList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "projectStage", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "Stage", cascade = CascadeType.ALL)
     private List<Task> taskList = new ArrayList<>();
 }

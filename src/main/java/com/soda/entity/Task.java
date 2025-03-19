@@ -18,4 +18,6 @@ public class Task extends BaseEntity{
     @JoinColumn(name = "stage_id", nullable = false)
     private Stage stage;
 
+    @OneToMany(mappedBy = "Task", cascade = CascadeType.ALL)
+    private List<Request> requestList = new ArrayList<>();
 }

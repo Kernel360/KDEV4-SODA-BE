@@ -1,4 +1,4 @@
-package com.soda.Request.entity;
+package com.soda.request.entity;
 
 import com.soda.common.BaseEntity;
 import jakarta.persistence.Entity;

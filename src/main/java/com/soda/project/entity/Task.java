@@ -1,7 +1,7 @@
 package com.soda.project.entity;
 
 import com.soda.common.BaseEntity;
-import com.soda.Request.entity.Request;
+import com.soda.request.entity.Request;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -20,6 +20,6 @@ public class Task extends BaseEntity {
     @JoinColumn(name = "stage_id", nullable = false)
     private Stage stage;
 
-    @OneToMany(mappedBy = "Task", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
     private List<Request> requestList = new ArrayList<>();
 }

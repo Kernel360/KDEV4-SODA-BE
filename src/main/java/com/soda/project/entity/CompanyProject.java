@@ -1,7 +1,7 @@
 package com.soda.project.entity;
 
 import com.soda.common.BaseEntity;
-import Company;
+import com.soda.member.entity.Company;
 import com.soda.member.enums.CompanyProjectRole;
 import jakarta.persistence.*;
 import lombok.Getter;

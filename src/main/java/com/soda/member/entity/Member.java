@@ -1,6 +1,5 @@
 package com.soda.member.entity;
 
-import Company;
 import com.soda.common.BaseEntity;
 import com.soda.member.enums.MemberRole;
 import com.soda.notice.entity.MemberNotice;

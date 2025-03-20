@@ -1,0 +1,35 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+logging:
+  level:
+    com.practice.simple: debug
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}
+  access:
+    expiration: 3600000
+    header: Authorization

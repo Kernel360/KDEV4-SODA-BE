@@ -4,6 +4,7 @@ import com.soda.common.BaseEntity;
 import com.soda.member.entity.Company;
 import com.soda.member.enums.CompanyProjectRole;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
@@ -20,5 +21,12 @@ public class CompanyProject extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private CompanyProjectRole companyProjectRole;
+
+    @Builder
+    public CompanyProject(Company company, Project project, CompanyProjectRole companyProjectRole) {
+        this.company = company;
+        this.project = project;
+        this.companyProjectRole = companyProjectRole;
+    }
 
 }

@@ -47,6 +47,22 @@ public class ProjectService {
             throw new GeneralException(ErrorCode.PROJECT_TITLE_DUPLICATED);
         }
 
+        Project project = createProjectEntity(request);
+
+        // 2. 개발사 지정
+        List<Member> devMembers = assignCompanyAndMembers(request.getDevCompanyId(), request.getDevMembers(), project,
+                CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_MANAGER, MemberProjectRole.DEV_PARTICIPANT);
+
+        // 3. 고객사 지정
+        List<Member> cliMembers = assignCompanyAndMembers(request.getClientCompanyId(), request.getClientMembers(), project,
+                CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_MANAGER, MemberProjectRole.CLI_PARTICIPANT);
+
+        // 4. response DTO 생성
+        return createProjectCreateResponse(project, devMembers, cliMembers);
+
+    }
+
+    private Project createProjectEntity(ProjectCreateRequest request) {
         ProjectDTO projectDTO = ProjectDTO.builder()
                 .title(request.getTitle())
                 .startDate(request.getStartDate())
@@ -55,102 +71,65 @@ public class ProjectService {
 
         Project project = projectDTO.toEntity();
         projectRepository.save(project); // 프로젝트 DB에 저장
+        return project;
+    }
 
-        // 2-1. 개발사 지정
-        Company devCompany = companyRepository.findById(request.getDevCompanyId())
+    // 회사 및 멤버 지정 (개발사 및 고객사 모두에서 사용)
+    private List<Member> assignCompanyAndMembers(Long companyId, List<Long> memberIds, Project project, CompanyProjectRole companyRole, MemberProjectRole managerRole, MemberProjectRole participantRole) {
+        Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
 
-        CompanyProjectDTO devCompanyProjectDTO = CompanyProjectDTO.builder()
-                .companyId(devCompany.getId())
+        // 회사와 프로젝트 연결
+        CompanyProjectDTO companyProjectDTO = CompanyProjectDTO.builder()
+                .companyId(company.getId())
                 .projectId(project.getId())
-                .companyProjectRole(CompanyProjectRole.DEV_COMPANY)
+                .companyProjectRole(companyRole)
                 .build();
 
-        CompanyProject devCompanyProject = devCompanyProjectDTO.toEntity(devCompany, project);
-        companyProjectRepository.save(devCompanyProject);
+        CompanyProject companyProject = companyProjectDTO.toEntity(company, project);
+        companyProjectRepository.save(companyProject);
 
-        // 2-2. 개발사 직원 지정
-        List<Member> devMembers = new ArrayList<>();
-        if (!request.getDevMembers().isEmpty()) {
-
-            for (Long memberId : request.getDevMembers()) {
-                Member devMember = memberRepository.findById(memberId)
+        // 멤버 지정
+        List<Member> members = new ArrayList<>();
+        if (!memberIds.isEmpty()) {
+            for (Long memberId : memberIds) {
+                Member member = memberRepository.findById(memberId)
                         .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-                // 지정한 개발사와 멤버의 회사가 일치해야 프로젝트 생성 가능
-                if (!devMember.getCompany().getId().equals(devCompany.getId())) {
+                // 지정된 회사와 멤버가 동일한지 확인
+                if (!member.getCompany().getId().equals(company.getId())) {
                     throw new GeneralException(ErrorCode.INVALID_MEMBER_COMPANY);
                 }
 
-                devMembers.add(devMember);
+                members.add(member);
 
-                MemberProjectDTO devMemberProjectDTO = MemberProjectDTO.builder()
-                        .memberId(devMember.getId())
+                MemberProjectDTO memberProjectDTO = MemberProjectDTO.builder()
+                        .memberId(member.getId())
                         .projectId(project.getId())
-                        .memberProjectRole(devMember.getId().equals(request.getDevMembers().get(0))
-                                ? MemberProjectRole.DEV_MANAGER
-                                : MemberProjectRole.DEV_PARTICIPANT)
+                        .memberProjectRole(memberId.equals(memberIds.get(0)) ? managerRole : participantRole)
                         .build();
 
-                MemberProject devMemberProject = devMemberProjectDTO.toEntity(devMember, project);
-                memberProjectRepository.save(devMemberProject);
+                MemberProject memberProject = memberProjectDTO.toEntity(member, project);
+                memberProjectRepository.save(memberProject);
             }
         }
+        return members;
+    }
 
-        // 3-1. 고객사 지정
-        Company clientCompany = companyRepository.findById(request.getClientCompanyId())
-                .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
-
-        CompanyProjectDTO clientCompanyProjectDTO = CompanyProjectDTO.builder()
-                .companyId(clientCompany.getId())
-                .projectId(project.getId())
-                .companyProjectRole(CompanyProjectRole.CLIENT_COMPANY)
-                .build();
-
-        CompanyProject clientCompanyProject = clientCompanyProjectDTO.toEntity(clientCompany, project);
-        companyProjectRepository.save(clientCompanyProject);
-
-        // 3-2. 고객사 직원 지정
-        List<Member> clientMembers = new ArrayList<>();
-        if (!request.getClientMembers().isEmpty()) {
-
-            for (Long memberId : request.getClientMembers()) {
-                Member cliMember = memberRepository.findById(memberId)
-                        .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
-
-                // 지정한 고객사와 멤버의 회사가 일치해야 프로젝트 생성 가능
-                if (!cliMember.getCompany().getId().equals(clientCompany.getId())) {
-                    throw new GeneralException(ErrorCode.INVALID_MEMBER_COMPANY);
-                }
-
-                clientMembers.add(cliMember);
-
-                MemberProjectDTO cliMemberProjectDTO = MemberProjectDTO.builder()
-                        .memberId(cliMember.getId())
-                        .projectId(project.getId())
-                        .memberProjectRole(cliMember.getId().equals(request.getClientMembers().get(0))
-                                ? MemberProjectRole.CLI_MANAGER
-                                : MemberProjectRole.CLI_PARTICIPANT)
-                        .build();
-
-                MemberProject cliMemberProject = cliMemberProjectDTO.toEntity(cliMember, project);
-                memberProjectRepository.save(cliMemberProject);
-
-            }
-        }
-
-        // 4. response DTO 생성
+    // 프로젝트 생성 응답 DTO 생성
+    private ProjectCreateResponse createProjectCreateResponse(Project project, List<Member> devMembers, List<Member> clientMembers) {
         return ProjectCreateResponse.builder()
                 .projectId(project.getId())
                 .title(project.getTitle())
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
-                .clientCompanyName(clientCompany.getName())
-                .clientCompanyManager(clientMembers.get(0).getName())
-                .clientCompanyMembers(clientMembers.stream().skip(1).map(Member::getName).collect(Collectors.toList()))
-                .devCompanyName(devCompany.getName())
-                .devCompanyManager(devMembers.get(0).getName())
-                .devCompanyMembers(devMembers.stream().skip(1).map(Member::getName).collect(Collectors.toList()))
+                .devCompanyName(devMembers.get(0).getCompany().getName()) // 개발사 이름
+                .devCompanyManager(devMembers.get(0).getName()) // 개발사 담당자 이름
+                .devCompanyMembers(devMembers.stream().skip(1).map(Member::getName).collect(Collectors.toList())) // 개발사 직원들
+                .clientCompanyName(clientMembers.get(0).getCompany().getName()) // 고객사 이름
+                .clientCompanyManager(clientMembers.get(0).getName()) // 고객사 담당자 이름
+                .clientCompanyMembers(clientMembers.stream().skip(1).map(Member::getName).collect(Collectors.toList())) // 고객사 직원들
                 .build();
     }
+
 }

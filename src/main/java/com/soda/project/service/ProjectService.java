@@ -188,6 +188,48 @@ public class ProjectService {
     }
 
     public ProjectResponse getProject(Long projectId) {
-        return null;
+        // 1. 프로젝트 기본 정보 조회
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
+
+        // 2. 개발사 정보 조회
+        CompanyProject devCompanyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, CompanyProjectRole.DEV_COMPANY)
+                .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
+        String devCompanyName = devCompanyProject.getCompany().getName();
+
+        // 개발사 담당자 및 일반 참여자 조회
+        List<Member> devManagers = memberProjectRepository.findByProjectAndRole(project, MemberProjectRole.DEV_MANAGER).stream()
+                .map(MemberProject::getMember)
+                .toList();
+        List<Member> devParticipants = memberProjectRepository.findByProjectAndRole(project, MemberProjectRole.DEV_PARTICIPANT).stream()
+                .map(MemberProject::getMember)
+                .toList();
+
+        // 3. 고객사 정보 조회
+        CompanyProject clientCompanyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, CompanyProjectRole.CLIENT_COMPANY)
+                .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
+        String clientCompanyName = clientCompanyProject.getCompany().getName();
+
+        // 고객사 담당자 및 일반 참여자 조회
+        List<Member> clientManagers = memberProjectRepository.findByProjectAndRole(project, MemberProjectRole.CLI_MANAGER).stream()
+                .map(MemberProject::getMember)
+                .toList();
+        List<Member> clientParticipants = memberProjectRepository.findByProjectAndRole(project, MemberProjectRole.CLI_PARTICIPANT).stream()
+                .map(MemberProject::getMember)
+                .toList();
+
+        // 4. ProjectResponse DTO 생성 및 반환
+        return ProjectResponse.builder()
+                .title(project.getTitle())
+                .description(project.getDescription())
+                .startDate(project.getStartDate())
+                .endDate(project.getEndDate())
+                .devCompanyName(devCompanyName)
+                .devCompanyManagers(devManagers.stream().map(Member::getName).collect(Collectors.toList()))
+                .devCompanyMembers(devParticipants.stream().map(Member::getName).collect(Collectors.toList()))
+                .clientCompanyName(clientCompanyName)
+                .clientCompanyManagers(clientManagers.stream().map(Member::getName).collect(Collectors.toList()))
+                .clientCompanyMembers(clientParticipants.stream().map(Member::getName).collect(Collectors.toList()))
+                .build();
     }
 }

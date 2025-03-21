@@ -21,6 +21,7 @@ public enum ErrorCode {
     INVALID_MEMBER_COMPANY("1003", "Invalid member company: The member does not belong to the specified company.", HttpStatus.BAD_REQUEST),
     PROJECT_TITLE_DUPLICATED("1004", "Project title is duplicated: A project with the same title already exists.", HttpStatus.BAD_REQUEST),
     COMPANY_PROJECT_NOT_FOUND("1005", "The company project does not exist for the given project and role.", HttpStatus.NOT_FOUND),
+    PROJECT_NOT_FOUND("1006", "Invalid project Id", HttpStatus.NOT_FOUND),
 
     // 공통 오류 메시지
     UNEXPECTED_ERROR("1000", "Unexpected Error: An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),

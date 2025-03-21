@@ -4,6 +4,7 @@ import com.soda.global.response.ApiResponseForm;
 import com.soda.project.domain.ProjectCreateRequest;
 import com.soda.project.domain.ProjectCreateResponse;
 import com.soda.project.domain.ProjectListResponse;
+import com.soda.project.domain.ProjectResponse;
 import com.soda.project.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,5 +29,11 @@ public class ProjectController {
     public ResponseEntity<ApiResponseForm<List<ProjectListResponse>>> getAllProjects() {
         List<ProjectListResponse> projectList = projectService.getAllProjects();
         return ResponseEntity.ok(ApiResponseForm.success(projectList));
+    }
+
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ApiResponseForm<ProjectResponse>> getProject(@PathVariable Long projectId) {
+        ProjectResponse response = projectService.getProject(projectId);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 }

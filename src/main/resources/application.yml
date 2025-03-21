@@ -31,5 +31,16 @@ jwt:
   secret:
     key: ${JWT_SECRET_KEY}
   access:
-    expiration: 3600000
+    expiration: 1800000
     header: Authorization
+  refresh:
+    expiration: 604800000
+
+init:
+  admin:
+    authid: ${ADMIN_AUTH_ID}
+    password: ${ADMIN_PASSWORD}
+
+
+
+

@@ -83,15 +83,18 @@ public class ProjectService {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
 
-        // 회사와 프로젝트 연결
-        CompanyProjectDTO companyProjectDTO = CompanyProjectDTO.builder()
-                .companyId(company.getId())
-                .projectId(project.getId())
-                .companyProjectRole(companyRole)
-                .build();
+        // 기존에 해당 회사와 해당 프로젝트가 연결되어 있는지 확인
+        boolean isCompanyProjectExisting = companyProjectRepository.existsByCompanyAndProject(company, project);
+        if(!isCompanyProjectExisting) {
+            CompanyProjectDTO companyProjectDTO = CompanyProjectDTO.builder()
+                    .companyId(company.getId())
+                    .projectId(project.getId())
+                    .companyProjectRole(companyRole)
+                    .build();
 
-        CompanyProject companyProject = companyProjectDTO.toEntity(company, project, companyRole);
-        companyProjectRepository.save(companyProject);
+            CompanyProject companyProject = companyProjectDTO.toEntity(company, project, companyRole);
+            companyProjectRepository.save(companyProject);
+        }
 
         // 멤버 지정
         List<Member> members = new ArrayList<>();
@@ -152,5 +155,9 @@ public class ProjectService {
                 .clientCompanyManagers(cliManagerNames) // 고객사 관리자들
                 .clientCompanyMembers(cliParticipantNames) // 고객사 직원들
                 .build();
+    }
+
+    public List<ProjectListResponse> getAllProjects() {
+        return null;
     }
 }

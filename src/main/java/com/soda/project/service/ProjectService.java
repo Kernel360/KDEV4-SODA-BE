@@ -50,15 +50,19 @@ public class ProjectService {
         Project project = createProjectEntity(request);
 
         // 2. 개발사 지정
+        List<Member> devManagers = assignCompanyAndMembers(request.getDevCompanyId(), request.getDevManagers(), project,
+                CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_MANAGER);
         List<Member> devMembers = assignCompanyAndMembers(request.getDevCompanyId(), request.getDevMembers(), project,
-                CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_MANAGER, MemberProjectRole.DEV_PARTICIPANT);
+                CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_PARTICIPANT);
 
         // 3. 고객사 지정
-        List<Member> cliMembers = assignCompanyAndMembers(request.getClientCompanyId(), request.getClientMembers(), project,
-                CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_MANAGER, MemberProjectRole.CLI_PARTICIPANT);
+        List<Member> clientManagers = assignCompanyAndMembers(request.getClientCompanyId(), request.getClientManagers(), project,
+                CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_MANAGER);
+        List<Member> clientMembers = assignCompanyAndMembers(request.getClientCompanyId(), request.getClientMembers(), project,
+                CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_PARTICIPANT);
 
         // 4. response DTO 생성
-        return createProjectCreateResponse(project, devMembers, cliMembers);
+        return createProjectCreateResponse(project, devManagers, devMembers, clientManagers, clientMembers);
 
     }
 
@@ -75,7 +79,7 @@ public class ProjectService {
     }
 
     // 회사 및 멤버 지정 (개발사 및 고객사 모두에서 사용)
-    private List<Member> assignCompanyAndMembers(Long companyId, List<Long> memberIds, Project project, CompanyProjectRole companyRole, MemberProjectRole managerRole, MemberProjectRole participantRole) {
+    private List<Member> assignCompanyAndMembers(Long companyId, List<Long> memberIds, Project project, CompanyProjectRole companyRole, MemberProjectRole memberRole) {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
 
@@ -86,7 +90,7 @@ public class ProjectService {
                 .companyProjectRole(companyRole)
                 .build();
 
-        CompanyProject companyProject = companyProjectDTO.toEntity(company, project);
+        CompanyProject companyProject = companyProjectDTO.toEntity(company, project, companyRole);
         companyProjectRepository.save(companyProject);
 
         // 멤버 지정
@@ -106,10 +110,10 @@ public class ProjectService {
                 MemberProjectDTO memberProjectDTO = MemberProjectDTO.builder()
                         .memberId(member.getId())
                         .projectId(project.getId())
-                        .memberProjectRole(memberId.equals(memberIds.get(0)) ? managerRole : participantRole)
+                        .memberProjectRole(memberRole)
                         .build();
 
-                MemberProject memberProject = memberProjectDTO.toEntity(member, project);
+                MemberProject memberProject = memberProjectDTO.toEntity(member, project, memberRole);
                 memberProjectRepository.save(memberProject);
             }
         }
@@ -117,19 +121,36 @@ public class ProjectService {
     }
 
     // 프로젝트 생성 응답 DTO 생성
-    private ProjectCreateResponse createProjectCreateResponse(Project project, List<Member> devMembers, List<Member> clientMembers) {
+    private ProjectCreateResponse createProjectCreateResponse(Project project, List<Member> devManagers, List<Member> devParticipants,
+                                                              List<Member> cliManagers, List<Member> cliParticipants) {
+
+        List<String> devManagerNames = devManagers.stream()
+                .map(Member::getName)
+                .collect(Collectors.toList());
+
+        List<String> devParticipantNames = devParticipants.stream()
+                .map(Member::getName)
+                .collect(Collectors.toList());
+
+        List<String> cliManagerNames = cliManagers.stream()
+                .map(Member::getName)
+                .collect(Collectors.toList());
+
+        List<String> cliParticipantNames = cliParticipants.stream()
+                .map(Member::getName)
+                .collect(Collectors.toList());
+
         return ProjectCreateResponse.builder()
                 .projectId(project.getId())
                 .title(project.getTitle())
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
-                .devCompanyName(devMembers.get(0).getCompany().getName()) // 개발사 이름
-                .devCompanyManager(devMembers.get(0).getName()) // 개발사 담당자 이름
-                .devCompanyMembers(devMembers.stream().skip(1).map(Member::getName).collect(Collectors.toList())) // 개발사 직원들
-                .clientCompanyName(clientMembers.get(0).getCompany().getName()) // 고객사 이름
-                .clientCompanyManager(clientMembers.get(0).getName()) // 고객사 담당자 이름
-                .clientCompanyMembers(clientMembers.stream().skip(1).map(Member::getName).collect(Collectors.toList())) // 고객사 직원들
+                .devCompanyName(devManagers.get(0).getCompany().getName())
+                .devCompanyManagers(devManagerNames) // 개발사 관리자 리스트
+                .devCompanyMembers(devParticipantNames) // 개발사 직원들
+                .clientCompanyName(cliManagers.get(0).getCompany().getName())
+                .clientCompanyManagers(cliManagerNames) // 고객사 관리자들
+                .clientCompanyMembers(cliParticipantNames) // 고객사 직원들
                 .build();
     }
-
 }

@@ -3,13 +3,13 @@ package com.soda.project.controller;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.project.domain.ProjectCreateRequest;
 import com.soda.project.domain.ProjectCreateResponse;
+import com.soda.project.domain.ProjectListResponse;
 import com.soda.project.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/projects")
@@ -21,6 +21,12 @@ public class ProjectController {
     @PostMapping("")
     public ResponseEntity<ApiResponseForm<ProjectCreateResponse>> createProject(@RequestBody ProjectCreateRequest request) {
         ProjectCreateResponse response = projectService.createProject(request);
-        return ResponseEntity.ok(ApiResponseForm.success(response));
+        return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 생성 성공"));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<ApiResponseForm<List<ProjectListResponse>>> getAllProjects() {
+        List<ProjectListResponse> projectList = projectService.getAllProjects();
+        return ResponseEntity.ok(ApiResponseForm.success(projectList));
     }
 }

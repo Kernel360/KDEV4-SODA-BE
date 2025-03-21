@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
+//@Transactional
 @RequiredArgsConstructor
 public class ProjectService {
 
@@ -157,7 +157,30 @@ public class ProjectService {
                 .build();
     }
 
+    /*
+       전체 프로젝트 조회
+       - 관리자, 개발사 담당자만 접근 가능
+     */
     public List<ProjectListResponse> getAllProjects() {
-        return null;
+        List<Project> projectList = projectRepository.findByIsDeletedFalse();
+        return projectList.stream()
+                .map(project -> {
+                    CompanyProject devCompanyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, CompanyProjectRole.DEV_COMPANY)
+                            .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
+                    String devCompanyName = devCompanyProject != null ? devCompanyProject.getCompany().getName() : null;
+
+                    CompanyProject clientCompanyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, CompanyProjectRole.CLIENT_COMPANY)
+                            .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
+                    String clientCompanyName = clientCompanyProject != null ? clientCompanyProject.getCompany().getName() : null;
+
+                    return ProjectListResponse.builder()
+                            .title(project.getTitle())
+                            .startDate(project.getStartDate())
+                            .endDate(project.getEndDate())
+                            .devCompanyName(devCompanyName)
+                            .clientCompanyName(clientCompanyName)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }

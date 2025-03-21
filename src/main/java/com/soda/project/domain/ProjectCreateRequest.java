@@ -19,7 +19,9 @@ public class ProjectCreateRequest {
     private LocalDateTime endDate;
     private Long clientCompanyId;           // 고객사 ID
     private Long devCompanyId;              // 개발사 ID
-    private List<Long> clientMembers;       // 고객사 멤버 ID
-    private List<Long> devMembers;          // 개발사 멤버 ID
+    private List<Long> devManagers;         // 개발사 담당자들 ID
+    private List<Long> devMembers;          // 개발사 멤버들 ID
+    private List<Long> clientManagers;      // 고객사 담당자들 ID
+    private List<Long> clientMembers;       // 고객사 멤버들 ID
 
 }

@@ -31,4 +31,8 @@ public class MemberProject extends BaseEntity {
         this.project = project;
         this.role = memberProjectRole;
     }
+
+    public void delete() {
+        this.markAsDeleted();
+    }
 }

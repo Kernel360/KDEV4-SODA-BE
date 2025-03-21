@@ -31,10 +31,11 @@ public class MemberProjectDTO {
     }
 
     // DTO → Entity 변환
-    public MemberProject toEntity(Member member, Project project) {
+    public MemberProject toEntity(Member member, Project project, MemberProjectRole memberProjectRole) {
         return MemberProject.builder()
                 .member(member)
                 .project(project)
+                .memberProjectRole(memberProjectRole)
                 .build();
     }
 }

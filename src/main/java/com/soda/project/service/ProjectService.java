@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-//@Transactional
 @RequiredArgsConstructor
 public class ProjectService {
 
@@ -41,21 +40,19 @@ public class ProjectService {
         - 고객사 지정, 관리자/직원 지정
      */
     public ProjectCreateResponse createProject(ProjectCreateRequest request) {
-        // 1. 기본 정보 생성
-        // 프로젝트 제목은 중복 불가능
+        // 1. 프로젝트 제목 중복 체크
         if (projectRepository.existsByTitle(request.getTitle())) {
             throw new GeneralException(ErrorCode.PROJECT_TITLE_DUPLICATED);
         }
 
+        // 2. 기본 정보 생성
         Project project = createProjectEntity(request);
 
-        // 2. 개발사 지정
+        // 3. 개발사 및 고객사 지정
         List<Member> devManagers = assignCompanyAndMembers(request.getDevCompanyId(), request.getDevManagers(), project,
                 CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_MANAGER);
         List<Member> devMembers = assignCompanyAndMembers(request.getDevCompanyId(), request.getDevMembers(), project,
                 CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_PARTICIPANT);
-
-        // 3. 고객사 지정
         List<Member> clientManagers = assignCompanyAndMembers(request.getClientCompanyId(), request.getClientManagers(), project,
                 CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_MANAGER);
         List<Member> clientMembers = assignCompanyAndMembers(request.getClientCompanyId(), request.getClientMembers(), project,
@@ -63,63 +60,59 @@ public class ProjectService {
 
         // 4. response DTO 생성
         return createProjectCreateResponse(project, devManagers, devMembers, clientManagers, clientMembers);
-
     }
 
     private Project createProjectEntity(ProjectCreateRequest request) {
-        ProjectDTO projectDTO = ProjectDTO.builder()
+        Project project = ProjectDTO.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
-                .build();
+                .build().toEntity();
 
-        Project project = projectDTO.toEntity();
-        projectRepository.save(project); // 프로젝트 DB에 저장
+        projectRepository.save(project);
         return project;
     }
 
-    // 회사 및 멤버 지정 (개발사 및 고객사 모두에서 사용)
     private List<Member> assignCompanyAndMembers(Long companyId, List<Long> memberIds, Project project, CompanyProjectRole companyRole, MemberProjectRole memberRole) {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
 
-        // 기존에 해당 회사와 해당 프로젝트가 연결되어 있는지 확인
-        boolean isCompanyProjectExisting = companyProjectRepository.existsByCompanyAndProject(company, project);
-        if(!isCompanyProjectExisting) {
-            CompanyProjectDTO companyProjectDTO = CompanyProjectDTO.builder()
+        // 회사와 프로젝트가 연결되지 않은 경우 연결
+        assignCompanyToProject(company, project, companyRole);
+
+        // 멤버들을 프로젝트와 역할에 맞게 지정
+        return assignMembersToProject(company, memberIds, project, memberRole);
+    }
+
+    private void assignCompanyToProject(Company company, Project project, CompanyProjectRole companyRole) {
+        if (!companyProjectRepository.existsByCompanyAndProject(company, project)) {
+            CompanyProject companyProject = CompanyProjectDTO.builder()
                     .companyId(company.getId())
                     .projectId(project.getId())
                     .companyProjectRole(companyRole)
-                    .build();
-
-            CompanyProject companyProject = companyProjectDTO.toEntity(company, project, companyRole);
+                    .build().toEntity(company, project, companyRole);
             companyProjectRepository.save(companyProject);
         }
+    }
 
-        // 멤버 지정
+    private List<Member> assignMembersToProject(Company company, List<Long> memberIds, Project project, MemberProjectRole memberRole) {
         List<Member> members = new ArrayList<>();
-        if (!memberIds.isEmpty()) {
-            for (Long memberId : memberIds) {
-                Member member = memberRepository.findById(memberId)
-                        .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+        for (Long memberId : memberIds) {
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-                // 지정된 회사와 멤버가 동일한지 확인
-                if (!member.getCompany().getId().equals(company.getId())) {
-                    throw new GeneralException(ErrorCode.INVALID_MEMBER_COMPANY);
-                }
-
-                members.add(member);
-
-                MemberProjectDTO memberProjectDTO = MemberProjectDTO.builder()
-                        .memberId(member.getId())
-                        .projectId(project.getId())
-                        .memberProjectRole(memberRole)
-                        .build();
-
-                MemberProject memberProject = memberProjectDTO.toEntity(member, project, memberRole);
-                memberProjectRepository.save(memberProject);
+            if (!member.getCompany().getId().equals(company.getId())) {
+                throw new GeneralException(ErrorCode.INVALID_MEMBER_COMPANY);
             }
+
+            members.add(member);
+            MemberProject memberProject = MemberProjectDTO.builder()
+                    .memberId(member.getId())
+                    .projectId(project.getId())
+                    .memberProjectRole(memberRole)
+                    .build().toEntity(member, project, memberRole);
+            memberProjectRepository.save(memberProject);
         }
         return members;
     }
@@ -127,23 +120,6 @@ public class ProjectService {
     // 프로젝트 생성 응답 DTO 생성
     private ProjectCreateResponse createProjectCreateResponse(Project project, List<Member> devManagers, List<Member> devParticipants,
                                                               List<Member> cliManagers, List<Member> cliParticipants) {
-
-        List<String> devManagerNames = devManagers.stream()
-                .map(Member::getName)
-                .collect(Collectors.toList());
-
-        List<String> devParticipantNames = devParticipants.stream()
-                .map(Member::getName)
-                .collect(Collectors.toList());
-
-        List<String> cliManagerNames = cliManagers.stream()
-                .map(Member::getName)
-                .collect(Collectors.toList());
-
-        List<String> cliParticipantNames = cliParticipants.stream()
-                .map(Member::getName)
-                .collect(Collectors.toList());
-
         return ProjectCreateResponse.builder()
                 .projectId(project.getId())
                 .title(project.getTitle())
@@ -151,29 +127,27 @@ public class ProjectService {
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
                 .devCompanyName(devManagers.get(0).getCompany().getName())
-                .devCompanyManagers(devManagerNames) // 개발사 관리자 리스트
-                .devCompanyMembers(devParticipantNames) // 개발사 직원들
+                .devCompanyManagers(extractMemberNames(devManagers))
+                .devCompanyMembers(extractMemberNames(devParticipants))
                 .clientCompanyName(cliManagers.get(0).getCompany().getName())
-                .clientCompanyManagers(cliManagerNames) // 고객사 관리자들
-                .clientCompanyMembers(cliParticipantNames) // 고객사 직원들
+                .clientCompanyManagers(extractMemberNames(cliManagers))
+                .clientCompanyMembers(extractMemberNames(cliParticipants))
                 .build();
     }
 
-    /*
-       전체 프로젝트 조회
-       - 관리자, 개발사 담당자만 접근 가능
-     */
+    private List<String> extractMemberNames(List<Member> members) {
+        return members.stream()
+                .map(Member::getName)
+                .collect(Collectors.toList());
+    }
+
+    // 전체 프로젝트 조회
     public List<ProjectListResponse> getAllProjects() {
         List<Project> projectList = projectRepository.findByIsDeletedFalse();
         return projectList.stream()
                 .map(project -> {
-                    CompanyProject devCompanyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, CompanyProjectRole.DEV_COMPANY)
-                            .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
-                    String devCompanyName = devCompanyProject != null ? devCompanyProject.getCompany().getName() : null;
-
-                    CompanyProject clientCompanyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, CompanyProjectRole.CLIENT_COMPANY)
-                            .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
-                    String clientCompanyName = clientCompanyProject != null ? clientCompanyProject.getCompany().getName() : null;
+                    String devCompanyName = getCompanyNameByRole(project, CompanyProjectRole.DEV_COMPANY);
+                    String clientCompanyName = getCompanyNameByRole(project, CompanyProjectRole.CLIENT_COMPANY);
 
                     return ProjectListResponse.builder()
                             .title(project.getTitle())
@@ -187,49 +161,43 @@ public class ProjectService {
                 .collect(Collectors.toList());
     }
 
+    private String getCompanyNameByRole(Project project, CompanyProjectRole role) {
+        CompanyProject companyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, role)
+                .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
+        return companyProject.getCompany().getName();
+    }
+
+    // 개별 프로젝트 조회
     public ProjectResponse getProject(Long projectId) {
-        // 1. 프로젝트 기본 정보 조회
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
 
-        // 2. 개발사 정보 조회
-        CompanyProject devCompanyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, CompanyProjectRole.DEV_COMPANY)
-                .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
-        String devCompanyName = devCompanyProject.getCompany().getName();
+        String devCompanyName = getCompanyNameByRole(project, CompanyProjectRole.DEV_COMPANY);
+        String clientCompanyName = getCompanyNameByRole(project, CompanyProjectRole.CLIENT_COMPANY);
 
-        // 개발사 담당자 및 일반 참여자 조회
-        List<Member> devManagers = memberProjectRepository.findByProjectAndRole(project, MemberProjectRole.DEV_MANAGER).stream()
-                .map(MemberProject::getMember)
-                .toList();
-        List<Member> devParticipants = memberProjectRepository.findByProjectAndRole(project, MemberProjectRole.DEV_PARTICIPANT).stream()
-                .map(MemberProject::getMember)
-                .toList();
+        List<Member> devManagers = getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
+        List<Member> devParticipants = getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
 
-        // 3. 고객사 정보 조회
-        CompanyProject clientCompanyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, CompanyProjectRole.CLIENT_COMPANY)
-                .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
-        String clientCompanyName = clientCompanyProject.getCompany().getName();
+        List<Member> clientManagers = getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
+        List<Member> clientParticipants = getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
 
-        // 고객사 담당자 및 일반 참여자 조회
-        List<Member> clientManagers = memberProjectRepository.findByProjectAndRole(project, MemberProjectRole.CLI_MANAGER).stream()
-                .map(MemberProject::getMember)
-                .toList();
-        List<Member> clientParticipants = memberProjectRepository.findByProjectAndRole(project, MemberProjectRole.CLI_PARTICIPANT).stream()
-                .map(MemberProject::getMember)
-                .toList();
-
-        // 4. ProjectResponse DTO 생성 및 반환
         return ProjectResponse.builder()
                 .title(project.getTitle())
                 .description(project.getDescription())
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
                 .devCompanyName(devCompanyName)
-                .devCompanyManagers(devManagers.stream().map(Member::getName).collect(Collectors.toList()))
-                .devCompanyMembers(devParticipants.stream().map(Member::getName).collect(Collectors.toList()))
+                .devCompanyManagers(extractMemberNames(devManagers))
+                .devCompanyMembers(extractMemberNames(devParticipants))
                 .clientCompanyName(clientCompanyName)
-                .clientCompanyManagers(clientManagers.stream().map(Member::getName).collect(Collectors.toList()))
-                .clientCompanyMembers(clientParticipants.stream().map(Member::getName).collect(Collectors.toList()))
+                .clientCompanyManagers(extractMemberNames(clientManagers))
+                .clientCompanyMembers(extractMemberNames(clientParticipants))
                 .build();
+    }
+
+    private List<Member> getMembersByRole(Project project, MemberProjectRole role) {
+        return memberProjectRepository.findByProjectAndRole(project, role).stream()
+                .map(MemberProject::getMember)
+                .collect(Collectors.toList());
     }
 }

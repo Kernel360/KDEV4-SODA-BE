@@ -21,6 +21,7 @@ public class BaseEntity {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Getter
     @Column(nullable = false)
     private Boolean isDeleted;
 
@@ -29,6 +30,10 @@ public class BaseEntity {
         if (this.isDeleted == null) {
             this.isDeleted = false;
         }
+    }
+
+    protected void markAsDeleted() {
+        this.isDeleted = true;
     }
 
 }

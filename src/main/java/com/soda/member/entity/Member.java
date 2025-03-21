@@ -5,13 +5,19 @@ import com.soda.member.enums.MemberRole;
 import com.soda.notice.entity.MemberNotice;
 import com.soda.project.entity.MemberProject;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Member extends BaseEntity {
 
     @Column(nullable = false)
@@ -31,7 +37,7 @@ public class Member extends BaseEntity {
     private MemberRole role;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id", nullable = false)
+    @JoinColumn(name = "company_id")
     private Company company;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)

@@ -69,6 +69,7 @@ public class ProjectService {
     private Project createProjectEntity(ProjectCreateRequest request) {
         ProjectDTO projectDTO = ProjectDTO.builder()
                 .title(request.getTitle())
+                .description(request.getDescription())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .build();
@@ -146,6 +147,7 @@ public class ProjectService {
         return ProjectCreateResponse.builder()
                 .projectId(project.getId())
                 .title(project.getTitle())
+                .description(project.getDescription())
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
                 .devCompanyName(devManagers.get(0).getCompany().getName())
@@ -175,6 +177,7 @@ public class ProjectService {
 
                     return ProjectListResponse.builder()
                             .title(project.getTitle())
+                            .description(project.getDescription())
                             .startDate(project.getStartDate())
                             .endDate(project.getEndDate())
                             .devCompanyName(devCompanyName)
@@ -182,5 +185,9 @@ public class ProjectService {
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    public ProjectResponse getProject(Long projectId) {
+        return null;
     }
 }

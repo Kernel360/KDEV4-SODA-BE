@@ -15,6 +15,7 @@ import java.util.List;
 public class ProjectCreateRequest {
 
     private String title;
+    private String description;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Long clientCompanyId;           // 고객사 ID

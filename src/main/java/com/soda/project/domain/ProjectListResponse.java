@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class ProjectListResponse {
 
     private String title;
+    private String description;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String devCompanyName;

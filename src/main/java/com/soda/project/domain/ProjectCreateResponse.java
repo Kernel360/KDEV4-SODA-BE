@@ -17,6 +17,7 @@ public class ProjectCreateResponse {
 
     private Long projectId;
     private String title;
+    private String description;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 

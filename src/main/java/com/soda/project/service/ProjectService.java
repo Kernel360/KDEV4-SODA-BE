@@ -200,4 +200,32 @@ public class ProjectService {
                 .map(MemberProject::getMember)
                 .collect(Collectors.toList());
     }
+
+    // project 삭제 (연관된 company_project, member_project 같이 삭제)
+    @Transactional
+    public void deleteProject(Long projectId) {
+        // 1. 프로젝트 존재 여부 체크
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
+
+        // 2. 이미 삭제된 프로젝트인지 체크
+        if (project.getIsDeleted()) {
+            throw new GeneralException(ErrorCode.PROJECT_ALREADY_DELETED);
+        }
+
+        // 3. 프로젝트 상태를 삭제된 상태로 변경
+        project.delete(); // isDeleted 값을 true로 변경
+
+        // 4. 프로젝트와 관련된 회사 프로젝트들 삭제 처리
+        List<CompanyProject> companyProjects = companyProjectRepository.findByProject(project);
+        companyProjects.forEach(CompanyProject::delete); // isDeleted 값을 true로 설정
+
+        // 5. 프로젝트와 관련된 멤버 프로젝트들 삭제 처리
+        List<MemberProject> memberProjects = memberProjectRepository.findByProject(project);
+        memberProjects.forEach(MemberProject::delete); // isDeleted 값을 true로 설정
+
+        projectRepository.save(project);
+        companyProjectRepository.saveAll(companyProjects);
+        memberProjectRepository.saveAll(memberProjects);
+    }
 }

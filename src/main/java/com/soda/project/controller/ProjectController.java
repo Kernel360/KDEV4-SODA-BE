@@ -36,4 +36,10 @@ public class ProjectController {
         ProjectResponse response = projectService.getProject(projectId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
+
+    @DeleteMapping("/{projectId}")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long projectId) {
+        projectService.deleteProject(projectId);
+        return ResponseEntity.noContent().build();
+    }
 }

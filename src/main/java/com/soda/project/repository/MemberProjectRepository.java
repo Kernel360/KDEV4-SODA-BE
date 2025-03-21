@@ -12,4 +12,6 @@ import java.util.List;
 @Repository
 public interface MemberProjectRepository extends JpaRepository<MemberProject, Long> {
     List<MemberProject> findByProjectAndRole(Project project, MemberProjectRole memberProjectRole);
+
+    List<MemberProject> findByProject(Project project);
 }

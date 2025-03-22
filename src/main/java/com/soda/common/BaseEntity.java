@@ -4,10 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
 public class BaseEntity {
 
     @Getter
@@ -34,6 +36,10 @@ public class BaseEntity {
 
     protected void markAsDeleted() {
         this.isDeleted = true;
+    }
+
+    public void markAsActive() {
+        this.isDeleted = false;
     }
 
 }

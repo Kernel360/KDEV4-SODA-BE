@@ -35,4 +35,10 @@ public class CompanyProject extends BaseEntity {
     public void delete() {
         this.markAsDeleted();
     }
+
+    public void updateCompanyProject(Company company, Project project, CompanyProjectRole companyProjectRole) {
+        this.company = company;
+        this.project = project;
+        this.companyProjectRole = companyProjectRole;
+    }
 }

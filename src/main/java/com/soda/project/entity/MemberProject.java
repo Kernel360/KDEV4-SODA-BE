@@ -35,4 +35,14 @@ public class MemberProject extends BaseEntity {
     public void delete() {
         this.markAsDeleted();
     }
+
+    public void reActive() {
+        this.markAsActive();
+    }
+
+    public void updateMemberProject(Member member, Project project, MemberProjectRole memberProjectRole) {
+        this.member = member;
+        this.project = project;
+        this.role = memberProjectRole;
+    }
 }

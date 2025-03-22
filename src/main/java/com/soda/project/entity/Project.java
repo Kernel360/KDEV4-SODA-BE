@@ -46,4 +46,11 @@ public class Project extends BaseEntity {
     public void delete() {
         this.markAsDeleted();
     }
+
+    public void updateProject(String title, String description, LocalDateTime startDate, LocalDateTime endDate) {
+        this.title = title;
+        this.description = description;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 }

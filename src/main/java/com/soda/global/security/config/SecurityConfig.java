@@ -11,6 +11,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import java.util.List;
+
 
 @Configuration
 @EnableWebSecurity
@@ -21,6 +25,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    private final SecurityProperties securityProperties;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
@@ -29,15 +34,16 @@ public class SecurityConfig {
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/signup", "/login").permitAll() // 회원가입, 로그인 요청은 모두 허용
-                        .requestMatchers("/**").permitAll() // 회원가입, 로그인 요청은 모두 허용
-                        .requestMatchers("/error","/send-password-reset-email").permitAll()
-                        .anyRequest().authenticated() // 나머지 요청은 인증 필요
-                )
+                .authorizeHttpRequests(authorize -> {
+                    List<String> excludedPaths = securityProperties.getExcludedPaths();
+                    for (String path : excludedPaths) {
+                        authorize.requestMatchers(new AntPathRequestMatcher(path)).permitAll();
+                    }
+                    authorize.anyRequest().authenticated(); // 인증 관련은 JwtAuthenticationFilter
+                })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
-    }
+                    return http.build();
+                }
 
-}
+    }
 

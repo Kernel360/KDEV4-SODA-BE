@@ -3,6 +3,7 @@ package com.soda.global.security.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.global.response.ErrorCode;
+import com.soda.global.security.config.SecurityProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -14,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,9 +23,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 
 @Component
@@ -34,16 +38,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
+    private final SecurityProperties securityProperties;
+    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = jwtTokenProvider.resolveToken(request);
 
-//            if (token == null) {
-//                filterChain.doFilter(request, response);
-//                return;
-//            }
+
+            if (isExcludedPath(request.getServletPath())) {
+                filterChain.doFilter(request, response);
+                return;
+            }
 
             // 토큰 검증 시도
             if (!jwtTokenProvider.validateToken(token)) {
@@ -82,5 +89,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String jsonResponse = objectMapper.writeValueAsString(errorResponse);
         response.getWriter().write(jsonResponse);
+    }
+
+    private boolean isExcludedPath(String path) {
+        for (String excludedPath : securityProperties.getExcludedPaths()) {
+            if (antPathMatcher.match(excludedPath, path)) {
+                return true;
+
+            }
+        }
+        return false;
     }
 }

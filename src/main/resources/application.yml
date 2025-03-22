@@ -8,9 +8,18 @@ spring:
     password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  security:
+    excluded-paths:
+      - /swagger-ui/**
+      - /signup
+      - /login
+      - /error
+      - /verification
+
+
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true

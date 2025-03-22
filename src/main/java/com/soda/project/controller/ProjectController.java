@@ -42,4 +42,10 @@ public class ProjectController {
         projectService.deleteProject(projectId);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{projectId}")
+    public ResponseEntity<ApiResponseForm<ProjectCreateResponse>> updateProject(@PathVariable Long projectId, @RequestBody ProjectCreateRequest request) {
+        ProjectCreateResponse response = projectService.updateProject(projectId, request);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 수정 성공"));
+    }
 }

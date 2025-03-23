@@ -4,12 +4,15 @@ import com.soda.common.BaseEntity;
 import com.soda.member.entity.Member;
 import com.soda.project.entity.Task;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Request extends BaseEntity {
 
     private Boolean isApproved;

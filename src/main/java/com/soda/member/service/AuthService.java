@@ -1,24 +1,31 @@
 package com.soda.member.service;
 
+import com.soda.common.mail.service.EmailService;
 import com.soda.global.response.ErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.global.security.jwt.JwtTokenProvider;
-import com.soda.member.dto.LoginRequestDto;
-import com.soda.member.dto.LoginResponseDto;
-import com.soda.member.dto.SignupRequestDto;
+import com.soda.member.dto.*;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.entity.RefreshToken;
+import com.soda.member.repository.CompanyRepository;
 import com.soda.member.repository.MemberRepository;
 import com.soda.member.repository.RefreshTokenRepository;
+import com.soda.member.repository.VerificationCodeRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.util.Random;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AuthService {
 
     private final MemberRepository memberRepository;
@@ -26,17 +33,21 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final EmailService emailService;
 
+    private final VerificationCodeRepository verificationCodeRepository;
+    private static final long VERIFICATION_CODE_EXPIRATION = 300; // 5분
+    private final CompanyRepository companyRepository;
 
     @Transactional
-    public void signup(SignupRequestDto requestDto) {
+    public void signup(SignupRequest requestDto) {
         // 아이디 중복 확인
         if (memberRepository.existsByAuthId(requestDto.getAuthId())) {
             throw new GeneralException(ErrorCode.DUPLICATE_AUTH_ID);
         }
 
-        // todo company생기면 수정해야함
-        Company company = null;
+        Company company = companyRepository.findByName(requestDto.getCompanyName())
+                .orElseThrow(()->new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
 
         Member member = Member.builder()
                 .authId(requestDto.getAuthId())
@@ -53,7 +64,7 @@ public class AuthService {
 
 
     @Transactional
-    public LoginResponseDto login(LoginRequestDto requestDto, HttpServletRequest request) {
+    public LoginResponse login(LoginRequest requestDto, HttpServletRequest request) {
         Member member = memberRepository.findByAuthId(requestDto.getAuthId())
                 .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_CREDENTIALS));
 
@@ -74,14 +85,14 @@ public class AuthService {
                 .build();
         refreshTokenRepository.save(refreshTokenEntity);
 
-        return LoginResponseDto.builder()
+        return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
     }
 
     @Transactional
-    public LoginResponseDto refreshAccessToken(HttpServletRequest request) {
+    public LoginResponse refreshAccessToken(HttpServletRequest request) {
         String refreshToken = jwtTokenProvider.resolveToken(request);
         RefreshToken storedToken = refreshTokenRepository.findByToken(refreshToken)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_REFRESH_TOKEN));
@@ -97,9 +108,50 @@ public class AuthService {
         // 토큰 초기화
         storedToken.setToken(newRefreshToken);
 
-        return LoginResponseDto.builder()
+        return LoginResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(refreshToken)
                 .build();
     }
+
+    @Transactional
+    public void sendVerificationCode(String email) throws IOException {
+        String code = generateVerificationCode();
+        try {
+            emailService.sendVerificationEmail(email, code);
+            // Redis 또는 데이터베이스에 인증번호 저장 및 만료 시간 설정
+            verificationCodeRepository.saveVerificationCode(email, code, VERIFICATION_CODE_EXPIRATION); // Redis에 인증번호 저장
+        } catch (Exception e) {
+            throw new GeneralException(ErrorCode.MAIL_SEND_FAILED);
+        }
+    }
+
+
+    @Transactional
+    public boolean verifyVerificationCode(String email, String code) {
+        String storedCode = verificationCodeRepository.findVerificationCode(email);
+        if (storedCode != null && storedCode.equals(code)) {
+            // 인증 성공 시 Redis에서 인증번호 삭제
+            verificationCodeRepository.deleteVerificationCode(email);
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
+    public void changePassword(ChangePasswordRequest requestDto) {
+        Member member = memberRepository.findByEmail(requestDto.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_MEMBER));
+
+        member.changePassword(passwordEncoder.encode(requestDto.getNewPassword()));
+        memberRepository.save(member);
+    }
+
+    // 인증번호 생성 메서드
+    private String generateVerificationCode() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(1000000));
+    }
+
+
 }

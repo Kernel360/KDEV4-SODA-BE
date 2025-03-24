@@ -41,7 +41,7 @@ dependencies {
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
 	// spring security
-//	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 
 	// jwt
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
@@ -49,6 +49,11 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 	implementation 'com.auth0:java-jwt:4.4.0'
 
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// smtp
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 }
 

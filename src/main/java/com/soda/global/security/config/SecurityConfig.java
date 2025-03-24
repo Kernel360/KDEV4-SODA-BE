@@ -15,7 +15,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.List;
 
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -39,11 +38,11 @@ public class SecurityConfig {
                     for (String path : excludedPaths) {
                         authorize.requestMatchers(new AntPathRequestMatcher(path)).permitAll();
                     }
-                    authorize.anyRequest().authenticated(); // 인증 관련은 JwtAuthenticationFilter
+                    authorize.anyRequest().permitAll(); // 개발중에는 모두 허용
                 })
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-                    return http.build();
-                }
-
+        return http.build();
     }
+
+}
 

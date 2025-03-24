@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,7 +26,6 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 
 @Component
@@ -74,7 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (MalformedJwtException | UnsupportedJwtException | SignatureException | IllegalArgumentException e) {
             sendErrorResponse(response, ErrorCode.INVALID_TOKEN);
         } catch (UsernameNotFoundException e) {
-            sendErrorResponse(response, ErrorCode.NOT_FOUND_AUTH_ID);
+            sendErrorResponse(response, ErrorCode.NOT_FOUND_MEMBER);
         } catch (Exception e) {
             sendErrorResponse(response, ErrorCode.UNEXPECTED_ERROR);
         }
@@ -95,7 +93,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         for (String excludedPath : securityProperties.getExcludedPaths()) {
             if (antPathMatcher.match(excludedPath, path)) {
                 return true;
-
             }
         }
         return false;

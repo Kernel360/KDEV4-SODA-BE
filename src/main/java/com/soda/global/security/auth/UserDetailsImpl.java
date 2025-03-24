@@ -25,7 +25,7 @@ public class UserDetailsImpl implements UserDetails {
         // 사용자의 권한 목록을 반환하는 메서드
         // 여기서는 User 엔티티의 role 필드를 사용하여 SimpleGrantedAuthority 객체를 생성하고,
         // Collections.singletonList()를 사용하여 권한 목록을 생성하여 반환합니다.
-        return Collections.singletonList(new SimpleGrantedAuthority(member.getRole().getDescription()));
+        return Collections.singletonList(new SimpleGrantedAuthority(member.getRole().toString()));
     }
 
     @Override
@@ -65,6 +65,6 @@ public class UserDetailsImpl implements UserDetails {
     public boolean isEnabled() {
         // 계정 활성화 여부를 반환하는 메서드
         // 여기서는 항상 true를 반환하여 계정이 활성화되었음을 나타냅니다.
-        return true;
+        return member.isEnabled();
     }
 }

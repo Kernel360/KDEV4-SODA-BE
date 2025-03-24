@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserDetailsServiceImple implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final MemberRepository memberRepository;
 
@@ -21,6 +21,11 @@ public class UserDetailsServiceImple implements UserDetailsService {
     public UserDetails loadUserByUsername(String authId) throws UsernameNotFoundException {
         Member member = memberRepository.findByAuthId(authId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND));
+
+        if (!member.isEnabled()) {
+            throw new GeneralException(ErrorCode.NOT_FOUND_MEMBER);
+        }
         return new UserDetailsImpl(member);
+
     }
 }

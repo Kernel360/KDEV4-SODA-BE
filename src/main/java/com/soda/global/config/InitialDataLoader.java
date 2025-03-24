@@ -39,16 +39,6 @@ public class InitialDataLoader {
         Optional<Member> adminUserOptional = memberRepository.findByAuthId(adminAuthId);
 
         if (adminUserOptional.isEmpty()) {
-            // 관리자 회사 생성
-            Company adminCompany = Company.builder()
-                    .name("Admin Company")
-                    .phoneNumber("010-0000-0000")
-                    .companyNumber("000-00-00000")
-                    .address("Admin Address")
-                    .detailAddress("Admin Detail Address")
-                    .build();
-            companyRepository.save(adminCompany);
-
             // 관리자 유저 생성
             Member adminUser = Member.builder()
                     .authId(adminAuthId)
@@ -58,7 +48,6 @@ public class InitialDataLoader {
                     .phoneNumber("010-1234-5678")
                     .email("admin@gmail.com")
                     .role(MemberRole.ADMIN)
-                    .company(adminCompany)
                     .build();
             memberRepository.save(adminUser);
         }

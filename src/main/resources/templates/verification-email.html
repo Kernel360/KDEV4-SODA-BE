@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SODA 비밀번호 재설정</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 20px;
+        }
+        .code {
+            background-color: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>SODA 비밀번호 재설정</h1>
+    <p>안녕하세요!</p>
+    <p>SODA 비밀번호 재설정을 요청하셨습니다.</p>
+    <p>아래 인증 코드를 입력하여 비밀번호를 재설정해주세요.</p>
+    <p class="code">{{code}}</p>
+    <p>인증 코드는 5분 동안 유효합니다.</p>
+    <p>만약 비밀번호 재설정을 요청하지 않으셨다면, 이 메일을 무시해주세요.</p>
+    <p>감사합니다.</p>
+    <div class="footer">
+        <p>본 메일은 SODA 서비스에서 발송되었습니다.</p>
+        <p>© 2025 SODA. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

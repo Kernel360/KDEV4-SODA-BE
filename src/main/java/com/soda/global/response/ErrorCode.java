@@ -29,8 +29,26 @@ public enum ErrorCode {
     INVALID_INPUT("1011", "Invalid Input", HttpStatus.BAD_REQUEST),
 
     // 공통 오류 메시지
-    UNEXPECTED_ERROR("1000", "Unexpected Error: An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
+    UNEXPECTED_ERROR("1000", "Unexpected Error: An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR), // 요청 관련 오류
+
+    // 인증 관련 추가 오류
+
+
+
+    INVALID_CREDENTIALS("2001", "아이디 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED),
+    TOKEN_EXPIRED("2002", "토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),
+    INVALID_TOKEN("2003", "잘못된 토큰입니다.", HttpStatus.UNAUTHORIZED),
+    ACCESS_DENIED("2004", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
+
+    NOT_FOUND_MEMBER("2005", "멤버를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
+    NOT_FOUND_REFRESH_TOKEN("2006", "Refresh token을 찾을 수 없습니다.", HttpStatus.UNAUTHORIZED),
+    INVALID_REFRESH_TOKEN("2007", "유효하지 않은 Refresh token입니다.", HttpStatus.UNAUTHORIZED),
+    DUPLICATE_AUTH_ID("2008", "이미 사용 중인 아이디입니다.", HttpStatus.BAD_REQUEST),
+    MAIL_SEND_FAILED("2009", "메일 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    NOT_FOUND_COMPANY("2010", "회사를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
+
     ;
+
 
     private final String code;
     private final String message;

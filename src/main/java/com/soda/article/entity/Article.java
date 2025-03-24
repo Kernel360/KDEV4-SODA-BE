@@ -6,6 +6,7 @@ import com.soda.common.BaseEntity;
 import com.soda.member.entity.Member;
 import com.soda.project.entity.Stage;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -57,6 +58,20 @@ public class Article extends BaseEntity {
     // 부모 게시글이 없으면 일반 게시글, 있으면 답글
     public boolean isChildComment() {
         return parentArticle != null;
+    }
+
+    // 기본 생성자
+    public Article() {}
+
+    @Builder
+    public Article(String title, String content, PriorityType priority, LocalDateTime deadline, Member member, Stage stage, ArticleStatus status) {
+        this.title = title;
+        this.content = content;
+        this.priority = priority;
+        this.deadline = deadline;
+        this.member = member;
+        this.stage = stage;
+        this.status = status;
     }
 
 }

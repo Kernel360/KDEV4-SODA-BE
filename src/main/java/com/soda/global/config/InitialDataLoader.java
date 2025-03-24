@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class InitialDataLoader {
@@ -33,26 +35,32 @@ public class InitialDataLoader {
     }
 
     private void createAdminCompanyAndUser() {
-        // 관리자 회사 생성
-        Company adminCompany = Company.builder()
-                .name("Admin Company")
-                .phoneNumber("010-0000-0000")
-                .companyNumber("000-00-00000")
-                .address("Admin Address")
-                .detailAddress("Admin Detail Address")
-                .build();
-        companyRepository.save(adminCompany);
+        // 관리자 계정 존재 여부 확인
+        Optional<Member> adminUserOptional = memberRepository.findByAuthId(adminAuthId);
 
-        // 관리자 유저 생성
-        Member adminUser = Member.builder()
-                .authId(adminAuthId)
-                .password(passwordEncoder.encode(adminPassword))
-                .name("Admin User")
-                .position("Admin Position")
-                .phoneNumber("010-1234-5678")
-                .role(MemberRole.ADMIN)
-                .company(adminCompany)
-                .build();
-        memberRepository.save(adminUser);
+        if (adminUserOptional.isEmpty()) {
+            // 관리자 회사 생성
+            Company adminCompany = Company.builder()
+                    .name("Admin Company")
+                    .phoneNumber("010-0000-0000")
+                    .companyNumber("000-00-00000")
+                    .address("Admin Address")
+                    .detailAddress("Admin Detail Address")
+                    .build();
+            companyRepository.save(adminCompany);
+
+            // 관리자 유저 생성
+            Member adminUser = Member.builder()
+                    .authId(adminAuthId)
+                    .password(passwordEncoder.encode(adminPassword))
+                    .name("Admin User")
+                    .position("Admin Position")
+                    .phoneNumber("010-1234-5678")
+                    .email("admin@gmail.com")
+                    .role(MemberRole.ADMIN)
+                    .company(adminCompany)
+                    .build();
+            memberRepository.save(adminUser);
+        }
     }
 }

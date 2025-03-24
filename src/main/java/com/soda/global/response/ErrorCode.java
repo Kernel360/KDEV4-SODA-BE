@@ -15,6 +15,16 @@ public enum ErrorCode {
     BAD_GATEWAY("502", "Bad Gateway: The server received an invalid response from the upstream server.", HttpStatus.BAD_GATEWAY),
     SERVICE_UNAVAILABLE("503", "Service Unavailable: The server is temporarily unable to handle the request.", HttpStatus.SERVICE_UNAVAILABLE),
 
+    // service 로직 오류 메시지
+    COMPANY_NOT_FOUND("1001", "Company not found: The specified company does not exist.", HttpStatus.NOT_FOUND),
+    MEMBER_NOT_FOUND("1002", "Member not found: The specified member does not exist.", HttpStatus.NOT_FOUND),
+    INVALID_MEMBER_COMPANY("1003", "Invalid member company: The member does not belong to the specified company.", HttpStatus.BAD_REQUEST),
+    PROJECT_TITLE_DUPLICATED("1004", "Project title is duplicated: A project with the same title already exists.", HttpStatus.BAD_REQUEST),
+    COMPANY_PROJECT_NOT_FOUND("1005", "The company project does not exist for the given project and role.", HttpStatus.NOT_FOUND),
+    PROJECT_NOT_FOUND("1006", "Invalid project Id", HttpStatus.NOT_FOUND),
+    PROJECT_ALREADY_DELETED("1007", "This Project is already deleted", HttpStatus.NOT_FOUND),
+    MEMBER_PROJECT_NOT_FOUND("1008", "The member project does not exist for the given project and role.", HttpStatus.NOT_FOUND),
+
     // 공통 오류 메시지
     UNEXPECTED_ERROR("1000", "Unexpected Error: An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
 

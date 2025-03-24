@@ -147,6 +147,16 @@ public class AuthService {
         memberRepository.save(member);
     }
 
+    @Transactional
+    public void updateMember(Long memberId, UpdateMemberRequest request) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_MEMBER));
+        Company company = companyRepository.findByName(request.getCompanyName())
+                .orElseThrow(()->new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+
+        member.updateMember(request,company);
+    }
+
     // 인증번호 생성 메서드
     private String generateVerificationCode() {
         Random random = new Random();

@@ -56,5 +56,25 @@ public class Member extends BaseEntity {
         this.password = newPassword;
     }
 
-
+    // 멤버 수정 메서드
+    public void updateMember(UpdateMemberRequest request,Company company) {
+        if (request.getName() != null) {
+            this.name = request.getName();
+        }
+        if (request.getPosition() != null) {
+            this.position = request.getPosition();
+        }
+        if (request.getPhoneNumber() != null) {
+            this.phoneNumber = request.getPhoneNumber();
+        }
+        if (request.getEmail() != null) {
+            this.email = request.getEmail();
+        }
+        if (request.getRole()!=null){
+            this.role = request.getRole();
+        }
+        if (request.getCompanyName()!=null){
+            this.company = company;
+        }
+    }
 }

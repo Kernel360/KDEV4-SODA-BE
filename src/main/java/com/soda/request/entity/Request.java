@@ -9,13 +9,16 @@ import lombok.*;
 import java.util.List;
 
 @Entity
-@Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@Getter
 public class Request extends BaseEntity {
 
     private Boolean isApproved;
+
+    private String title;
+
+    @Lob
+    private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
@@ -30,4 +33,19 @@ public class Request extends BaseEntity {
 
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
     private List<RequestLink> links;
+
+    @Builder
+    public Request(Member member, Task task, List<RequestFile> files, List<RequestLink> links) {
+        this.member = member;
+        this.task = task;
+        this.files = files;
+        this.links = links;
+    }
+
+    public void updateTitle(String title) {
+        this.title = title;
+    }
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }

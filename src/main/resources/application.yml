@@ -8,9 +8,29 @@ spring:
     password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  security:
+    excluded-paths:
+      - /swagger-ui/**
+      - /signup
+      - /login
+      - /error
+      - /verification
+      - /verification/confirm
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -31,5 +51,16 @@ jwt:
   secret:
     key: ${JWT_SECRET_KEY}
   access:
-    expiration: 3600000
+    expiration: 1800000
     header: Authorization
+  refresh:
+    expiration: 604800000
+
+init:
+  admin:
+    authid: ${ADMIN_AUTH_ID}
+    password: ${ADMIN_PASSWORD}
+
+
+
+

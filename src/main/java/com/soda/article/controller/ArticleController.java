@@ -48,4 +48,11 @@ public class ArticleController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{projectId}/articles/{articleId}")
+    public ResponseEntity<ApiResponseForm<ArticleModifyResponse>> updateArticle(@PathVariable Long projectId, @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                           @PathVariable Long articleId, @RequestBody ArticleModifyRequest request) {
+        ArticleModifyResponse response = articleService.updateArticle(projectId, userDetails, articleId, request);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "Article 수정 성공"));
+    }
+
 }

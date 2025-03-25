@@ -228,4 +228,105 @@ public class ArticleService {
         articleLinkRepository.saveAll(linkList);
 
     }
+
+    // article 수정
+    @Transactional
+    public ArticleModifyResponse updateArticle(Long projectId, UserDetailsImpl userDetails, Long articleId, ArticleModifyRequest request) {
+        Member member = userDetails.getMember();
+
+        // 1. project, member 검증
+        validateMemberInProject(projectId, member);
+
+        // 2. 게시글 존재 여부 체크
+        Article article = articleRepository.findByIdAndIsDeletedFalse(articleId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_ARTICLE));
+
+        // 3. 수정된 데이터 검증 (파일, 링크 수 제한)
+        if (request.getFileList() != null && request.getFileList().size() > 10) {
+            throw new GeneralException(ErrorCode.INVALID_INPUT);
+        }
+
+        if (request.getLinkList() != null && request.getLinkList().size() > 10) {
+            throw new GeneralException(ErrorCode.INVALID_INPUT);
+        }
+
+        // 4. 게시글 수정
+        article.updateArticle(request.getTitle(), request.getContent(), request.getPriority(), request.getDeadLine());
+
+        // 5. 기존 파일 및 링크 삭제
+        List<ArticleFile> existingFiles = articleFileRepository.findByArticleId(articleId);
+        existingFiles.forEach(ArticleFile::delete);
+        article.getArticleFileList().removeIf(existingFiles::contains);
+
+        List<ArticleLink> existingLinks = articleLinkRepository.findByArticleId(articleId);
+        existingLinks.forEach(ArticleLink::delete);
+        article.getArticleLinkList().removeIf(existingLinks::contains);
+
+        // 6. 새로운 파일 및 링크 추가 또는 복원
+        if (request.getFileList() != null) {
+            for (ArticleFileDTO fileDTO : request.getFileList()) {
+                // 삭제된 파일이 있으면 isDeleted = false
+                ArticleFile file = articleFileRepository.findByArticleIdAndNameAndIsDeletedTrue(articleId, fileDTO.getName())
+                        .orElseThrow(() -> new GeneralException(ErrorCode.ARTICLE_FILE_NOT_FOUND));
+
+                if (file != null) {
+                    file.reActive();
+                } else {
+                    file = ArticleFile.builder()
+                            .name(fileDTO.getName())
+                            .url(fileDTO.getUrl())
+                            .article(article)
+                            .build();
+                    articleFileRepository.save(file);
+                    article.getArticleFileList().add(file);
+                }
+            }
+        }
+
+        if (request.getLinkList() != null) {
+            for (ArticleLinkDTO linkDTO : request.getLinkList()) {
+                // 삭제된 링크가 있으면 isDeleted = false
+                ArticleLink link = articleLinkRepository.findByArticleIdAndUrlAddressAndIsDeletedTrue(articleId, linkDTO.getUrlAddress())
+                        .orElseThrow(() -> new GeneralException(ErrorCode.ARTICLE_LINK_NOT_FOUND));
+
+                if (link != null) {
+                    link.reActive();
+                } else {
+                    link = ArticleLink.builder()
+                            .urlAddress(linkDTO.getUrlAddress())
+                            .urlDescription(linkDTO.getUrlDescription())
+                            .article(article)
+                            .build();
+                    articleLinkRepository.save(link);
+                    article.getArticleLinkList().add(link);
+                }
+            }
+        }
+
+        // 7. 수정된 게시글 저장
+        article = articleRepository.save(article);
+
+        // 8. 응답 객체 생성 및 반환
+        return ArticleModifyResponse.builder()
+                .title(article.getTitle())
+                .content(article.getContent())
+                .priority(article.getPriority())
+                .deadLine(article.getDeadline())
+                .memberName(article.getMember().getName())
+                .stageId(article.getStage().getId())
+                .fileList(article.getArticleFileList().stream()
+                        .map(file -> ArticleFileDTO.builder()
+                                .name(file.getName())
+                                .url(file.getUrl())
+                                .build())
+                        .collect(Collectors.toList()))
+                .linkList(article.getArticleLinkList().stream()
+                        .map(link -> ArticleLinkDTO.builder()
+                                .urlAddress(link.getUrlAddress())
+                                .urlDescription(link.getUrlDescription())
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
 }

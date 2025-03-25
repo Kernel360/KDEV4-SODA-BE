@@ -31,8 +31,10 @@ public enum ErrorCode {
     MEMBER_NOT_IN_PROJECT("1010", "This member does not exist in this project", HttpStatus.NOT_FOUND),
     INVALID_INPUT("1011", "Invalid Input", HttpStatus.BAD_REQUEST),
     INVALID_STAGE_FOR_PROJECT("1012", "Invalid stage for project", HttpStatus.NOT_FOUND),
-    INVALID_ARTICLE("1013", "The Article does not exists", HttpStatus.NOT_FOUND),
+    INVALID_ARTICLE("1013", "The Article does not exist", HttpStatus.NOT_FOUND),
     ARTICLE_ALREADY_DELETED("1014","This article is already deleted", HttpStatus.NOT_FOUND),
+    ARTICLE_FILE_NOT_FOUND("1015", "This article file does not exist", HttpStatus.NOT_FOUND),
+    ARTICLE_LINK_NOT_FOUND("1016", "This article link does not exist", HttpStatus.NOT_FOUND),
 
     INVALID_CREDENTIALS("2001", "아이디 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED),
     TOKEN_EXPIRED("2002", "토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),

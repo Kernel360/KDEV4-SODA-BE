@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -131,7 +130,7 @@ public class ArticleService {
     }
 
     // Article List 조회
-    public List<ArticleListResponse> getAllArticles(UserDetailsImpl userDetails, Long projectId) {
+    public List<ArticleViewResponse> getAllArticles(UserDetailsImpl userDetails, Long projectId) {
         Member member = userDetails.getMember();
 
         // 특정 프로젝트를 조회 (프로젝트가 존재하지 않으면 예외 발생)
@@ -148,7 +147,7 @@ public class ArticleService {
         List<Article> articles = articleRepository.findByIsDeletedFalseAndStage_Project(project);
 
         return articles.stream()
-                .map(article -> ArticleListResponse.builder()
+                .map(article -> ArticleViewResponse.builder()
                         .title(article.getTitle())
                         .content(article.getContent())
                         .priority(article.getPriority())
@@ -174,7 +173,7 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
-    public ArticleListResponse getArticle(Long projectId, UserDetailsImpl userDetails, Long articleId) {
+    public ArticleViewResponse getArticle(Long projectId, UserDetailsImpl userDetails, Long articleId) {
         Member member = userDetails.getMember();
 
         // 특정 프로젝트를 조회 (프로젝트가 존재하지 않으면 예외 발생)
@@ -190,7 +189,7 @@ public class ArticleService {
         Article article = articleRepository.findByIdAndIsDeletedFalse(articleId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_ARTICLE));
 
-        return ArticleListResponse.builder()
+        return ArticleViewResponse.builder()
                 .title(article.getTitle())
                 .content(article.getContent())
                 .priority(article.getPriority())

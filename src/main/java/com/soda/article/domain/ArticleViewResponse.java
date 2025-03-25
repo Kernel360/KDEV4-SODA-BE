@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ArticleListResponse {
+public class ArticleViewResponse {
     private String title;
     private String content;
     private PriorityType priority;

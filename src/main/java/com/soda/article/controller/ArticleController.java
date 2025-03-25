@@ -1,7 +1,6 @@
 package com.soda.article.controller;
 
-import com.soda.article.domain.ArticleDTO;
-import com.soda.article.domain.ArticleListResponse;
+import com.soda.article.domain.ArticleViewResponse;
 import com.soda.article.domain.ArticleModifyRequest;
 import com.soda.article.domain.ArticleModifyResponse;
 import com.soda.article.service.ArticleService;
@@ -29,16 +28,16 @@ public class ArticleController {
     }
 
     @GetMapping("/{projectId}/articles")
-    public ResponseEntity<ApiResponseForm<List<ArticleListResponse>>> getAllArticles(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<ApiResponseForm<List<ArticleViewResponse>>> getAllArticles(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                                      @PathVariable Long projectId) {
-        List<ArticleListResponse> response = articleService.getAllArticles(userDetails, projectId);
+        List<ArticleViewResponse> response = articleService.getAllArticles(userDetails, projectId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
     @GetMapping("/{projectId}/articles/{articleId}")
-    public ResponseEntity<ApiResponseForm<ArticleListResponse>> getArticle(@PathVariable Long projectId, @AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<ApiResponseForm<ArticleViewResponse>> getArticle(@PathVariable Long projectId, @AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                            @PathVariable Long articleId) {
-        ArticleListResponse response = articleService.getArticle(projectId, userDetails, articleId);
+        ArticleViewResponse response = articleService.getArticle(projectId, userDetails, articleId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

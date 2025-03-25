@@ -30,4 +30,8 @@ public class ArticleLink extends BaseEntity {
         this.article = article;
     }
 
+    public void delete() {
+        this.markAsDeleted();
+    }
+
 }

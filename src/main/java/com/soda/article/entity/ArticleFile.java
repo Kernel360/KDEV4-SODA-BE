@@ -26,4 +26,8 @@ public class ArticleFile extends BaseEntity {
         this.url = url;
         this.article = article;
     }
+
+    public void delete() {
+        this.markAsDeleted();
+    }
 }

@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class RequestCreateRequest {
-    private Long taskId;
     private String title;
     private String content;
 }

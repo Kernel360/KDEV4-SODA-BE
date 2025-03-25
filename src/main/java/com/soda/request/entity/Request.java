@@ -14,6 +14,7 @@ import java.util.List;
 @Getter
 public class Request extends BaseEntity {
 
+    @Enumerated(EnumType.STRING)
     private RequestStatus status;
 
     private String title;

@@ -26,6 +26,8 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 
 @Component
@@ -44,12 +46,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = jwtTokenProvider.resolveToken(request);
 
-
             if (isExcludedPath(request.getServletPath())) {
                 filterChain.doFilter(request, response);
                 return;
             }
-
             // 토큰 검증 시도
             if (!jwtTokenProvider.validateToken(token)) {
                 sendErrorResponse(response, ErrorCode.INVALID_TOKEN);
@@ -74,20 +74,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (UsernameNotFoundException e) {
             sendErrorResponse(response, ErrorCode.NOT_FOUND_MEMBER);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             sendErrorResponse(response, ErrorCode.UNEXPECTED_ERROR);
         }
     }
 
-    private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
-        response.setStatus(errorCode.getHttpStatus().value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setCharacterEncoding("UTF-8");
+    private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) {
+        try {
+            if (response.isCommitted()) {
+                return; // 이미 응답이 전송되었으면 처리하지 않음
+            }
 
-        ApiResponseForm<Void> errorResponse = ApiResponseForm.error(errorCode.getCode(), errorCode.getMessage());
+            response.setStatus(errorCode.getHttpStatus().value());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding("UTF-8");
 
-        String jsonResponse = objectMapper.writeValueAsString(errorResponse);
-        response.getWriter().write(jsonResponse);
+            ApiResponseForm<Void> errorResponse = ApiResponseForm.error(errorCode.getCode(), errorCode.getMessage());
+            String jsonResponse = objectMapper.writeValueAsString(errorResponse);
+
+            OutputStream out = response.getOutputStream();
+            out.write(jsonResponse.getBytes(StandardCharsets.UTF_8));
+            out.flush();
+        } catch (Exception e) {
+            // 로깅만 하고, 여기서 다시 예외 던지면 또 문제가 생길 수 있으므로 swallow
+            System.err.println("sendErrorResponse 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
+
 
     private boolean isExcludedPath(String path) {
         for (String excludedPath : securityProperties.getExcludedPaths()) {

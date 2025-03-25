@@ -1,40 +1,38 @@
 package com.soda.request.dto;
 
-import com.soda.project.domain.ProjectDTO;
-import com.soda.project.entity.Project;
 import com.soda.request.entity.Request;
 import com.soda.request.enums.RequestStatus;
 import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+@Builder
+@Getter
 public class RequestDTO {
-    private RequestStatus status;
+    private Long requestId;
+    private Long taskId;
+    private Long memberId;
+    private String memberName;
     private String title;
     private String content;
-
-    @Builder
-    public RequestDTO(String title, String content, RequestStatus status) {
-        this.title = title;
-        this.content = content;
-        this.status = status;
-    }
+    private RequestStatus status;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     // Entity → DTO 변환
     public static RequestDTO fromEntity(Request request) {
         return RequestDTO.builder()
+                .requestId(request.getId())
+                .taskId(request.getTask().getId())
+                .memberId(request.getMember().getId())
+                .memberName(request.getMember().getName())
                 .title(request.getTitle())
                 .content(request.getContent())
                 .status(request.getStatus())
+                .createdAt(request.getCreatedAt())
+                .updatedAt(request.getUpdatedAt() == null ? LocalDateTime.now() : request.getUpdatedAt())
                 .build();
     }
 
-    // DTO → Entity 변환
-    public Request toEntity() {
-        return Request.builder()
-                .title(this.title)
-                .content(this.content)
-                .status(this.status)
-                .build();
-    }
 }

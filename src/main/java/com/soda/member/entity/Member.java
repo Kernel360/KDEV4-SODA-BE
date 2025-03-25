@@ -77,4 +77,13 @@ public class Member extends BaseEntity {
             this.company = company;
         }
     }
+
+    // 승인요청 테스트를 위해 임시로 만든 메서드입니다.
+    // 멤버프로젝트 담당하시는 분이 사용할지 말지 취사선택하시면 될 것 같습니다
+    public void setMemberProjects(MemberProject memberProjects) {
+        if (this.memberProjects == null) {
+            this.memberProjects = new ArrayList<>();
+        }
+        this.memberProjects.add(memberProjects);
+    }
 }

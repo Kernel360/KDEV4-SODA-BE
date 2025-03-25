@@ -11,6 +11,7 @@ spring:
   security:
     excluded-paths:
       - /swagger-ui/**
+      - /v3/api-docs/**
       - /signup
       - /login
       - /error
@@ -30,7 +31,7 @@ spring:
             enable: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
@@ -51,7 +52,7 @@ jwt:
   secret:
     key: ${JWT_SECRET_KEY}
   access:
-    expiration: 1800000
+    expiration: 36000000
     header: Authorization
   refresh:
     expiration: 604800000

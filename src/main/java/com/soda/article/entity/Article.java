@@ -77,4 +77,8 @@ public class Article extends BaseEntity {
         this.articleLinkList = articleLinkList != null ? articleLinkList : new ArrayList<>();
     }
 
+    public void delete() {
+        this.markAsDeleted();
+    }
+
 }

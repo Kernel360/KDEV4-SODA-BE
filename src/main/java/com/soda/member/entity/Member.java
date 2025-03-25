@@ -86,4 +86,8 @@ public class Member extends BaseEntity {
         }
         this.memberProjects.add(memberProjects);
     }
+
+    public boolean isAdmin() {
+        return this.role == MemberRole.ADMIN;  // 예시로 role이 ADMIN일 경우 관리자
+    }
 }

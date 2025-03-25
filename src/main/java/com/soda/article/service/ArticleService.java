@@ -287,7 +287,7 @@ public class ArticleService {
             throw new GeneralException(ErrorCode.MEMBER_NOT_IN_PROJECT);
         }
     }
-    
+
     // ArticleViewResponse 생성 로직
     private ArticleViewResponse buildArticleViewResponse(Article article) {
         return ArticleViewResponse.builder()

@@ -38,4 +38,10 @@ public class CompanyController {
         return ResponseEntity.ok(ApiResponseForm.success(company, "회사 조회 성공"));
     }
 
+    // 회사 수정
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponseForm<CompanyResponse>> updateCompany(@PathVariable Long id, @RequestBody CompanyRequest request) {
+        CompanyResponse updatedCompany = companyService.updateCompany(id, request);
+        return ResponseEntity.ok(ApiResponseForm.success(updatedCompany, "회사 수정 성공"));
+    }
 }

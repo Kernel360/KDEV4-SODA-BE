@@ -70,4 +70,29 @@ public class CompanyService {
         return CompanyResponse.fromEntity(company);
     }
 
+    /**
+     * 회사 수정 메서드
+     *
+     * @param id 회사 ID
+     * @param request 회사 수정 요청 DTO
+     * @return 수정된 회사 정보 DTO
+     * @throws GeneralException 회사를 찾을 수 없는 경우 또는 사업자 등록번호 중복 시 발생
+     */
+    @Transactional
+    public CompanyResponse updateCompany(Long id, CompanyRequest request) {
+        Company company = companyRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+
+        // 수정하려는 사업자 등록번호가 다른 회사의 사업자 등록번호와 중복되는지 확인
+        Optional<Company> existingCompany = companyRepository.findByCompanyNumber(request.getCompanyNumber());
+        if (existingCompany.isPresent() && !existingCompany.get().getId().equals(id)) {
+            throw new GeneralException(ErrorCode.DUPLICATE_COMPANY_NUMBER);
+        }
+
+        company.updateCompany(request);
+        Company updatedCompany = companyRepository.save(company);
+        return CompanyResponse.fromEntity(updatedCompany);
+    }
+
+
 }

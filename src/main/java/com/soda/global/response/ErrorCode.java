@@ -15,6 +15,9 @@ public enum ErrorCode {
     BAD_GATEWAY("502", "Bad Gateway: The server received an invalid response from the upstream server.", HttpStatus.BAD_GATEWAY),
     SERVICE_UNAVAILABLE("503", "Service Unavailable: The server is temporarily unable to handle the request.", HttpStatus.SERVICE_UNAVAILABLE),
 
+    // 인증 관련 추가 오류
+    UNEXPECTED_ERROR("1000", "Unexpected Error: An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
+
     // service 로직 오류 메시지
     COMPANY_NOT_FOUND("1001", "Company not found: The specified company does not exist.", HttpStatus.NOT_FOUND),
     MEMBER_NOT_FOUND("1002", "Member not found: The specified member does not exist.", HttpStatus.NOT_FOUND),
@@ -29,18 +32,10 @@ public enum ErrorCode {
     INVALID_INPUT("1011", "Invalid Input", HttpStatus.BAD_REQUEST),
     ARTICLE_LINK_NOT_FOUND("1012", "The article link does not exist in this project", HttpStatus.NOT_FOUND),
 
-    // 공통 오류 메시지
-    UNEXPECTED_ERROR("1000", "Unexpected Error: An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR), // 요청 관련 오류
-
-    // 인증 관련 추가 오류
-
-
-
     INVALID_CREDENTIALS("2001", "아이디 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED),
     TOKEN_EXPIRED("2002", "토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),
     INVALID_TOKEN("2003", "잘못된 토큰입니다.", HttpStatus.UNAUTHORIZED),
     ACCESS_DENIED("2004", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
-
     NOT_FOUND_MEMBER("2005", "멤버를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
     NOT_FOUND_REFRESH_TOKEN("2006", "Refresh token을 찾을 수 없습니다.", HttpStatus.UNAUTHORIZED),
     INVALID_REFRESH_TOKEN("2007", "유효하지 않은 Refresh token입니다.", HttpStatus.UNAUTHORIZED),
@@ -48,6 +43,12 @@ public enum ErrorCode {
     MAIL_SEND_FAILED("2009", "메일 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_FOUND_COMPANY("2010", "회사를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
 
+
+    // 승인요청 관련 오류 메시지
+    USER_NOT_IN_PROJECT_DEV("3000", "This user is not in current project or not in project's dev company", HttpStatus.BAD_REQUEST),
+    REQUEST_NOT_FOUND("3001", "This request id is not found in Requests", HttpStatus.NOT_FOUND),
+    USER_NOT_WRITE_REQUEST("3002", "This user doesn't write this request", HttpStatus.BAD_REQUEST),
+    TASK_NOT_FOUND("3003", "This task is not found", HttpStatus.NOT_FOUND),
     ;
 
 

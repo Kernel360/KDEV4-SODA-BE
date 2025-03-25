@@ -79,6 +79,9 @@ public class RequestService {
         // request의 제목, 내용을 수정
         updateRequestFields(requestUpdateRequest, request);
 
+        requestRepository.save(request);
+        requestRepository.flush();
+
         return RequestUpdateResponse.fromEntity(request);
     }
 

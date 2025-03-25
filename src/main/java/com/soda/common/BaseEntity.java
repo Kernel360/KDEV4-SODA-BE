@@ -19,6 +19,7 @@ public class BaseEntity {
     private Long id;
 
     @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate

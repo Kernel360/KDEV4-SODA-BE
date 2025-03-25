@@ -47,6 +47,7 @@ public class InitialDataLoader {
                     .position("Admin Position")
                     .phoneNumber("010-1234-5678")
                     .email("admin@gmail.com")
+                    .isEnabled(true)
                     .role(MemberRole.ADMIN)
                     .build();
             memberRepository.save(adminUser);

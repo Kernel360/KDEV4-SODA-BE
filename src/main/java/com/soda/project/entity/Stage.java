@@ -3,13 +3,17 @@ package com.soda.project.entity;
 import com.soda.article.entity.Article;
 import com.soda.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Stage extends BaseEntity {
 
     private String name;
@@ -27,4 +31,12 @@ public class Stage extends BaseEntity {
 
     @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
     private List<Task> taskList = new ArrayList<>();
+
+    @Builder
+    public Stage(String name, Long nextStageId, String description, Project project) {
+        this.name = name;
+        this.nextStageId = nextStageId;
+        this.description = description;
+        this.project = project;
+    }
 }

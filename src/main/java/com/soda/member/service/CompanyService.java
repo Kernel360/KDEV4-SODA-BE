@@ -95,4 +95,37 @@ public class CompanyService {
     }
 
 
+    /**
+     * 회사 삭제 메서드 (소프트 삭제)
+     *
+     * @param id 회사 ID
+     * @throws GeneralException 회사를 찾을 수 없는 경우 발생
+     */
+    @Transactional
+    public void deleteCompany(Long id) {
+        Company company = companyRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+
+        company.delete();
+        companyRepository.save(company);
+    }
+
+    /**
+     * 회사 복구 메서드
+     *
+     * @param id 회사 ID
+     * @return 복구된 회사 정보 DTO
+     * @throws GeneralException 삭제된 회사를 찾을 수 없는 경우 발생
+     */
+    @Transactional
+    public CompanyResponse restoreCompany(Long id) {
+        Company company = companyRepository.findByIdAndIsDeletedTrue(id)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+
+        company.markAsActive();
+        Company restoredCompany = companyRepository.save(company);
+        return CompanyResponse.fromEntity(restoredCompany);
+    }
+
+
 }

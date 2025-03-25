@@ -44,4 +44,18 @@ public class CompanyController {
         CompanyResponse updatedCompany = companyService.updateCompany(id, request);
         return ResponseEntity.ok(ApiResponseForm.success(updatedCompany, "회사 수정 성공"));
     }
+
+    // 회사 삭제 (소프트 삭제)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponseForm<Void>> deleteCompany(@PathVariable Long id) {
+        companyService.deleteCompany(id);
+        return ResponseEntity.ok(ApiResponseForm.success(null, "회사 삭제 성공"));
+    }
+
+    // 회사 복구
+    @PutMapping("/{id}/restore")
+    public ResponseEntity<ApiResponseForm<CompanyResponse>> restoreCompany(@PathVariable Long id) {
+        CompanyResponse restoredCompany = companyService.restoreCompany(id);
+        return ResponseEntity.ok(ApiResponseForm.success(restoredCompany, "회사 복구 성공"));
+    }
 }

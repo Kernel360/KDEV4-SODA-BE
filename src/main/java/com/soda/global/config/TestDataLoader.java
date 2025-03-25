@@ -38,7 +38,6 @@ public class TestDataLoader {
                 .authId("dabin1234")
                 .password(passwordEncoder.encode("password1234"))  // 비밀번호 인코딩 필요 시 처리
                 .email("dabin@example.com")
-                .isEnabled(true)
                 .role(MemberRole.USER)
                 .build());
 
@@ -47,7 +46,6 @@ public class TestDataLoader {
                 .authId("seoyeon1234")
                 .password(passwordEncoder.encode("password1234"))
                 .email("seoyeon@example.com")
-                .isEnabled(true)
                 .role(MemberRole.USER)
                 .build());
 
@@ -56,7 +54,6 @@ public class TestDataLoader {
                 .authId("junbeom1234")
                 .password(passwordEncoder.encode("password1234"))
                 .email("junbeom@example.com")
-                .isEnabled(true)
                 .role(MemberRole.USER)
                 .build());
 

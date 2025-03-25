@@ -127,5 +127,19 @@ public class CompanyService {
         return CompanyResponse.fromEntity(restoredCompany);
     }
 
+    /**
+     * 회사 멤버 조회 메서드
+     *
+     * @param companyId 회사 ID
+     * @return 회사 멤버 정보 DTO 리스트
+     * @throws GeneralException 회사를 찾을 수 없는 경우 발생
+     */
+    public List<MemberResponse> getCompanyMembers(Long companyId) {
+        Company company = companyRepository.findByIdAndIsDeletedFalse(companyId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
 
+        return company.getMemberList().stream()
+                .map(MemberResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
 }

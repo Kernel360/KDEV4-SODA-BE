@@ -3,6 +3,7 @@ package com.soda.member.controller;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.member.dto.company.CompanyRequest;
 import com.soda.member.dto.company.CompanyResponse;
+import com.soda.member.dto.company.MemberResponse;
 import com.soda.member.service.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -57,5 +58,11 @@ public class CompanyController {
     public ResponseEntity<ApiResponseForm<CompanyResponse>> restoreCompany(@PathVariable Long id) {
         CompanyResponse restoredCompany = companyService.restoreCompany(id);
         return ResponseEntity.ok(ApiResponseForm.success(restoredCompany, "회사 복구 성공"));
+    }
+
+    @GetMapping("/{id}/members")
+    public ResponseEntity<ApiResponseForm<List<MemberResponse>>> getCompanyMembers(@PathVariable Long id) {
+        List<MemberResponse> members = companyService.getCompanyMembers(id);
+        return ResponseEntity.ok(ApiResponseForm.success(members, "회사 멤버 정보 조회 성공"));
     }
 }

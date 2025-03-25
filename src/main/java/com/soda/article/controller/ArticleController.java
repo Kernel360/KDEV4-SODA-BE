@@ -41,4 +41,11 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
+    @DeleteMapping("/{projectId}/articles/{articleId}")
+    public ResponseEntity<Void> deleteArticle(@PathVariable Long projectId, @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                              @PathVariable Long articleId) {
+        articleService.deleteArticle(projectId, userDetails, articleId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

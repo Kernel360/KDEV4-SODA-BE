@@ -195,4 +195,37 @@ public class ArticleService {
                         .collect(Collectors.toList()))
                 .build();
     }
+
+    // article 삭제
+    @Transactional
+    public void deleteArticle(Long projectId, UserDetailsImpl userDetails, Long articleId) {
+        // 1. 로그인한 사용자가 삭제 가능한 프로젝트에 속한 사람인지, 관리자인지 체크
+        Member member = userDetails.getMember();
+        validateMemberInProject(projectId, member);
+
+        // 2. article 존재 여부 체크
+        Article article = articleRepository.findByIdAndIsDeletedFalse(articleId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_ARTICLE));
+
+        // 3. 이미 삭제되었는지 체크
+        if (article.getIsDeleted()) {
+            throw new GeneralException(ErrorCode.ARTICLE_ALREADY_DELETED);
+        }
+
+        // 4. isDeleted = true
+        article.delete();
+
+        // 5. 연관된 article_link, article_file 함께 삭제
+        List<ArticleFile> fileList = articleFileRepository.findByArticleId(articleId);
+        fileList.forEach(ArticleFile::delete);
+
+        List<ArticleLink> linkList = articleLinkRepository.findByArticleId(articleId);
+        linkList.forEach(ArticleLink::delete);
+
+        // 6. 수정된 isDeleted update
+        articleRepository.save(article);
+        articleFileRepository.saveAll(fileList);
+        articleLinkRepository.saveAll(linkList);
+
+    }
 }

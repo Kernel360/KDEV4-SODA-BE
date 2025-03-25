@@ -30,7 +30,7 @@ public enum ErrorCode {
     STAGE_NOT_FOUND("1009", "The stage does not exist", HttpStatus.NOT_FOUND),
     MEMBER_NOT_IN_PROJECT("1010", "This member does not exist in this project", HttpStatus.NOT_FOUND),
     INVALID_INPUT("1011", "Invalid Input", HttpStatus.BAD_REQUEST),
-    ARTICLE_LINK_NOT_FOUND("1012", "The article link does not exist in this project", HttpStatus.NOT_FOUND),
+    INVALID_STAGE_FOR_PROJECT("1012", "Invalid stage for project", HttpStatus.NOT_FOUND),
 
     INVALID_CREDENTIALS("2001", "아이디 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED),
     TOKEN_EXPIRED("2002", "토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),

@@ -1,19 +1,14 @@
 package com.soda.article.repository;
 
 import com.soda.article.entity.Article;
+import com.soda.project.entity.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
-    @Query("SELECT a FROM Article a " +
-            "LEFT JOIN FETCH a.articleFileList " +
-            "LEFT JOIN FETCH a.articleLinkList " +
-            "WHERE a.id = :id")
-    Optional<Article> findByIdWithFilesAndLinks(@Param("id") Long id);
-
+    // isDeleted가 false인 게시글만 조회하고, 특정 Project에 속한 게시글만 조회
+    List<Article> findByIsDeletedFalseAndStage_Project(Project project);
 }

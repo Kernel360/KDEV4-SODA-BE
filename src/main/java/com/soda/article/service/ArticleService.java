@@ -42,17 +42,22 @@ public class ArticleService {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
-    public ArticleModifyResponse createArticle(ArticleModifyRequest request, UserDetailsImpl userDetails) {
-        Long memberId = userDetails.getMember().getId();
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+    public ArticleModifyResponse createArticle(Long projectId, ArticleModifyRequest request, UserDetailsImpl userDetails) {
+        Member member = userDetails.getMember();
 
+        // 특정 프로젝트를 조회 (프로젝트가 존재하지 않으면 예외 발생)
+        Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
         Stage stage = stageRepository.findById(request.getStageId())
                 .orElseThrow(() -> new GeneralException(ErrorCode.STAGE_NOT_FOUND));
-        Project project = stage.getProject();
 
+        if (!stage.getProject().equals(project)) {
+            throw new GeneralException(ErrorCode.INVALID_STAGE_FOR_PROJECT);
+        }
+
+        // 로그인한 사용자가 해당 프로젝트에 참여 중인지 체크
         boolean isMemberInProject = memberProjectRepository.existsByMemberAndProjectAndIsDeletedFalse(member, project);
-        if (!isMemberInProject) {
+        if (!isMemberInProject && !member.isAdmin()) {
             throw new GeneralException(ErrorCode.MEMBER_NOT_IN_PROJECT);
         }
 
@@ -123,5 +128,49 @@ public class ArticleService {
                                 .build())
                         .collect(Collectors.toList()))
                 .build();
+    }
+
+    // Article List 조회
+    public List<ArticleListResponse> getAllArticles(UserDetailsImpl userDetails, Long projectId) {
+        Member member = userDetails.getMember();
+
+        // 특정 프로젝트를 조회 (프로젝트가 존재하지 않으면 예외 발생)
+        Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
+
+        // 로그인한 멤버가 해당 프로젝트의 멤버인지를 확인
+        boolean isMemberInProject = memberProjectRepository.existsByMemberAndProjectAndIsDeletedFalse(member, project);
+        if (!isMemberInProject && !member.isAdmin()) {
+            throw new GeneralException(ErrorCode.MEMBER_NOT_IN_PROJECT);
+        }
+
+        // 프로젝트에 속한 삭제되지 않은 게시글 조회
+        List<Article> articles = articleRepository.findByIsDeletedFalseAndStage_Project(project);
+
+        return articles.stream()
+                .map(article -> ArticleListResponse.builder()
+                        .title(article.getTitle())
+                        .content(article.getContent())
+                        .priority(article.getPriority())
+                        .deadLine(article.getDeadline())
+                        .memberName(article.getMember().getName())
+                        .stageName(article.getStage().getName())
+                        .fileList(article.getArticleFileList().stream()
+                                .map(file -> ArticleFileDTO.builder()
+                                        .name(file.getName())
+                                        .url(file.getUrl())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .linkList(article.getArticleLinkList().stream()
+                                .map(link -> ArticleLinkDTO.builder()
+                                        .urlAddress(link.getUrlAddress())
+                                        .urlDescription(link.getUrlDescription())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .commentList(article.getCommentList().stream()
+                                .map(CommentDTO::fromEntity)
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
     }
 }

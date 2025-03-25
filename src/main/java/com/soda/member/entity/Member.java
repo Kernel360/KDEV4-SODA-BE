@@ -44,8 +44,6 @@ public class Member extends BaseEntity {
     @JoinColumn(name = "company_id")
     private Company company;
 
-    private boolean isEnabled;
-
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<MemberProject> memberProjects = new ArrayList<>();
 

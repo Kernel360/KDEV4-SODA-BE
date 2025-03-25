@@ -25,8 +25,9 @@ public enum ErrorCode {
     PROJECT_ALREADY_DELETED("1007", "This Project is already deleted", HttpStatus.NOT_FOUND),
     MEMBER_PROJECT_NOT_FOUND("1008", "The member project does not exist for the given project and role.", HttpStatus.NOT_FOUND),
     STAGE_NOT_FOUND("1009", "The stage does not exist", HttpStatus.NOT_FOUND),
-    MEMBER_NOT_IN_PROJECT("1010", "This member does not exist in thsi project", HttpStatus.NOT_FOUND),
+    MEMBER_NOT_IN_PROJECT("1010", "This member does not exist in this project", HttpStatus.NOT_FOUND),
     INVALID_INPUT("1011", "Invalid Input", HttpStatus.BAD_REQUEST),
+    ARTICLE_LINK_NOT_FOUND("1012", "The article link does not exist in this project", HttpStatus.NOT_FOUND),
 
     // 공통 오류 메시지
     UNEXPECTED_ERROR("1000", "Unexpected Error: An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR), // 요청 관련 오류

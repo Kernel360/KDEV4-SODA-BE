@@ -1,13 +1,17 @@
 package com.soda.article.service;
 
-import com.soda.article.domain.ArticleDTO;
-import com.soda.article.domain.ArticleModifyRequest;
+import com.soda.article.domain.*;
 import com.soda.article.entity.Article;
+import com.soda.article.entity.ArticleFile;
+import com.soda.article.entity.ArticleLink;
 import com.soda.article.enums.ArticleStatus;
-import com.soda.article.enums.PriorityType;
+import com.soda.article.repository.ArticleFileRepository;
+import com.soda.article.repository.ArticleLinkRepository;
 import com.soda.article.repository.ArticleRepository;
 import com.soda.global.response.ErrorCode;
 import com.soda.global.response.GeneralException;
+import com.soda.global.security.auth.UserDetailsImpl;
+import com.soda.global.security.jwt.JwtTokenProvider;
 import com.soda.member.entity.Member;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.entity.Project;
@@ -19,8 +23,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Transactional(readOnly = true)
 @Service
@@ -32,55 +37,91 @@ public class ArticleService {
     private final MemberProjectRepository memberProjectRepository;
     private final StageRepository stageRepository;
     private final ProjectRepository projectRepository;
+    private final ArticleFileRepository articleFileRepository;
+    private final ArticleLinkRepository articleLinkRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
-    public ArticleDTO createArticle(ArticleModifyRequest request) {
-        // 1. 해당 project에 포함된 member 인가?
-        Member member = memberRepository.findById(request.getMemberId())
-                .orElseThrow(() -> new RuntimeException("member not found"));
+    public ArticleModifyResponse createArticle(ArticleModifyRequest request, UserDetailsImpl userDetails) {
+        Long memberId = userDetails.getMember().getId();
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 2. 해당 stage가 존재하는가?
         Stage stage = stageRepository.findById(request.getStageId())
                 .orElseThrow(() -> new GeneralException(ErrorCode.STAGE_NOT_FOUND));
         Project project = stage.getProject();
 
         boolean isMemberInProject = memberProjectRepository.existsByMemberAndProjectAndIsDeletedFalse(member, project);
-        if(!isMemberInProject) {
+        if (!isMemberInProject) {
             throw new GeneralException(ErrorCode.MEMBER_NOT_IN_PROJECT);
         }
 
-        // 3. 글 생성 (필수 필드 title, content)
-        PriorityType priority = request.getPriority();
-        LocalDateTime deadLine = request.getDeadLine();
-        List<Long> fileList = request.getFileList();
-        List<Long> linkList = request.getLinkList();
-
-        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+        if (request.getFileList() != null && request.getFileList().size() > 10) {
             throw new GeneralException(ErrorCode.INVALID_INPUT);
         }
 
-        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
+        if (request.getLinkList() != null && request.getLinkList().size() > 10) {
             throw new GeneralException(ErrorCode.INVALID_INPUT);
         }
 
-        Article article = ArticleDTO.builder()
+        Article article = Article.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
-                .priority(priority != null ? priority : PriorityType.LOW)
-                .deadline(deadLine)
-                .status(ArticleStatus.PENDING)
-                .memberId(request.getMemberId())
-                .stageId(request.getStageId())
-                .fileList(fileList)
-                .linkList(linkList)
-                .build().toEntity(member, stage);
+                .priority(request.getPriority())
+                .deadline(request.getDeadLine())
+                .member(member)
+                .stage(stage)
+                .status(ArticleStatus.PENDING)  // 기본 상태는 PENDING
+                .build();
 
-        // 4. DB에 저장
-        Article savedArticle = articleRepository.save(article);
+        article = articleRepository.save(article);
 
-        // 5. DTO return
-        return ArticleDTO.fromEntity(savedArticle);
+        // fileList와 articleLinkList 처리 (최대 10개 제한)
+        if (request.getFileList() != null) {
+            for (ArticleFileDTO fileDTO : request.getFileList()) {
+                ArticleFile file = ArticleFile.builder()
+                        .name(fileDTO.getName())
+                        .url(fileDTO.getUrl())
+                        .article(article)
+                        .build();
+                articleFileRepository.save(file);
+                article.getArticleFileList().add(file);
+            }
+        }
+
+        if (request.getLinkList() != null) {
+            for (ArticleLinkDTO linkDTO : request.getLinkList()) {
+                ArticleLink link = ArticleLink.builder()
+                        .urlAddress(linkDTO.getUrlAddress())
+                        .urlDescription(linkDTO.getUrlDescription())
+                        .article(article)
+                        .build();
+                articleLinkRepository.save(link);
+                article.getArticleLinkList().add(link);
+            }
+        }
+
+        article = articleRepository.save(article);
+
+        return ArticleModifyResponse.builder()
+                .title(article.getTitle())
+                .content(article.getContent())
+                .priority(article.getPriority())
+                .deadLine(article.getDeadline())
+                .memberName(article.getMember().getName())
+                .stageId(article.getStage().getId())
+                .fileList(article.getArticleFileList().stream()
+                        .map(file -> ArticleFileDTO.builder()
+                                .name(file.getName())
+                                .url(file.getUrl())
+                                .build())
+                        .collect(Collectors.toList()))
+                .linkList(article.getArticleLinkList().stream()
+                        .map(link -> ArticleLinkDTO.builder()
+                                .urlAddress(link.getUrlAddress())
+                                .urlDescription(link.getUrlDescription())
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
     }
-
-
 }

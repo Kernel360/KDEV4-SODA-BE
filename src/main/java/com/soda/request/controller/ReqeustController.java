@@ -29,7 +29,6 @@ public class ReqeustController {
     @GetMapping("/tasks/{taskId}/requests")
     public ResponseEntity<ApiResponseForm<?>> getAllRequests(@PathVariable Long taskId) {
         List<RequestDTO> requestDTOList = requestService.findAllByTaskId(taskId);
-        System.out.println(requestDTOList.toString());
         return ResponseEntity.ok(ApiResponseForm.success(requestDTOList));
     }
 

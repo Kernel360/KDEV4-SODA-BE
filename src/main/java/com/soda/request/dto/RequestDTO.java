@@ -31,7 +31,7 @@ public class RequestDTO {
                 .content(request.getContent())
                 .status(request.getStatus())
                 .createdAt(request.getCreatedAt())
-                .updatedAt(request.getUpdatedAt() == null ? LocalDateTime.now() : request.getUpdatedAt())
+                .updatedAt(request.getUpdatedAt())
                 .build();
     }
 

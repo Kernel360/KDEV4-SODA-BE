@@ -23,7 +23,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String authId) throws UsernameNotFoundException {
         Member member = memberRepository.findByAuthId(authId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND));
-        log.info(member.getAuthId());
+
         if (!member.isEnabled()) {
             throw new GeneralException(ErrorCode.NOT_FOUND_MEMBER);
         }

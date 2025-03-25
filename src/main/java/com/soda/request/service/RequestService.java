@@ -67,6 +67,11 @@ public class RequestService {
         return requests.stream().map(RequestDTO::fromEntity).collect(Collectors.toList());
     }
 
+    public RequestDTO findById(Long requestId) {
+        Request request = getRequestOrThrow(requestId);
+        return RequestDTO.fromEntity(request);
+    }
+
 
     @Transactional
     public RequestUpdateResponse updateRequest(UserDetailsImpl userDetails, Long requestId, RequestUpdateRequest requestUpdateRequest) throws GeneralException {

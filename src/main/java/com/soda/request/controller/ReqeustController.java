@@ -32,6 +32,12 @@ public class ReqeustController {
         return ResponseEntity.ok(ApiResponseForm.success(requestDTOList));
     }
 
+    @GetMapping("/tasks/{taskId}/requests/{requestId}")
+    public ResponseEntity<ApiResponseForm<?>> getRequest(@PathVariable Long taskId, @PathVariable Long requestId) {
+        RequestDTO requestDTO = requestService.findById(requestId);
+        return ResponseEntity.ok(ApiResponseForm.success(requestDTO));
+    }
+
     @PutMapping("/projects/{projectId}/stages/{stageId}/tasks/{taskId}/requests/{requestId}")
     public ResponseEntity<ApiResponseForm<?>> updateRequest(@RequestBody RequestUpdateRequest requestUpdateRequest,
                                                             @PathVariable Long projectId, @PathVariable Long stageId, @PathVariable Long taskId, @PathVariable Long requestId,

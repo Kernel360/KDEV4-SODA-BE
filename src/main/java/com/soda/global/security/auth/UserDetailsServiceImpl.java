@@ -22,7 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         Member member = memberRepository.findByAuthId(authId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND));
 
-        if (!member.isEnabled()) {
+        if (member.getIsDeleted()) {
             throw new GeneralException(ErrorCode.NOT_FOUND_MEMBER);
         }
         return new UserDetailsImpl(member);

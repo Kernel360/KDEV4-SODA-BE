@@ -35,4 +35,11 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
+    @GetMapping("/{projectId}/articles/{articleId}")
+    public ResponseEntity<ApiResponseForm<ArticleListResponse>> getArticle(@PathVariable Long projectId, @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                           @PathVariable Long articleId) {
+        ArticleListResponse response = articleService.getArticle(projectId, userDetails, articleId);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
+    }
+
 }

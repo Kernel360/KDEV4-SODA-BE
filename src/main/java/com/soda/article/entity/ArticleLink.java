@@ -34,4 +34,13 @@ public class ArticleLink extends BaseEntity {
         this.markAsDeleted();
     }
 
+    public void reActive() {
+        this.markAsActive();
+    }
+
+    public void updateArticleLink(String urlAddress, String urlDescription) {
+        this.urlAddress = urlAddress;
+        this.urlDescription = urlDescription;
+    }
+
 }

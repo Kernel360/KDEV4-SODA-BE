@@ -81,4 +81,11 @@ public class Article extends BaseEntity {
         this.markAsDeleted();
     }
 
+    public void updateArticle(String title, String content, PriorityType priority, LocalDateTime deadline) {
+        this.title = title;
+        this.content = content;
+        this.priority = priority;
+        this.deadline = deadline;
+    }
+
 }

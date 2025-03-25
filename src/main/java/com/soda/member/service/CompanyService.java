@@ -46,6 +46,28 @@ public class CompanyService {
         Company savedCompany = companyRepository.save(company);
         return CompanyResponse.fromEntity(savedCompany);
     }
+    /**
+     * 모든 회사 조회 메서드
+     *
+     * @return 모든 회사 정보 DTO 리스트
+     */
+    public List<CompanyResponse> getAllCompanies() {
+        return companyRepository.findByIsDeletedFalse().stream()
+                .map(CompanyResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
 
+    /**
+     * 회사 ID로 조회 메서드
+     *
+     * @param id 회사 ID
+     * @return 회사 정보 DTO
+     * @throws GeneralException 회사를 찾을 수 없는 경우 발생
+     */
+    public CompanyResponse getCompanyById(Long id) {
+        Company company = companyRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+        return CompanyResponse.fromEntity(company);
+    }
 
 }

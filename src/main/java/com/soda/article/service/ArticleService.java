@@ -133,49 +133,31 @@ public class ArticleService {
     public List<ArticleViewResponse> getAllArticles(UserDetailsImpl userDetails, Long projectId) {
         Member member = userDetails.getMember();
 
-        // 특정 프로젝트를 조회 (프로젝트가 존재하지 않으면 예외 발생)
+        validateMemberInProject(projectId, member);
         Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
-
-        // 로그인한 멤버가 해당 프로젝트의 멤버인지를 확인
-        boolean isMemberInProject = memberProjectRepository.existsByMemberAndProjectAndIsDeletedFalse(member, project);
-        if (!isMemberInProject && !member.isAdmin()) {
-            throw new GeneralException(ErrorCode.MEMBER_NOT_IN_PROJECT);
-        }
 
         // 프로젝트에 속한 삭제되지 않은 게시글 조회
         List<Article> articles = articleRepository.findByIsDeletedFalseAndStage_Project(project);
 
         return articles.stream()
-                .map(article -> ArticleViewResponse.builder()
-                        .title(article.getTitle())
-                        .content(article.getContent())
-                        .priority(article.getPriority())
-                        .deadLine(article.getDeadline())
-                        .memberName(article.getMember().getName())
-                        .stageName(article.getStage().getName())
-                        .fileList(article.getArticleFileList().stream()
-                                .map(file -> ArticleFileDTO.builder()
-                                        .name(file.getName())
-                                        .url(file.getUrl())
-                                        .build())
-                                .collect(Collectors.toList()))
-                        .linkList(article.getArticleLinkList().stream()
-                                .map(link -> ArticleLinkDTO.builder()
-                                        .urlAddress(link.getUrlAddress())
-                                        .urlDescription(link.getUrlDescription())
-                                        .build())
-                                .collect(Collectors.toList()))
-                        .commentList(article.getCommentList().stream()
-                                .map(CommentDTO::fromEntity)
-                                .collect(Collectors.toList()))
-                        .build())
+                .map(this::buildArticleViewResponse)
                 .collect(Collectors.toList());
     }
 
     public ArticleViewResponse getArticle(Long projectId, UserDetailsImpl userDetails, Long articleId) {
         Member member = userDetails.getMember();
 
+        validateMemberInProject(projectId, member);
+
+        Article article = articleRepository.findByIdAndIsDeletedFalse(articleId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_ARTICLE));
+
+        return buildArticleViewResponse(article);
+    }
+
+    // 프로젝트 및 멤버 검증 로직
+    private void validateMemberInProject(Long projectId, Member member) {
         // 특정 프로젝트를 조회 (프로젝트가 존재하지 않으면 예외 발생)
         Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
@@ -185,10 +167,10 @@ public class ArticleService {
         if (!isMemberInProject && !member.isAdmin()) {
             throw new GeneralException(ErrorCode.MEMBER_NOT_IN_PROJECT);
         }
+    }
 
-        Article article = articleRepository.findByIdAndIsDeletedFalse(articleId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_ARTICLE));
-
+    // ArticleViewResponse 생성 로직
+    private ArticleViewResponse buildArticleViewResponse(Article article) {
         return ArticleViewResponse.builder()
                 .title(article.getTitle())
                 .content(article.getContent())

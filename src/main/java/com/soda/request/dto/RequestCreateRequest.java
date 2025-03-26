@@ -6,4 +6,7 @@ import lombok.Getter;
 public class RequestCreateRequest {
     private String title;
     private String content;
+    private Long projectId;
+    private Long stageId;
+    private Long taskId;
 }

@@ -19,21 +19,7 @@ public enum CommonErrorCode implements ErrorCode {
     UNEXPECTED_ERROR("1000", "Unexpected Error: An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // service 로직 오류 메시지
-    COMPANY_NOT_FOUND("1001", "Company not found: The specified company does not exist.", HttpStatus.NOT_FOUND),
-    MEMBER_NOT_FOUND("1002", "Member not found: The specified member does not exist.", HttpStatus.NOT_FOUND),
-    INVALID_MEMBER_COMPANY("1003", "Invalid member company: The member does not belong to the specified company.", HttpStatus.BAD_REQUEST),
-    PROJECT_TITLE_DUPLICATED("1004", "Project title is duplicated: A project with the same title already exists.", HttpStatus.BAD_REQUEST),
-    COMPANY_PROJECT_NOT_FOUND("1005", "The company project does not exist for the given project and role.", HttpStatus.NOT_FOUND),
 
-    PROJECT_ALREADY_DELETED("1007", "This Project is already deleted", HttpStatus.NOT_FOUND),
-    MEMBER_PROJECT_NOT_FOUND("1008", "The member project does not exist for the given project and role.", HttpStatus.NOT_FOUND),
-
-
-
-
-
-    ARTICLE_FILE_NOT_FOUND("1015", "This article file does not exist", HttpStatus.NOT_FOUND),
-    ARTICLE_LINK_NOT_FOUND("1016", "This article link does not exist", HttpStatus.NOT_FOUND),
 
     INVALID_CREDENTIALS("2001", "아이디 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED),
     TOKEN_EXPIRED("2002", "토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),

@@ -38,7 +38,7 @@ public class ArticleService {
     private final ArticleLinkRepository articleLinkRepository;
 
     @Transactional
-    public ArticleCreateResponse createArticle(ArticleCreateRequest request, UserDetailsImpl userDetails) {
+    public ArticleModifyResponse createArticle(ArticleModifyRequest request, UserDetailsImpl userDetails) {
         Member member = userDetails.getMember();
         Project project = validateProject(request.getProjectId());
         Stage stage = validateStage(request.getStageId(), project);
@@ -58,7 +58,7 @@ public class ArticleService {
 
     // article 수정
     @Transactional
-    public ArticleCreateResponse updateArticle(Long projectId, UserDetailsImpl userDetails, Long articleId, ArticleCreateRequest request) {
+    public ArticleModifyResponse updateArticle(Long projectId, UserDetailsImpl userDetails, Long articleId, ArticleModifyRequest request) {
         Member member = userDetails.getMember();
         Project project = validateProject(projectId);
         validateMemberInProject(project.getId(), member);
@@ -99,7 +99,7 @@ public class ArticleService {
     }
 
     // 게시글 저장
-    private Article saveArticle(ArticleCreateRequest request, Member member, Stage stage) {
+    private Article saveArticle(ArticleModifyRequest request, Member member, Stage stage) {
         Article article = Article.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -114,7 +114,7 @@ public class ArticleService {
     }
 
     // 공통된 파일 및 링크 처리 로직
-    private void processFilesAndLinks(ArticleCreateRequest request, Article article) {
+    private void processFilesAndLinks(ArticleModifyRequest request, Article article) {
         if (request.getFileList() != null) {
             request.getFileList().forEach(fileDTO -> {
                 ArticleFile file = processFile(fileDTO, article);
@@ -180,7 +180,7 @@ public class ArticleService {
     }
 
     // 파일과 링크의 수가 10개를 초과하는지 체크
-    private void validateFileAndLinkSize(ArticleCreateRequest request) {
+    private void validateFileAndLinkSize(ArticleModifyRequest request) {
         if (request.getFileList() != null && request.getFileList().size() > 10) {
             throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
         }
@@ -223,8 +223,8 @@ public class ArticleService {
     }
 
     // 응답 객체 생성
-    private ArticleCreateResponse buildArticleModifyResponse(Article article) {
-        return ArticleCreateResponse.builder()
+    private ArticleModifyResponse buildArticleModifyResponse(Article article) {
+        return ArticleModifyResponse.builder()
                 .title(article.getTitle())
                 .content(article.getContent())
                 .priority(article.getPriority())

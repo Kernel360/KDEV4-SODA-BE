@@ -1,12 +1,17 @@
 package com.soda.member.service;
 
 import com.soda.common.mail.service.EmailService;
-import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.global.security.jwt.JwtTokenProvider;
-import com.soda.member.dto.*;
+import com.soda.member.dto.ChangePasswordRequest;
+import com.soda.member.dto.LoginRequest;
+import com.soda.member.dto.MemberUpdateRequest;
+import com.soda.member.dto.SignupRequest;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
+import com.soda.member.error.AuthErrorCode;
+import com.soda.member.error.CompanyErrorCode;
+import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.CompanyRepository;
 import com.soda.member.repository.MemberRepository;
 import com.soda.member.repository.RefreshTokenRepository;
@@ -33,26 +38,28 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
-
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
-
     private final VerificationCodeRepository verificationCodeRepository;
+    private final CompanyRepository companyRepository;
+
     @Value("${jwt.refresh.expiration}")
     private long refreshTokenValidTime;
 
     private static final long VERIFICATION_CODE_EXPIRATION = 300; // 5분
-    private final CompanyRepository companyRepository;
 
     @Transactional
     public void signup(SignupRequest requestDto) {
-        // 아이디 중복 확인
         if (memberRepository.existsByAuthId(requestDto.getAuthId())) {
-            throw new GeneralException(CommonErrorCode.DUPLICATE_AUTH_ID);
+            log.error("회원 가입 실패: 아이디 중복 - {}", requestDto.getAuthId());
+            throw new GeneralException(MemberErrorCode.DUPLICATE_AUTH_ID);
         }
 
         Company company = companyRepository.findByName(requestDto.getCompanyName())
-                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_COMPANY));
+                .orElseThrow(() -> {
+                    log.error("회원 가입 실패: 회사를 찾을 수 없음 - {}", requestDto.getCompanyName());
+                    return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
+                });
 
         Member member = Member.builder()
                 .authId(requestDto.getAuthId())
@@ -65,63 +72,65 @@ public class AuthService {
                 .build();
 
         memberRepository.save(member);
+        log.info("회원 가입 성공: {}", member.getAuthId());
     }
-
 
     @Transactional
     public void login(LoginRequest requestDto, HttpServletResponse response) {
         Member member = memberRepository.findByAuthId(requestDto.getAuthId())
-                .orElseThrow(() -> new GeneralException(CommonErrorCode.INVALID_CREDENTIALS));
+                .orElseThrow(() -> {
+                    log.error("로그인 실패: 잘못된 아이디 또는 비밀번호 - {}", requestDto.getAuthId());
+                    return new GeneralException(AuthErrorCode.INVALID_CREDENTIALS);
+                });
 
         if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword())) {
-            throw new GeneralException(CommonErrorCode.INVALID_CREDENTIALS);
+            log.error("로그인 실패: 잘못된 아이디 또는 비밀번호 - {}", requestDto.getAuthId());
+            throw new GeneralException(AuthErrorCode.INVALID_CREDENTIALS);
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(member.getAuthId());
         String refreshToken = jwtTokenProvider.createRefreshToken(member.getAuthId());
 
-        // 기존 리프레시 토큰 삭제 후 새로운 토큰 저장
         refreshTokenRepository.deleteByAuthId(member.getAuthId());
         refreshTokenRepository.save(member.getAuthId(), refreshToken);
 
-        // 리프레시 토큰을 HttpOnly 쿠키에 저장
         addRefreshTokenCookie(response, refreshToken);
-
-        // 액세스 토큰을 Authorization 헤더에 담아 응답
         response.setHeader("Authorization", "Bearer " + accessToken);
 
-
+        log.info("로그인 성공: {}", member.getAuthId());
     }
 
     @Transactional
     public void refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
-
-
         String refreshToken = jwtTokenProvider.resolveToken(request);
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new GeneralException(CommonErrorCode.INVALID_REFRESH_TOKEN);
-        }
-        String AuthId = jwtTokenProvider.getAuthId(refreshToken);
 
-        String storedRefreshToken = refreshTokenRepository.findByAuthId(AuthId).orElseThrow(() ->
-                new GeneralException(CommonErrorCode.INVALID_REFRESH_TOKEN));
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            log.error("토큰 갱신 실패: 유효하지 않은 리프레시 토큰");
+            throw new GeneralException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        String authId = jwtTokenProvider.getAuthId(refreshToken);
+        String storedRefreshToken = refreshTokenRepository.findByAuthId(authId)
+                .orElseThrow(() -> {
+                    log.error("토큰 갱신 실패: 리프레시 토큰을 찾을 수 없음 - {}", authId);
+                    return new GeneralException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+                });
 
         if (!storedRefreshToken.equals(refreshToken)) {
-            throw new GeneralException(CommonErrorCode.INVALID_REFRESH_TOKEN);
+            log.error("토큰 갱신 실패: 리프레시 토큰 불일치 - {}", authId);
+            throw new GeneralException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        String newAccessToken = jwtTokenProvider.createAccessToken(AuthId);
-        String newRefreshToken = jwtTokenProvider.createRefreshToken(AuthId);
+        String newAccessToken = jwtTokenProvider.createAccessToken(authId);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(authId);
 
-        // 기존 리프레시 토큰 삭제 후 새로운 토큰 저장
-        refreshTokenRepository.deleteByAuthId(AuthId);
-        refreshTokenRepository.save(AuthId, newRefreshToken);
+        refreshTokenRepository.deleteByAuthId(authId);
+        refreshTokenRepository.save(authId, newRefreshToken);
 
-        // 리프레시 토큰을 HttpOnly 쿠키에 저장
-        addRefreshTokenCookie(response, refreshToken);
-
-        // 새 액세스 토큰을 Authorization 헤더에 설정
+        addRefreshTokenCookie(response, newRefreshToken); // 수정된 부분
         response.setHeader("Authorization", "Bearer " + newAccessToken);
+
+        log.info("토큰 갱신 성공: {}", authId);
     }
 
     @Transactional
@@ -129,51 +138,63 @@ public class AuthService {
         String code = generateVerificationCode();
         try {
             emailService.sendVerificationEmail(email, code);
-            // Redis 또는 데이터베이스에 인증번호 저장 및 만료 시간 설정
-            verificationCodeRepository.saveVerificationCode(email, code, VERIFICATION_CODE_EXPIRATION); // Redis에 인증번호 저장
+            verificationCodeRepository.saveVerificationCode(email, code, VERIFICATION_CODE_EXPIRATION);
+            log.info("인증 코드 전송 성공: {}", email);
         } catch (Exception e) {
-            throw new GeneralException(CommonErrorCode.MAIL_SEND_FAILED);
+            log.error("인증 코드 전송 실패: {}", email, e);
+            throw new GeneralException(AuthErrorCode.MAIL_SEND_FAILED);
         }
     }
-
 
     @Transactional
     public boolean verifyVerificationCode(String email, String code) {
         String storedCode = verificationCodeRepository.findVerificationCode(email);
         if (storedCode != null && storedCode.equals(code)) {
-            // 인증 성공 시 Redis에서 인증번호 삭제
             verificationCodeRepository.deleteVerificationCode(email);
+            log.info("인증 코드 검증 성공: {}", email);
             return true;
         }
+        log.warn("인증 코드 검증 실패: {}", email);
         return false;
     }
 
     @Transactional
     public void changePassword(ChangePasswordRequest requestDto) {
         Member member = memberRepository.findByEmail(requestDto.getEmail())
-                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> {
+                    log.error("비밀번호 변경 실패: 멤버를 찾을 수 없음 - {}", requestDto.getEmail());
+                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+                });
 
         member.changePassword(passwordEncoder.encode(requestDto.getNewPassword()));
         memberRepository.save(member);
+        log.info("비밀번호 변경 성공: {}", member.getAuthId());
     }
 
     @Transactional
     public void updateMember(Long memberId, MemberUpdateRequest request) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_MEMBER));
-        Company company = companyRepository.findByName(request.getCompanyName())
-                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_COMPANY));
+                .orElseThrow(() -> {
+                    log.error("멤버 정보 수정 실패: 멤버를 찾을 수 없음 - {}", memberId);
+                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+                });
 
-//        member.updateMember(request,company);
+        Company company = companyRepository.findByName(request.getCompanyName())
+                .orElseThrow(() -> {
+                    log.error("멤버 정보 수정 실패: 회사를 찾을 수 없음 - {}", request.getCompanyName());
+                    return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
+                });
+
+        member.updateMember(request, company);
+        memberRepository.save(member);
+        log.info("멤버 정보 수정 성공: {}", memberId);
     }
 
-    // 인증번호 생성 메서드
     private String generateVerificationCode() {
         Random random = new Random();
         return String.format("%06d", random.nextInt(1000000));
     }
 
-    // refreshToken을 쿠키에 넣는 메서드
     private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         refreshTokenCookie.setHttpOnly(true);

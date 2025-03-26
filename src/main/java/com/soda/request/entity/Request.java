@@ -57,4 +57,8 @@ public class Request extends BaseEntity {
     public void delete() {
         markAsDeleted();
     }
+
+    public void approve() {
+        this.status = RequestStatus.APPROVED;
+    }
 }

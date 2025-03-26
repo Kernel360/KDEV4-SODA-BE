@@ -67,6 +67,11 @@ public class RequestService {
         return requests.stream().map(RequestDTO::fromEntity).collect(Collectors.toList());
     }
 
+    public RequestDTO findById(Long requestId) {
+        Request request = getRequestOrThrow(requestId);
+        return RequestDTO.fromEntity(request);
+    }
+
 
     @Transactional
     public RequestUpdateResponse updateRequest(UserDetailsImpl userDetails, Long requestId, RequestUpdateRequest requestUpdateRequest) throws GeneralException {
@@ -78,6 +83,9 @@ public class RequestService {
 
         // request의 제목, 내용을 수정
         updateRequestFields(requestUpdateRequest, request);
+
+        requestRepository.save(request);
+        requestRepository.flush();
 
         return RequestUpdateResponse.fromEntity(request);
     }

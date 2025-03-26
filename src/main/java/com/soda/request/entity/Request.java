@@ -21,6 +21,7 @@ public class Request extends BaseEntity {
     @TrackUpdate
     private String title;
 
+    @TrackUpdate
     @Lob
     private String content;
 

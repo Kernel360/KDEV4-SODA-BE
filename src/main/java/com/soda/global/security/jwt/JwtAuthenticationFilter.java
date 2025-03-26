@@ -2,7 +2,7 @@ package com.soda.global.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.soda.global.response.ApiResponseForm;
-import com.soda.global.response.ErrorCode;
+import com.soda.global.response.CommonErrorCode;
 import com.soda.global.security.config.SecurityProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             // 토큰 검증 시도
             if (!jwtTokenProvider.validateToken(token)) {
-                sendErrorResponse(response, ErrorCode.INVALID_TOKEN);
+                sendErrorResponse(response, CommonErrorCode.INVALID_TOKEN);
                 return;
             }
 
@@ -68,18 +68,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException e) {
-            sendErrorResponse(response, ErrorCode.TOKEN_EXPIRED);
+            sendErrorResponse(response, CommonErrorCode.TOKEN_EXPIRED);
         } catch (MalformedJwtException | UnsupportedJwtException | SignatureException | IllegalArgumentException e) {
-            sendErrorResponse(response, ErrorCode.INVALID_TOKEN);
+            sendErrorResponse(response, CommonErrorCode.INVALID_TOKEN);
         } catch (UsernameNotFoundException e) {
-            sendErrorResponse(response, ErrorCode.NOT_FOUND_MEMBER);
+            sendErrorResponse(response, CommonErrorCode.NOT_FOUND_MEMBER);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            sendErrorResponse(response, ErrorCode.UNEXPECTED_ERROR);
+            sendErrorResponse(response, CommonErrorCode.UNEXPECTED_ERROR);
         }
     }
 
-    private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) {
+    private void sendErrorResponse(HttpServletResponse response, CommonErrorCode errorCode) {
         try {
             if (response.isCommitted()) {
                 return; // 이미 응답이 전송되었으면 처리하지 않음

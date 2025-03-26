@@ -1,6 +1,6 @@
 package com.soda.project.service;
 
-import com.soda.global.response.ErrorCode;
+import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
@@ -42,7 +42,7 @@ public class ProjectService {
     public ProjectCreateResponse createProject(ProjectCreateRequest request) {
         // 1. 프로젝트 제목 중복 체크
         if (projectRepository.existsByTitle(request.getTitle())) {
-            throw new GeneralException(ErrorCode.PROJECT_TITLE_DUPLICATED);
+            throw new GeneralException(CommonErrorCode.PROJECT_TITLE_DUPLICATED);
         }
 
         // 2. 기본 정보 생성
@@ -76,7 +76,7 @@ public class ProjectService {
 
     private List<Member> assignCompanyAndMembers(Long companyId, List<Long> memberIds, Project project, CompanyProjectRole companyRole, MemberProjectRole memberRole) {
         Company company = companyRepository.findByIdAndIsDeletedFalse(companyId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.COMPANY_NOT_FOUND));
 
         // 회사와 프로젝트가 연결되지 않은 경우 연결
         assignCompanyToProject(company, project, companyRole);
@@ -100,10 +100,10 @@ public class ProjectService {
         List<Member> members = new ArrayList<>();
         for (Long memberId : memberIds) {
             Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
-                    .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+                    .orElseThrow(() -> new GeneralException(CommonErrorCode.MEMBER_NOT_FOUND));
 
             if (!member.getCompany().getId().equals(company.getId())) {
-                throw new GeneralException(ErrorCode.INVALID_MEMBER_COMPANY);
+                throw new GeneralException(CommonErrorCode.INVALID_MEMBER_COMPANY);
             }
 
             // 이미 멤버가 프로젝트에 존재하는지 확인
@@ -162,14 +162,14 @@ public class ProjectService {
 
     private String getCompanyNameByRole(Project project, CompanyProjectRole role) {
         CompanyProject companyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, role)
-                .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.COMPANY_NOT_FOUND));
         return companyProject.getCompany().getName();
     }
 
     // 개별 프로젝트 조회
     public ProjectResponse getProject(Long projectId) {
         Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.PROJECT_NOT_FOUND));
 
         String devCompanyName = getCompanyNameByRole(project, CompanyProjectRole.DEV_COMPANY);
         String clientCompanyName = getCompanyNameByRole(project, CompanyProjectRole.CLIENT_COMPANY);
@@ -205,11 +205,11 @@ public class ProjectService {
     public void deleteProject(Long projectId) {
         // 1. 프로젝트 존재 여부 체크
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.PROJECT_NOT_FOUND));
 
         // 2. 이미 삭제된 프로젝트인지 체크
         if (project.getIsDeleted()) {
-            throw new GeneralException(ErrorCode.PROJECT_ALREADY_DELETED);
+            throw new GeneralException(CommonErrorCode.PROJECT_ALREADY_DELETED);
         }
 
         // 3. 프로젝트 상태를 삭제된 상태로 변경
@@ -237,7 +237,7 @@ public class ProjectService {
     public ProjectCreateResponse updateProject(Long projectId, ProjectCreateRequest request) {
         // 1. 프로젝트 존재 여부 체크
         Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.PROJECT_NOT_FOUND));
 
         // 2. 프로젝트 기본 정보 수정
         project.updateProject(request.getTitle(), request.getDescription(), request.getStartDate(), request.getEndDate());
@@ -258,7 +258,7 @@ public class ProjectService {
 
     private void updateCompanyProjectMembers(Project project, Long companyId, List<Long> managerIds, List<Long> participantIds, CompanyProjectRole companyRole, MemberProjectRole managerRole, MemberProjectRole participantRole) {
         Company company = companyRepository.findByIdAndIsDeletedFalse(companyId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.COMPANY_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.COMPANY_NOT_FOUND));
 
         // 1. 회사와 프로젝트 연결 여부 확인 (이미 연결되어 있다면 새로운 저장 하지 않음)
         if (!companyProjectRepository.existsByCompanyAndProject(company, project)) {

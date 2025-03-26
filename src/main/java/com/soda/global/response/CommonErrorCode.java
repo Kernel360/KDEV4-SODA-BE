@@ -31,7 +31,7 @@ public enum CommonErrorCode implements ErrorCode {
     DUPLICATE_AUTH_ID("2008", "이미 사용 중인 아이디입니다.", HttpStatus.BAD_REQUEST),
     MAIL_SEND_FAILED("2009", "메일 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_FOUND_COMPANY("2010", "회사를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
-
+    DUPLICATE_COMPANY_NUMBER("2011", "이미 존재하는 회사입니다.", HttpStatus.BAD_REQUEST),
 
     // 승인요청 관련 오류 메시지
     USER_NOT_IN_PROJECT_DEV("3000", "This user is not in current project or not in project's dev company", HttpStatus.BAD_REQUEST),

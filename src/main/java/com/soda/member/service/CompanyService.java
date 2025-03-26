@@ -1,5 +1,6 @@
 package com.soda.member.service;
 
+import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.ErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.dto.company.CompanyCreateRequest;
@@ -34,7 +35,7 @@ public class CompanyService {
     public CompanyResponse createCompany(CompanyCreateRequest request) {
         // 사업자 등록번호 중복 확인
         if (companyRepository.findByCompanyNumber(request.getCompanyNumber()).isPresent()) {
-            throw new GeneralException(ErrorCode.DUPLICATE_COMPANY_NUMBER);
+            throw new GeneralException(CommonErrorCode.DUPLICATE_COMPANY_NUMBER);
         }
 
         Company company = Company.builder()
@@ -68,7 +69,7 @@ public class CompanyService {
      */
     public CompanyResponse getCompanyById(Long id) {
         Company company = companyRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_COMPANY));
         return CompanyResponse.fromEntity(company);
     }
 
@@ -83,12 +84,12 @@ public class CompanyService {
     @Transactional
     public CompanyResponse updateCompany(Long id, CompanyUpdateRequest request) {
         Company company = companyRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_COMPANY));
 
         // 수정하려는 사업자 등록번호가 다른 회사의 사업자 등록번호와 중복되는지 확인
         Optional<Company> existingCompany = companyRepository.findByCompanyNumber(request.getCompanyNumber());
         if (existingCompany.isPresent() && !existingCompany.get().getId().equals(id)) {
-            throw new GeneralException(ErrorCode.DUPLICATE_COMPANY_NUMBER);
+            throw new GeneralException(CommonErrorCode.DUPLICATE_COMPANY_NUMBER);
         }
 
         company.updateCompany(request);
@@ -106,7 +107,7 @@ public class CompanyService {
     @Transactional
     public void deleteCompany(Long id) {
         Company company = companyRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_COMPANY));
 
         company.delete();
         companyRepository.save(company);
@@ -122,7 +123,7 @@ public class CompanyService {
     @Transactional
     public CompanyResponse restoreCompany(Long id) {
         Company company = companyRepository.findByIdAndIsDeletedTrue(id)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_COMPANY));
 
         company.markAsActive();
         Company restoredCompany = companyRepository.save(company);
@@ -138,7 +139,7 @@ public class CompanyService {
      */
     public List<MemberResponse> getCompanyMembers(Long companyId) {
         Company company = companyRepository.findByIdAndIsDeletedFalse(companyId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_COMPANY));
 
         return company.getMemberList().stream()
                 .map(MemberResponse::fromEntity)

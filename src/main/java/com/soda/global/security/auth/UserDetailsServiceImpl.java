@@ -1,6 +1,6 @@
 package com.soda.global.security.auth;
 
-import com.soda.global.response.ErrorCode;
+import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.repository.MemberRepository;
@@ -22,10 +22,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String authId) throws UsernameNotFoundException {
         Member member = memberRepository.findByAuthId(authId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND));
 
         if (member.getIsDeleted()) {
-            throw new GeneralException(ErrorCode.NOT_FOUND_MEMBER);
+            throw new GeneralException(CommonErrorCode.NOT_FOUND_MEMBER);
         }
         return new UserDetailsImpl(member);
 

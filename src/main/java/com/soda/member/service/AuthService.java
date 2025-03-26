@@ -1,7 +1,7 @@
 package com.soda.member.service;
 
 import com.soda.common.mail.service.EmailService;
-import com.soda.global.response.ErrorCode;
+import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.global.security.jwt.JwtTokenProvider;
 import com.soda.member.dto.*;
@@ -48,11 +48,11 @@ public class AuthService {
     public void signup(SignupRequest requestDto) {
         // 아이디 중복 확인
         if (memberRepository.existsByAuthId(requestDto.getAuthId())) {
-            throw new GeneralException(ErrorCode.DUPLICATE_AUTH_ID);
+            throw new GeneralException(CommonErrorCode.DUPLICATE_AUTH_ID);
         }
 
         Company company = companyRepository.findByName(requestDto.getCompanyName())
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_COMPANY));
 
         Member member = Member.builder()
                 .authId(requestDto.getAuthId())
@@ -71,10 +71,10 @@ public class AuthService {
     @Transactional
     public void login(LoginRequest requestDto, HttpServletResponse response) {
         Member member = memberRepository.findByAuthId(requestDto.getAuthId())
-                .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_CREDENTIALS));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword())) {
-            throw new GeneralException(ErrorCode.INVALID_CREDENTIALS);
+            throw new GeneralException(CommonErrorCode.INVALID_CREDENTIALS);
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(member.getAuthId());
@@ -99,15 +99,15 @@ public class AuthService {
 
         String refreshToken = jwtTokenProvider.resolveToken(request);
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new GeneralException(CommonErrorCode.INVALID_REFRESH_TOKEN);
         }
         String AuthId = jwtTokenProvider.getAuthId(refreshToken);
 
         String storedRefreshToken = refreshTokenRepository.findByAuthId(AuthId).orElseThrow(() ->
-                new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN));
+                new GeneralException(CommonErrorCode.INVALID_REFRESH_TOKEN));
 
         if (!storedRefreshToken.equals(refreshToken)) {
-            throw new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new GeneralException(CommonErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         String newAccessToken = jwtTokenProvider.createAccessToken(AuthId);
@@ -132,7 +132,7 @@ public class AuthService {
             // Redis 또는 데이터베이스에 인증번호 저장 및 만료 시간 설정
             verificationCodeRepository.saveVerificationCode(email, code, VERIFICATION_CODE_EXPIRATION); // Redis에 인증번호 저장
         } catch (Exception e) {
-            throw new GeneralException(ErrorCode.MAIL_SEND_FAILED);
+            throw new GeneralException(CommonErrorCode.MAIL_SEND_FAILED);
         }
     }
 
@@ -151,7 +151,7 @@ public class AuthService {
     @Transactional
     public void changePassword(ChangePasswordRequest requestDto) {
         Member member = memberRepository.findByEmail(requestDto.getEmail())
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_MEMBER));
 
         member.changePassword(passwordEncoder.encode(requestDto.getNewPassword()));
         memberRepository.save(member);
@@ -160,9 +160,9 @@ public class AuthService {
     @Transactional
     public void updateMember(Long memberId, MemberUpdateRequest request) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_MEMBER));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_MEMBER));
         Company company = companyRepository.findByName(request.getCompanyName())
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_COMPANY));
 
 //        member.updateMember(request,company);
     }

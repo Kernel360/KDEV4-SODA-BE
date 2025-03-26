@@ -2,6 +2,7 @@ package com.soda.article.repository;
 
 import com.soda.article.entity.Article;
 import com.soda.project.entity.Project;
+import com.soda.project.entity.Stage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +15,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     List<Article> findByIsDeletedFalseAndStage_Project(Project project);
 
     Optional<Article> findByIdAndIsDeletedFalse(Long articleId);
+
+    List<Article> findByIsDeletedFalseAndStageAndStage_Project(Stage stage, Project project);
+
 }

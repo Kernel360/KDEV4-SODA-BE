@@ -24,10 +24,12 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponseForm.success(response, "게시글 생성 성공"));
     }
 
-    @GetMapping("/{projectId}/articles")
+    // 전체 article 조회 & stage 별 article 조회
+    @GetMapping("projects/{projectId}/articles")
     public ResponseEntity<ApiResponseForm<List<ArticleViewResponse>>> getAllArticles(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                                     @PathVariable Long projectId) {
-        List<ArticleViewResponse> response = articleService.getAllArticles(userDetails, projectId);
+                                                                                     @PathVariable Long projectId,
+                                                                                     @RequestParam(required = false) Long stageId) {
+        List<ArticleViewResponse> response = articleService.getAllArticles(userDetails, projectId, stageId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

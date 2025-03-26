@@ -247,7 +247,7 @@ public class ArticleService {
     }
 
     // Article List 조회
-    public List<ArticleViewResponse> getAllArticles(UserDetailsImpl userDetails, Long projectId) {
+    public List<ArticleViewResponse> getAllArticles(UserDetailsImpl userDetails, Long projectId, Long stageId) {
         Member member = userDetails.getMember();
 
         validateMemberInProject(projectId, member);
@@ -255,7 +255,15 @@ public class ArticleService {
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
 
         // 프로젝트에 속한 삭제되지 않은 게시글 조회
-        List<Article> articles = articleRepository.findByIsDeletedFalseAndStage_Project(project);
+        List<Article> articles;
+        if (stageId != null) {
+            Stage stage = stageRepository.findById(stageId)
+                    .orElseThrow(() -> new GeneralException(ProjectErrorCode.STAGE_NOT_FOUND));
+            articles = articleRepository.findByIsDeletedFalseAndStageAndStage_Project(stage, stage.getProject());
+        } else {
+            articles = articleRepository.findByIsDeletedFalseAndStage_Project(project);
+        }
+
 
         return articles.stream()
                 .map(this::buildArticleViewResponse)

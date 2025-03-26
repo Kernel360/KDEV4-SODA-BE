@@ -2,6 +2,7 @@ package com.soda.global.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.soda.global.response.ApiResponseForm;
+import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.ErrorCode;
 import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.global.security.config.SecurityProperties;
@@ -83,7 +84,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             sendErrorResponse(response, MemberErrorCode.NOT_FOUND_MEMBER);
         } catch (Exception e) {
             log.error("JWT 인증 필터 중 인증 실패 에러 발생: {}", e.getMessage(), e);
-            sendErrorResponse(response, AuthErrorCode.AUTHENTICATION_FAILED);
+            sendErrorResponse(response, CommonErrorCode.UNEXPECTED_ERROR);
         }
     }
 

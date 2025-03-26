@@ -3,6 +3,7 @@ package com.soda.global.security.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.global.response.ErrorCode;
+import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.global.security.config.SecurityProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -65,6 +66,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
+            // request에 사용자 정보 추가
+            addUserAttributes(request, userDetails);
+
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException e) {
@@ -76,6 +80,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             sendErrorResponse(response, ErrorCode.UNEXPECTED_ERROR);
+        }
+    }
+
+    private void addUserAttributes(HttpServletRequest request, UserDetails userDetails) {
+        if (userDetails instanceof UserDetailsImpl) {
+            UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
+            request.setAttribute("authId", userDetailsImpl.getUsername());
+            request.setAttribute("memberId", userDetailsImpl.getId());
+            request.setAttribute("userRole", userDetailsImpl.getMember().getRole());
+        } else {
+            log.warn("UserDetails is not an instance of UserDetailsImpl.");
         }
     }
 

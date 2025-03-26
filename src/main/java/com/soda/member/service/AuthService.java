@@ -7,14 +7,16 @@ import com.soda.global.security.jwt.JwtTokenProvider;
 import com.soda.member.dto.*;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
-import com.soda.member.entity.RefreshToken;
 import com.soda.member.repository.CompanyRepository;
 import com.soda.member.repository.MemberRepository;
 import com.soda.member.repository.RefreshTokenRepository;
 import com.soda.member.repository.VerificationCodeRepository;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,9 @@ public class AuthService {
     private final EmailService emailService;
 
     private final VerificationCodeRepository verificationCodeRepository;
+    @Value("${jwt.refresh.expiration}")
+    private long refreshTokenValidTime;
+
     private static final long VERIFICATION_CODE_EXPIRATION = 300; // 5분
     private final CompanyRepository companyRepository;
 
@@ -47,7 +52,7 @@ public class AuthService {
         }
 
         Company company = companyRepository.findByName(requestDto.getCompanyName())
-                .orElseThrow(()->new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
 
         Member member = Member.builder()
                 .authId(requestDto.getAuthId())
@@ -64,7 +69,7 @@ public class AuthService {
 
 
     @Transactional
-    public LoginResponse login(LoginRequest requestDto, HttpServletRequest request) {
+    public void login(LoginRequest requestDto, HttpServletResponse response) {
         Member member = memberRepository.findByAuthId(requestDto.getAuthId())
                 .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_CREDENTIALS));
 
@@ -77,41 +82,46 @@ public class AuthService {
 
         // 기존 리프레시 토큰 삭제 후 새로운 토큰 저장
         refreshTokenRepository.deleteByAuthId(member.getAuthId());
+        refreshTokenRepository.save(member.getAuthId(), refreshToken);
 
-        // 새로운 리프레시 토큰 저장
-        RefreshToken refreshTokenEntity = RefreshToken.builder()
-                .authId(member.getAuthId())
-                .token(refreshToken)
-                .build();
-        refreshTokenRepository.save(refreshTokenEntity);
+        // 리프레시 토큰을 HttpOnly 쿠키에 저장
+        addRefreshTokenCookie(response, refreshToken);
 
-        return LoginResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        // 액세스 토큰을 Authorization 헤더에 담아 응답
+        response.setHeader("Authorization", "Bearer " + accessToken);
+
+
     }
 
     @Transactional
-    public LoginResponse refreshAccessToken(HttpServletRequest request) {
-        String refreshToken = jwtTokenProvider.resolveToken(request);
-        RefreshToken storedToken = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_REFRESH_TOKEN));
+    public void refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
 
+
+        String refreshToken = jwtTokenProvider.resolveToken(request);
         if (!jwtTokenProvider.validateToken(refreshToken)) {
             throw new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
+        String AuthId = jwtTokenProvider.getAuthId(refreshToken);
 
-        String authId = storedToken.getAuthId();
-        String newAccessToken = jwtTokenProvider.createAccessToken(authId);
-        String newRefreshToken = jwtTokenProvider.createRefreshToken(authId);
+        String storedRefreshToken = refreshTokenRepository.findByAuthId(AuthId).orElseThrow(() ->
+                new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN));
 
-        // 토큰 초기화
-        storedToken.setToken(newRefreshToken);
+        if (!storedRefreshToken.equals(refreshToken)) {
+            throw new GeneralException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
 
-        return LoginResponse.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(refreshToken)
-                .build();
+        String newAccessToken = jwtTokenProvider.createAccessToken(AuthId);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(AuthId);
+
+        // 기존 리프레시 토큰 삭제 후 새로운 토큰 저장
+        refreshTokenRepository.deleteByAuthId(AuthId);
+        refreshTokenRepository.save(AuthId, newRefreshToken);
+
+        // 리프레시 토큰을 HttpOnly 쿠키에 저장
+        addRefreshTokenCookie(response, refreshToken);
+
+        // 새 액세스 토큰을 Authorization 헤더에 설정
+        response.setHeader("Authorization", "Bearer " + newAccessToken);
     }
 
     @Transactional
@@ -148,13 +158,13 @@ public class AuthService {
     }
 
     @Transactional
-    public void updateMember(Long memberId, UpdateMemberRequest request) {
+    public void updateMember(Long memberId, MemberUpdateRequest request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_MEMBER));
         Company company = companyRepository.findByName(request.getCompanyName())
-                .orElseThrow(()->new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
+                .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
 
-        member.updateMember(request,company);
+//        member.updateMember(request,company);
     }
 
     // 인증번호 생성 메서드
@@ -163,5 +173,14 @@ public class AuthService {
         return String.format("%06d", random.nextInt(1000000));
     }
 
+    // refreshToken을 쿠키에 넣는 메서드
+    private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge((int) (refreshTokenValidTime / 1000));
+        response.addCookie(refreshTokenCookie);
+    }
 
 }

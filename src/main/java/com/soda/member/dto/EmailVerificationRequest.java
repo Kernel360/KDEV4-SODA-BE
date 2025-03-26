@@ -1,10 +1,10 @@
 package com.soda.member.dto;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
+@Builder
 public class EmailVerificationRequest {
     private String email;
     private String code;

@@ -1,7 +1,7 @@
 package com.soda.member.entity;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.dto.UpdateMemberRequest;
+import com.soda.member.dto.MemberUpdateRequest;
 import com.soda.member.enums.MemberRole;
 import com.soda.notice.entity.MemberNotice;
 import com.soda.project.entity.MemberProject;
@@ -44,8 +44,6 @@ public class Member extends BaseEntity {
     @JoinColumn(name = "company_id")
     private Company company;
 
-    private boolean isEnabled;
-
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<MemberProject> memberProjects = new ArrayList<>();
 
@@ -57,7 +55,7 @@ public class Member extends BaseEntity {
     }
 
     // 멤버 수정 메서드
-    public void updateMember(UpdateMemberRequest request,Company company) {
+    public void updateMember(MemberUpdateRequest request, Company company) {
         if (request.getName() != null) {
             this.name = request.getName();
         }
@@ -85,5 +83,9 @@ public class Member extends BaseEntity {
             this.memberProjects = new ArrayList<>();
         }
         this.memberProjects.add(memberProjects);
+    }
+
+    public boolean isAdmin() {
+        return this.role == MemberRole.ADMIN;  // 예시로 role이 ADMIN일 경우 관리자
     }
 }

@@ -27,6 +27,14 @@ public enum ErrorCode {
     PROJECT_NOT_FOUND("1006", "Invalid project Id", HttpStatus.NOT_FOUND),
     PROJECT_ALREADY_DELETED("1007", "This Project is already deleted", HttpStatus.NOT_FOUND),
     MEMBER_PROJECT_NOT_FOUND("1008", "The member project does not exist for the given project and role.", HttpStatus.NOT_FOUND),
+    STAGE_NOT_FOUND("1009", "The stage does not exist", HttpStatus.NOT_FOUND),
+    MEMBER_NOT_IN_PROJECT("1010", "This member does not exist in this project", HttpStatus.NOT_FOUND),
+    INVALID_INPUT("1011", "Invalid Input", HttpStatus.BAD_REQUEST),
+    INVALID_STAGE_FOR_PROJECT("1012", "Invalid stage for project", HttpStatus.NOT_FOUND),
+    INVALID_ARTICLE("1013", "The Article does not exist", HttpStatus.NOT_FOUND),
+    ARTICLE_ALREADY_DELETED("1014","This article is already deleted", HttpStatus.NOT_FOUND),
+    ARTICLE_FILE_NOT_FOUND("1015", "This article file does not exist", HttpStatus.NOT_FOUND),
+    ARTICLE_LINK_NOT_FOUND("1016", "This article link does not exist", HttpStatus.NOT_FOUND),
 
     INVALID_CREDENTIALS("2001", "아이디 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED),
     TOKEN_EXPIRED("2002", "토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),
@@ -38,7 +46,7 @@ public enum ErrorCode {
     DUPLICATE_AUTH_ID("2008", "이미 사용 중인 아이디입니다.", HttpStatus.BAD_REQUEST),
     MAIL_SEND_FAILED("2009", "메일 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_FOUND_COMPANY("2010", "회사를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
-
+    DUPLICATE_COMPANY_NUMBER("2011", "이미 존재하는 회사입니다.", HttpStatus.BAD_REQUEST),
 
     // 승인요청 관련 오류 메시지
     USER_NOT_IN_PROJECT_DEV("3000", "This user is not in current project or not in project's dev company, or not an admin", HttpStatus.BAD_REQUEST),

@@ -64,7 +64,10 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public boolean isEnabled() {
         // 계정 활성화 여부를 반환하는 메서드
-        // 여기서는 항상 true를 반환하여 계정이 활성화되었음을 나타냅니다.
-        return member.isEnabled();
+        return !member.getIsDeleted();
+    }
+
+    public Long getId() {
+        return member.getId();
     }
 }

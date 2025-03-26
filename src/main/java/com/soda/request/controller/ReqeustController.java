@@ -18,11 +18,10 @@ import java.util.List;
 public class ReqeustController {
     private final RequestService requestService;
 
-    @PostMapping("/projects/{projectId}/stages/{stageId}/tasks/{taskId}/requests")
+    @PostMapping("/requests")
     public ResponseEntity<ApiResponseForm<?>> createRequest(@RequestBody RequestCreateRequest requestCreateRequest,
-                                                            @PathVariable Long projectId, @PathVariable Long stageId, @PathVariable Long taskId,
                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        RequestCreateResponse requestCreateResponse = requestService.createRequest(userDetails, projectId, taskId, requestCreateRequest);
+        RequestCreateResponse requestCreateResponse = requestService.createRequest(userDetails, requestCreateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestCreateResponse));
     }
 
@@ -32,22 +31,22 @@ public class ReqeustController {
         return ResponseEntity.ok(ApiResponseForm.success(requestDTOList));
     }
 
-    @GetMapping("/tasks/{taskId}/requests/{requestId}")
-    public ResponseEntity<ApiResponseForm<?>> getRequest(@PathVariable Long taskId, @PathVariable Long requestId) {
+    @GetMapping("requests/{requestId}")
+    public ResponseEntity<ApiResponseForm<?>> getRequest(@PathVariable Long requestId) {
         RequestDTO requestDTO = requestService.findById(requestId);
         return ResponseEntity.ok(ApiResponseForm.success(requestDTO));
     }
 
-    @PutMapping("/projects/{projectId}/stages/{stageId}/tasks/{taskId}/requests/{requestId}")
+    @PutMapping("/requests/{requestId}")
     public ResponseEntity<ApiResponseForm<?>> updateRequest(@RequestBody RequestUpdateRequest requestUpdateRequest,
-                                                            @PathVariable Long projectId, @PathVariable Long stageId, @PathVariable Long taskId, @PathVariable Long requestId,
+                                                            @PathVariable Long requestId,
                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         RequestUpdateResponse requestUpdateResponse = requestService.updateRequest(userDetails, requestId, requestUpdateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestUpdateResponse));
     }
 
-    @DeleteMapping("/projects/{projectId}/stages/{stageId}/tasks/{taskId}/requests/{requestId}")
-    public ResponseEntity<ApiResponseForm<?>> deleteRequest(@PathVariable Long projectId, @PathVariable Long stageId, @PathVariable Long taskId, @PathVariable Long requestId,
+    @DeleteMapping("/requests/{requestId}")
+    public ResponseEntity<ApiResponseForm<?>> deleteRequest(@PathVariable Long requestId,
                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         RequestDeleteResponse requestDeleteResponse = requestService.deleteRequest(userDetails, requestId);
         return ResponseEntity.ok(ApiResponseForm.success(requestDeleteResponse));

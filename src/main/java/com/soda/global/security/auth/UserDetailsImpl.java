@@ -66,4 +66,8 @@ public class UserDetailsImpl implements UserDetails {
         // 계정 활성화 여부를 반환하는 메서드
         return !member.getIsDeleted();
     }
+
+    public Long getId() {
+        return member.getId();
+    }
 }

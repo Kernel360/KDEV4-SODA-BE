@@ -158,7 +158,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void updateMember(Long memberId, UpdateMemberRequest request) {
+    public void updateMember(Long memberId, MemberUpdateRequest request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(CommonErrorCode.NOT_FOUND_MEMBER));
         Company company = companyRepository.findByName(request.getCompanyName())

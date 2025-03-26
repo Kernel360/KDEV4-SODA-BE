@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners(CustomAuditingEntityListener.class)
 public class BaseEntity {
 
     @Getter

@@ -1,11 +1,11 @@
 package com.soda.member.dto.company;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
-public class CompanyRequest {
+@Builder
+public class CompanyCreateRequest {
     private String name;
     private String phoneNumber;
     private String companyNumber;

@@ -34,17 +34,17 @@ public class RequestService {
     Request 데이터 생성 전에, 요청한 member가 현재 프로젝트에 속한 "개발사"의 멤버이거나 ADMIN유저인지 확인해야함.
     */
     @Transactional
-    public RequestCreateResponse createRequest(UserDetailsImpl userDetails, Long projectId, Long taskId, RequestCreateRequest requestCreateRequest) throws GeneralException {
+    public RequestCreateResponse createRequest(UserDetailsImpl userDetails, RequestCreateRequest requestCreateRequest) throws GeneralException {
         // isDevInCurrentProject에서 memberProject를 조회해 userDetails.getMember로 멤버객체를 그대로 사용하면 "LazyInitializationException"이 발생해
         // userDetails.getMember.getId를 바탕으로 (레프트)페치조인해 memberProject와 함께 영속성 컨텍스트에 등록
         System.out.println(userDetails.getMember().getId());
         Member member = memberRepository.findWithProjectsById(userDetails.getMember().getId())
                 .orElseThrow(() -> new GeneralException(CommonErrorCode.MEMBER_NOT_FOUND));
-        Task task = getTaskOrThrow(taskId);
+        Task task = getTaskOrThrow(requestCreateRequest.getTaskId());
 
         // 현재 프로젝트에 속한 "개발사"의 멤버가 아니고, 어드민도 아니면 USER_NOT_IN_PROJECT_DEV 반환
-        if (!isDevInCurrentProject(projectId, member) && !isAdmin(member)) {
-            throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_DEV);
+        if (!isDevInCurrentProject(requestCreateRequest.getProjectId(), member) && !isAdmin(member)) {
+            throw new GeneralException(ErrorCode.USER_NOT_IN_PROJECT_DEV);
         }
 
         Request request = Request.builder()

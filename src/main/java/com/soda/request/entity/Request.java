@@ -1,6 +1,7 @@
 package com.soda.request.entity;
 
 import com.soda.common.BaseEntity;
+import com.soda.common.TrackUpdate;
 import com.soda.member.entity.Member;
 import com.soda.project.entity.Task;
 import com.soda.request.enums.RequestStatus;
@@ -17,8 +18,10 @@ public class Request extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
 
+    @TrackUpdate
     private String title;
 
+    @TrackUpdate
     @Lob
     private String content;
 

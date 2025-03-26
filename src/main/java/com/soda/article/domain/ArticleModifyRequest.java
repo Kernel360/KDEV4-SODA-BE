@@ -18,6 +18,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ArticleModifyRequest {
 
+    private Long projectId;
     private String title;
     private String content;
     private PriorityType priority;

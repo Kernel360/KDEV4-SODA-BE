@@ -1,6 +1,6 @@
 package com.soda.request.service;
 
-import com.soda.global.response.ErrorCode;
+import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.member.entity.Member;
@@ -14,12 +14,10 @@ import com.soda.request.entity.Request;
 import com.soda.request.enums.RequestStatus;
 import com.soda.request.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,7 +38,7 @@ public class RequestService {
         // isDevInCurrentProject에서 memberProject를 조회해 userDetails.getMember로 멤버객체를 그대로 사용하면 "LazyInitializationException"이 발생해
         // userDetails.getMember.getId를 바탕으로 (레프트)페치조인해 memberProject와 함께 영속성 컨텍스트에 등록
         Member member = memberRepository.findWithProjectsById(userDetails.getMember().getId())
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(CommonErrorCode.MEMBER_NOT_FOUND));
         Task task = getTaskOrThrow(requestCreateRequest.getTaskId());
 
         // 현재 프로젝트에 속한 "개발사"의 멤버가 아니고, 어드민도 아니면 USER_NOT_IN_PROJECT_DEV 반환
@@ -106,11 +104,11 @@ public class RequestService {
 
     // 분리한 메서드들
     private Task getTaskOrThrow(Long taskId) {
-        return taskRepository.findById(taskId).orElseThrow(() -> new GeneralException(ErrorCode.TASK_NOT_FOUND));
+        return taskRepository.findById(taskId).orElseThrow(() -> new GeneralException(CommonErrorCode.TASK_NOT_FOUND));
     }
 
     private Request getRequestOrThrow(Long requestId) {
-        return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(ErrorCode.REQUEST_NOT_FOUND));
+        return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(CommonErrorCode.REQUEST_NOT_FOUND));
     }
 
     // member가 현재 프로젝트에 속한 "개발사"의 멤버인지 확인하는 메서드
@@ -129,7 +127,7 @@ public class RequestService {
     // Request(승인요청)을 작성한 멤버가 (인자의)Member인지 확인하는 메서드
     private static void validateRequestWriter(Request request, Member member) {
         boolean isRequestWriter = request.getMember().getId().equals(member.getId());
-        if (!isRequestWriter) { throw new GeneralException(ErrorCode.USER_NOT_WRITE_REQUEST); }
+        if (!isRequestWriter) { throw new GeneralException(CommonErrorCode.USER_NOT_WRITE_REQUEST); }
     }
 
     // Request(승인요청)의 제목이나 내용을 수정하는 메서드

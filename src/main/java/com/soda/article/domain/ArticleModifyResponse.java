@@ -22,7 +22,7 @@ public class ArticleModifyResponse {
     private PriorityType priority;
     private LocalDateTime deadLine;
     private String memberName;
-    private Long stageId;
+    private String stageName;
     private List<ArticleFileDTO> fileList;
     private List<ArticleLinkDTO> linkList;
 }

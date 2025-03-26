@@ -5,17 +5,16 @@ import com.soda.article.entity.Article;
 import com.soda.article.entity.ArticleFile;
 import com.soda.article.entity.ArticleLink;
 import com.soda.article.enums.ArticleStatus;
+import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.repository.ArticleFileRepository;
 import com.soda.article.repository.ArticleLinkRepository;
 import com.soda.article.repository.ArticleRepository;
-import com.soda.global.response.ErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.global.security.auth.UserDetailsImpl;
-import com.soda.global.security.jwt.JwtTokenProvider;
 import com.soda.member.entity.Member;
-import com.soda.member.repository.MemberRepository;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
+import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.MemberProjectRepository;
 import com.soda.project.repository.ProjectRepository;
 import com.soda.project.repository.StageRepository;
@@ -39,9 +38,9 @@ public class ArticleService {
     private final ArticleLinkRepository articleLinkRepository;
 
     @Transactional
-    public ArticleModifyResponse createArticle(Long projectId, ArticleModifyRequest request, UserDetailsImpl userDetails) {
+    public ArticleModifyResponse createArticle(ArticleModifyRequest request, UserDetailsImpl userDetails) {
         Member member = userDetails.getMember();
-        Project project = validateProject(projectId);
+        Project project = validateProject(request.getProjectId());
         Stage stage = validateStage(request.getStageId(), project);
         validateMemberInProject(project.getId(), member);
 
@@ -59,9 +58,9 @@ public class ArticleService {
 
     // article 수정
     @Transactional
-    public ArticleModifyResponse updateArticle(Long projectId, UserDetailsImpl userDetails, Long articleId, ArticleModifyRequest request) {
+    public ArticleModifyResponse updateArticle(UserDetailsImpl userDetails, Long articleId, ArticleModifyRequest request) {
         Member member = userDetails.getMember();
-        Project project = validateProject(projectId);
+        Project project = validateProject(request.getProjectId());
         validateMemberInProject(project.getId(), member);
 
         Article article = findArticleById(articleId);
@@ -183,27 +182,28 @@ public class ArticleService {
     // 파일과 링크의 수가 10개를 초과하는지 체크
     private void validateFileAndLinkSize(ArticleModifyRequest request) {
         if (request.getFileList() != null && request.getFileList().size() > 10) {
-            throw new GeneralException(ErrorCode.INVALID_INPUT);
+            throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
         }
 
         if (request.getLinkList() != null && request.getLinkList().size() > 10) {
-            throw new GeneralException(ErrorCode.INVALID_INPUT);
+            throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
         }
     }
 
     // 프로젝트 검증
     private Project validateProject(Long projectId) {
         return projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
+
     }
 
     // 단계 검증
     private Stage validateStage(Long stageId, Project project) {
         Stage stage = stageRepository.findById(stageId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.STAGE_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.STAGE_NOT_FOUND));
 
         if (!stage.getProject().equals(project)) {
-            throw new GeneralException(ErrorCode.INVALID_STAGE_FOR_PROJECT);
+            throw new GeneralException(ProjectErrorCode.INVALID_STAGE_FOR_PROJECT);
         }
 
         return stage;
@@ -212,13 +212,13 @@ public class ArticleService {
     // 게시글 조회
     private Article findArticleById(Long articleId) {
         return articleRepository.findByIdAndIsDeletedFalse(articleId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_ARTICLE));
+                .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
     }
 
     // 이미 삭제된 게시글 체크
     private void validateArticleNotDeleted(Article article) {
         if (article.getIsDeleted()) {
-            throw new GeneralException(ErrorCode.ARTICLE_ALREADY_DELETED);
+            throw new GeneralException(ArticleErrorCode.ARTICLE_ALREADY_DELETED);
         }
     }
 
@@ -230,7 +230,7 @@ public class ArticleService {
                 .priority(article.getPriority())
                 .deadLine(article.getDeadline())
                 .memberName(article.getMember().getName())
-                .stageId(article.getStage().getId())
+                .stageName(article.getStage().getName())
                 .fileList(article.getArticleFileList().stream()
                         .map(file -> ArticleFileDTO.builder()
                                 .name(file.getName())
@@ -247,15 +247,23 @@ public class ArticleService {
     }
 
     // Article List 조회
-    public List<ArticleViewResponse> getAllArticles(UserDetailsImpl userDetails, Long projectId) {
+    public List<ArticleViewResponse> getAllArticles(UserDetailsImpl userDetails, Long projectId, Long stageId) {
         Member member = userDetails.getMember();
 
         validateMemberInProject(projectId, member);
         Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
 
         // 프로젝트에 속한 삭제되지 않은 게시글 조회
-        List<Article> articles = articleRepository.findByIsDeletedFalseAndStage_Project(project);
+        List<Article> articles;
+        if (stageId != null) {
+            Stage stage = stageRepository.findById(stageId)
+                    .orElseThrow(() -> new GeneralException(ProjectErrorCode.STAGE_NOT_FOUND));
+            articles = articleRepository.findByIsDeletedFalseAndStageAndStage_Project(stage, stage.getProject());
+        } else {
+            articles = articleRepository.findByIsDeletedFalseAndStage_Project(project);
+        }
+
 
         return articles.stream()
                 .map(this::buildArticleViewResponse)
@@ -268,7 +276,7 @@ public class ArticleService {
         validateMemberInProject(projectId, member);
 
         Article article = articleRepository.findByIdAndIsDeletedFalse(articleId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.INVALID_ARTICLE));
+                .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
 
         return buildArticleViewResponse(article);
     }
@@ -277,12 +285,12 @@ public class ArticleService {
     private void validateMemberInProject(Long projectId, Member member) {
         // 특정 프로젝트를 조회 (프로젝트가 존재하지 않으면 예외 발생)
         Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.PROJECT_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
 
         // 로그인한 멤버가 해당 프로젝트의 멤버인지를 확인
         boolean isMemberInProject = memberProjectRepository.existsByMemberAndProjectAndIsDeletedFalse(member, project);
         if (!isMemberInProject && !member.isAdmin()) {
-            throw new GeneralException(ErrorCode.MEMBER_NOT_IN_PROJECT);
+            throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
         }
     }
 

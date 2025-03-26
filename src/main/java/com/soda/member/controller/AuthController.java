@@ -55,7 +55,7 @@ public class AuthController {
     }
 
     @PutMapping("/members/{memberId}")
-    public ResponseEntity<ApiResponseForm<Void>> updateMember(@PathVariable Long memberId, @RequestBody UpdateMemberRequest request) {
+    public ResponseEntity<ApiResponseForm<Void>> updateMember(@PathVariable Long memberId, @RequestBody MemberUpdateRequest request) {
         authService.updateMember(memberId, request);
         return ResponseEntity.ok(ApiResponseForm.success(null, "멤버 정보 수정 성공"));
     }

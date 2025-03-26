@@ -1,7 +1,8 @@
 package com.soda.member.controller;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.member.dto.company.CompanyRequest;
+import com.soda.member.dto.company.CompanyCreateRequest;
+import com.soda.member.dto.company.CompanyUpdateRequest;
 import com.soda.member.dto.company.CompanyResponse;
 import com.soda.member.dto.company.MemberResponse;
 import com.soda.member.service.CompanyService;
@@ -20,7 +21,7 @@ public class CompanyController {
 
     // 회사 등록
     @PostMapping
-    public ResponseEntity<ApiResponseForm<CompanyResponse>> createCompany(@RequestBody CompanyRequest request) {
+    public ResponseEntity<ApiResponseForm<CompanyResponse>> createCompany(@RequestBody CompanyCreateRequest request) {
         CompanyResponse response = companyService.createCompany(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponseForm.success(response, "회사 등록 성공"));
     }
@@ -41,7 +42,7 @@ public class CompanyController {
 
     // 회사 수정
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponseForm<CompanyResponse>> updateCompany(@PathVariable Long id, @RequestBody CompanyRequest request) {
+    public ResponseEntity<ApiResponseForm<CompanyResponse>> updateCompany(@PathVariable Long id, @RequestBody CompanyUpdateRequest request) {
         CompanyResponse updatedCompany = companyService.updateCompany(id, request);
         return ResponseEntity.ok(ApiResponseForm.success(updatedCompany, "회사 수정 성공"));
     }

@@ -1,11 +1,11 @@
 package com.soda.member.dto.company;
 
 import com.soda.member.entity.Member;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
+@Builder
 public class MemberResponse {
     private Long id;
     private String authId;
@@ -15,13 +15,13 @@ public class MemberResponse {
     private String role;
 
     public static MemberResponse fromEntity(Member member) {
-        MemberResponse response = new MemberResponse();
-        response.setId(member.getId());
-        response.setAuthId(member.getAuthId());
-        response.setName(member.getName());
-        response.setPosition(member.getPosition());
-        response.setPhoneNumber(member.getPhoneNumber());
-        response.setRole(member.getRole().toString());
-        return response;
+        return MemberResponse.builder()
+                .id(member.getId())
+                .authId(member.getAuthId())
+                .name(member.getName())
+                .position(member.getPosition())
+                .phoneNumber(member.getPhoneNumber())
+                .role(member.getRole().toString())
+                .build();
     }
 }

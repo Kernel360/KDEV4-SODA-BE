@@ -1,7 +1,7 @@
 package com.soda.member.entity;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.dto.company.CompanyRequest;
+import com.soda.member.dto.company.CompanyUpdateRequest;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,7 +39,7 @@ public class Company extends BaseEntity {
     private List<Member> memberList = new ArrayList<>();
 
     // Entity 수정 메서드
-    public void updateCompany(CompanyRequest request) {
+    public void updateCompany(CompanyUpdateRequest request) {
         if (request.getName() != null) {
             this.name = request.getName();
         }

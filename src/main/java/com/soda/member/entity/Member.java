@@ -1,7 +1,7 @@
 package com.soda.member.entity;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.dto.UpdateMemberRequest;
+import com.soda.member.dto.MemberUpdateRequest;
 import com.soda.member.enums.MemberRole;
 import com.soda.notice.entity.MemberNotice;
 import com.soda.project.entity.MemberProject;
@@ -55,7 +55,7 @@ public class Member extends BaseEntity {
     }
 
     // 멤버 수정 메서드
-    public void updateMember(UpdateMemberRequest request,Company company) {
+    public void updateMember(MemberUpdateRequest request, Company company) {
         if (request.getName() != null) {
             this.name = request.getName();
         }

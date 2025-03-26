@@ -2,14 +2,15 @@ package com.soda.member.service;
 
 import com.soda.global.response.ErrorCode;
 import com.soda.global.response.GeneralException;
-import com.soda.member.dto.company.CompanyRequest;
+import com.soda.member.dto.company.CompanyCreateRequest;
+import com.soda.member.dto.company.CompanyUpdateRequest;
 import com.soda.member.dto.company.CompanyResponse;
 import com.soda.member.dto.company.MemberResponse;
 import com.soda.member.entity.Company;
 import com.soda.member.repository.CompanyRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
@@ -29,7 +31,7 @@ public class CompanyService {
      * @throws GeneralException 사업자 등록번호 중복 시 발생
      */
     @Transactional
-    public CompanyResponse createCompany(CompanyRequest request) {
+    public CompanyResponse createCompany(CompanyCreateRequest request) {
         // 사업자 등록번호 중복 확인
         if (companyRepository.findByCompanyNumber(request.getCompanyNumber()).isPresent()) {
             throw new GeneralException(ErrorCode.DUPLICATE_COMPANY_NUMBER);
@@ -79,7 +81,7 @@ public class CompanyService {
      * @throws GeneralException 회사를 찾을 수 없는 경우 또는 사업자 등록번호 중복 시 발생
      */
     @Transactional
-    public CompanyResponse updateCompany(Long id, CompanyRequest request) {
+    public CompanyResponse updateCompany(Long id, CompanyUpdateRequest request) {
         Company company = companyRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new GeneralException(ErrorCode.NOT_FOUND_COMPANY));
 

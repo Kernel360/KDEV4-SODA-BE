@@ -32,13 +32,11 @@ import java.util.stream.Collectors;
 public class ArticleService {
 
     private final ArticleRepository articleRepository;
-    private final MemberRepository memberRepository;
     private final MemberProjectRepository memberProjectRepository;
     private final StageRepository stageRepository;
     private final ProjectRepository projectRepository;
     private final ArticleFileRepository articleFileRepository;
     private final ArticleLinkRepository articleLinkRepository;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public ArticleModifyResponse createArticle(Long projectId, ArticleModifyRequest request, UserDetailsImpl userDetails) {

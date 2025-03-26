@@ -1,11 +1,13 @@
 package com.soda.request.service;
 
+import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.ErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.repository.MemberRepository;
+import com.soda.project.error.ProjectErrorCode;
 import com.soda.request.dto.RequestApproveRequest;
 import com.soda.request.dto.RequestApproveResponse;
 import com.soda.request.entity.Request;
@@ -34,11 +36,11 @@ public class ResponseService {
     @Transactional
     public RequestApproveResponse approveRequest(Long memberId, Long requestId, RequestApproveRequest approveRequestRequest) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
         Request request = getRequestOrThrow(requestId);
 
         if(!request.getMember().equals(member)) {
-            throw new GeneralException(ErrorCode.USER_NOT_WRITE_REQUEST);
+            throw new GeneralException(CommonErrorCode.USER_NOT_WRITE_REQUEST);
         }
 
         request.approve();
@@ -48,28 +50,28 @@ public class ResponseService {
         return RequestApproveResponse.fromEntity(request);
     }
 
-//    @Transactional
-//    public RejectRequestResponse rejectRequest(UserDetailsImpl userDetails, Long requestId, Long projectId, RejectRequestRequest approveRequestRequest) {
-//        Member member = memberRepository.findWithProjectsById(userDetails.getMember().getId())
-//                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
-//        Request request = getRequestOrThrow(requestId);
-//
-//        if(!isCliInCurrentProject(projectId, member) && !isAdmin(member)) {
-//            throw new GeneralException(ErrorCode.USER_NOT_IN_PROJECT_CLI);
-//        }
-//
-//        Rejection rejection = Rejection.builder()
-//                .member(member)
-//                .request(request)
-//                .comment(approveRequestRequest.getcomment())
-//                .files()
-//                .links()
-//                .build();
-//    }
+    @Transactional
+    public RequestRejectResponse rejectRequest(Long memberId, Long requestId, Long projectId, RequestRejectRequest requestRejectRequest) {
+        Member member = memberRepository.findWithProjectsById(memberId)
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
+        Request request = getRequestOrThrow(requestId);
+
+        if(!isCliInCurrentProject(projectId, member) && !isAdmin(member)) {
+            throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_CLI);
+        }
+
+        Rejection rejection = Rejection.builder()
+                .member(member)
+                .request(request)
+                .comment(approveRequestRequest.getcomment())
+                .files()
+                .links()
+                .build();
+    }
 
     // 분리한 메서드들
     private Request getRequestOrThrow(Long requestId) {
-        return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(ErrorCode.REQUEST_NOT_FOUND));
+        return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(CommonErrorCode.REQUEST_NOT_FOUND));
     }
 
     // member가 현재 프로젝트에 속한 "개발사"의 멤버인지 확인하는 메서드

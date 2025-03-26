@@ -12,7 +12,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Rejection extends BaseEntity {
+public class Response extends BaseEntity {
 
     private String comment;
 
@@ -25,13 +25,13 @@ public class Rejection extends BaseEntity {
     private Member member;
 
     @OneToMany(mappedBy = "rejection", cascade = CascadeType.ALL)
-    private List<RejectionFile> files;
+    private List<ResponseFile> files;
 
     @OneToMany(mappedBy = "rejection", cascade = CascadeType.ALL)
-    private List<RejectionLink> links;
+    private List<ResponseLink> links;
 
     @Builder
-    public Rejection(Member member, String comment, Request request, List<RejectionFile> files, List<RejectionLink> links) {
+    public Response(Member member, String comment, Request request, List<ResponseFile> files, List<ResponseLink> links) {
         this.member = member;
         this.comment = comment;
         this.request = request;

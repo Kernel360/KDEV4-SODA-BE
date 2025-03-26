@@ -3,8 +3,11 @@ package com.soda.global.security.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.global.response.CommonErrorCode;
+import com.soda.global.response.ErrorCode;
 import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.global.security.config.SecurityProperties;
+import com.soda.member.error.AuthErrorCode;
+import com.soda.member.error.MemberErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -30,7 +33,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -53,7 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             // 토큰 검증 시도
             if (!jwtTokenProvider.validateToken(token)) {
-                sendErrorResponse(response, CommonErrorCode.INVALID_TOKEN);
+                sendErrorResponse(response, AuthErrorCode.INVALID_TOKEN);
                 return;
             }
 
@@ -72,13 +74,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException e) {
-            sendErrorResponse(response, CommonErrorCode.TOKEN_EXPIRED);
+            log.error("JWT 인증 필터 중 토큰 만료 에러 발생: {}", e.getMessage(), e);
+            sendErrorResponse(response, AuthErrorCode.TOKEN_EXPIRED);
         } catch (MalformedJwtException | UnsupportedJwtException | SignatureException | IllegalArgumentException e) {
-            sendErrorResponse(response, CommonErrorCode.INVALID_TOKEN);
+            log.error("JWT 인증 필터 중 유효하지 않은 토큰 에러 발생: {}", e.getMessage(), e);
+            sendErrorResponse(response, AuthErrorCode.INVALID_TOKEN);
         } catch (UsernameNotFoundException e) {
-            sendErrorResponse(response, CommonErrorCode.NOT_FOUND_MEMBER);
+            log.error("JWT 인증 필터 중 멤버를 찾을 수 없음: {}", e.getMessage(), e);
+            sendErrorResponse(response, MemberErrorCode.NOT_FOUND_MEMBER);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            log.error("JWT 인증 필터 중 인증 실패 에러 발생: {}", e.getMessage(), e);
             sendErrorResponse(response, CommonErrorCode.UNEXPECTED_ERROR);
         }
     }
@@ -90,11 +95,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             request.setAttribute("memberId", userDetailsImpl.getId());
             request.setAttribute("userRole", userDetailsImpl.getMember().getRole());
         } else {
-            log.warn("UserDetails is not an instance of UserDetailsImpl.");
+            log.warn("UserDetailsImpl 타입의 인스턴스가 아닙니다.");
         }
     }
 
-    private void sendErrorResponse(HttpServletResponse response, CommonErrorCode errorCode) {
+    private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) {
         try {
             if (response.isCommitted()) {
                 return; // 이미 응답이 전송되었으면 처리하지 않음
@@ -111,12 +116,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             out.write(jsonResponse.getBytes(StandardCharsets.UTF_8));
             out.flush();
         } catch (Exception e) {
-            // 로깅만 하고, 여기서 다시 예외 던지면 또 문제가 생길 수 있으므로 swallow
-            System.err.println("sendErrorResponse 중 에러 발생: " + e.getMessage());
-            e.printStackTrace();
+            log.error("sendErrorResponse 중 에러 발생: {}", e.getMessage(), e);
         }
     }
-
 
     private boolean isExcludedPath(String path) {
         for (String excludedPath : securityProperties.getExcludedPaths()) {

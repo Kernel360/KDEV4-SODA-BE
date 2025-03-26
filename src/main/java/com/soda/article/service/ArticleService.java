@@ -58,9 +58,9 @@ public class ArticleService {
 
     // article 수정
     @Transactional
-    public ArticleModifyResponse updateArticle(Long projectId, UserDetailsImpl userDetails, Long articleId, ArticleModifyRequest request) {
+    public ArticleModifyResponse updateArticle(UserDetailsImpl userDetails, Long articleId, ArticleModifyRequest request) {
         Member member = userDetails.getMember();
-        Project project = validateProject(projectId);
+        Project project = validateProject(request.getProjectId());
         validateMemberInProject(project.getId(), member);
 
         Article article = findArticleById(articleId);

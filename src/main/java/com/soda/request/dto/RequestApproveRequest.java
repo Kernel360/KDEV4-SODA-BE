@@ -4,6 +4,6 @@ import com.soda.request.enums.RequestStatus;
 import lombok.Getter;
 
 @Getter
-public class ApproveRequestRequest {
-    private RequestStatus status;
+public class RequestApproveRequest {
+    public Long projectId;
 }

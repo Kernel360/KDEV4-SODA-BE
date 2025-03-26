@@ -2,48 +2,50 @@ package com.soda.request.service;
 
 import com.soda.global.response.ErrorCode;
 import com.soda.global.response.GeneralException;
-import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.repository.MemberRepository;
-import com.soda.request.dto.ApproveRequestRequest;
-import com.soda.request.dto.ApproveRequestResponse;
-import com.soda.request.entity.Rejection;
+import com.soda.request.dto.RequestApproveRequest;
+import com.soda.request.dto.RequestApproveResponse;
 import com.soda.request.entity.Request;
 import com.soda.request.repository.RejectionRepository;
 import com.soda.request.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class RequestResponseService {
+public class ResponseService {
     private final RequestRepository requestRepository;
     private final RejectionRepository rejectionRepository;
     private final MemberRepository memberRepository;
 
-    /*
-    어떤 멤버가 어떤 request를 approve하는지만 알면 됨
-    멤버가 유효한 멤버인지는 체크해야함
+    /**
+     *
+     * @param memberId
+     * @param requestId
+     * @param approveRequestRequest
+     * @return
      */
     @Transactional
-    public ApproveRequestResponse approveRequest(UserDetailsImpl userDetails, Long requestId, Long projectId, ApproveRequestRequest approveRequestRequest) {
-        Member member = memberRepository.findWithProjectsById(userDetails.getMember().getId())
+    public RequestApproveResponse approveRequest(Long memberId, Long requestId, RequestApproveRequest approveRequestRequest) {
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
         Request request = getRequestOrThrow(requestId);
 
-        if(!isCliInCurrentProject(projectId, member) && !isAdmin(member)) {
-            throw new GeneralException(ErrorCode.USER_NOT_IN_PROJECT_CLI);
+        if(!request.getMember().equals(member)) {
+            throw new GeneralException(ErrorCode.USER_NOT_WRITE_REQUEST);
         }
 
         request.approve();
         requestRepository.save(request);
         requestRepository.flush();
 
-        return ApproveRequestResponse.fromEntity(request);
+        return RequestApproveResponse.fromEntity(request);
     }
 
 //    @Transactional

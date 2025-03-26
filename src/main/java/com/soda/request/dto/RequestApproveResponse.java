@@ -4,13 +4,12 @@ import com.soda.request.entity.Request;
 import com.soda.request.enums.RequestStatus;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class ApproveRequestResponse {
+public class RequestApproveResponse {
     private Long requestId;
     private Long taskId;
     private Long memberId;
@@ -21,8 +20,8 @@ public class ApproveRequestResponse {
     private LocalDateTime createdAt;
     private Boolean isDeleted;
 
-    public static ApproveRequestResponse fromEntity(Request request) {
-        return ApproveRequestResponse.builder()
+    public static RequestApproveResponse fromEntity(Request request) {
+        return RequestApproveResponse.builder()
                 .requestId(request.getId())
                 .taskId(request.getTask().getId())
                 .memberId(request.getMember().getId())

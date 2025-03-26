@@ -15,7 +15,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(GeneralException.class)
     public ResponseEntity<ApiResponseForm<Void>> handleGeneralException(GeneralException e) {
-        CommonErrorCode errorCode = e.getErrorCode();
+        ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity.status(errorCode.getHttpStatus())
                 .body(ApiResponseForm.error(errorCode.getCode(), errorCode.getMessage()));
     }

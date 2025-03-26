@@ -57,27 +57,39 @@ public class CustomAuditingEntityListener {
 
         if (shouldUpdate) {
             try {
-                Field updatedAtField = entity.getClass().getDeclaredField("updatedAt");
+                Field updatedAtField = getFieldIncludingSuper(entity.getClass(), "updatedAt");
                 updatedAtField.setAccessible(true);
                 updatedAtField.set(entity, LocalDateTime.now());
-            } catch (NoSuchFieldException | IllegalAccessException e) {
+            } catch (Exception e) {
                 throw new RuntimeException("updatedAt 필드가 없거나 접근 불가합니다", e);
             }
         }
     }
 
+    // 수정된 @PrePersist 부분
     @PrePersist
     public void prePersist(Object entity) {
         try {
-            Field createdAtField = entity.getClass().getDeclaredField("createdAt");
+            Field createdAtField = getFieldIncludingSuper(entity.getClass(), "createdAt");
             createdAtField.setAccessible(true);
             createdAtField.set(entity, LocalDateTime.now());
 
-            Field updatedAtField = entity.getClass().getDeclaredField("updatedAt");
+            Field updatedAtField = getFieldIncludingSuper(entity.getClass(), "updatedAt");
             updatedAtField.setAccessible(true);
             updatedAtField.set(entity, LocalDateTime.now());
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private Field getFieldIncludingSuper(Class<?> clazz, String fieldName) {
+        while (clazz != null) {
+            try {
+                return clazz.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        throw new RuntimeException(fieldName + " 필드가 없거나 접근 불가합니다");
     }
 }

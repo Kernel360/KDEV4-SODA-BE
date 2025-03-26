@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -24,10 +25,10 @@ public class Response extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "rejection", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "response", cascade = CascadeType.ALL)
     private List<ResponseFile> files;
 
-    @OneToMany(mappedBy = "rejection", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "response", cascade = CascadeType.ALL)
     private List<ResponseLink> links;
 
     @Builder
@@ -37,5 +38,12 @@ public class Response extends BaseEntity {
         this.request = request;
         this.files = files;
         this.links = links;
+    }
+
+    public void updateLink(List<ResponseLink> links) {
+        if (this.links == null) {
+            this.links = new ArrayList<>();
+        }
+        this.links.addAll(links);
     }
 }

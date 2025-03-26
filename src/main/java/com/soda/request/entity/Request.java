@@ -64,4 +64,8 @@ public class Request extends BaseEntity {
     public void approve() {
         this.status = RequestStatus.APPROVED;
     }
+
+    public void reject() {
+        this.status = RequestStatus.REJECTED;
+    }
 }

@@ -1,7 +1,6 @@
 package com.soda.request.service;
 
 import com.soda.global.response.CommonErrorCode;
-import com.soda.global.response.ErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberProjectRole;
@@ -10,40 +9,57 @@ import com.soda.member.repository.MemberRepository;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.request.dto.RequestApproveRequest;
 import com.soda.request.dto.RequestApproveResponse;
+import com.soda.request.dto.RequestRejectRequest;
 import com.soda.request.entity.Request;
-import com.soda.request.repository.RejectionRepository;
+import com.soda.request.dto.RequestRejectResponse;
+import com.soda.request.entity.RequestLink;
+import com.soda.request.entity.Response;
+import com.soda.request.entity.ResponseLink;
 import com.soda.request.repository.RequestRepository;
+import com.soda.request.repository.ResponseRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ResponseService {
     private final RequestRepository requestRepository;
-    private final RejectionRepository rejectionRepository;
+    private final ResponseRepository responseRepository;
     private final MemberRepository memberRepository;
 
-    /**
-     *
-     * @param memberId
-     * @param requestId
-     * @param approveRequestRequest
-     * @return
-     */
+
     @Transactional
-    public RequestApproveResponse approveRequest(Long memberId, Long requestId, RequestApproveRequest approveRequestRequest) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
+    public RequestApproveResponse approveRequest(Long memberId, Long requestId, RequestApproveRequest requestApproveRequest) {
+        Member member = getMemberWithProjectOrThrow(memberId);
         Request request = getRequestOrThrow(requestId);
 
-        if(!request.getMember().equals(member)) {
-            throw new GeneralException(CommonErrorCode.USER_NOT_WRITE_REQUEST);
+        if(!isCliInCurrentProject(requestApproveRequest.getProjectId(), member) && !isAdmin(member)) {
+            throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_CLI);
         }
 
+        Response approval = Response.builder()
+                .member(member)
+                .request(request)
+                .build();
+
+        List<ResponseLink> approvalLinks = requestApproveRequest.getLinkList().stream()
+                .map(dto -> ResponseLink.builder()
+                        .urlAddress(dto.getUrlAddress())
+                        .urlDescription(dto.getUrlDescription())
+                        .response(approval)
+                        .build())
+                .toList();
+        approval.updateLink(approvalLinks);
+        responseRepository.save(approval);
+
         request.approve();
+
         requestRepository.save(request);
         requestRepository.flush();
 
@@ -51,25 +67,41 @@ public class ResponseService {
     }
 
     @Transactional
-    public RequestRejectResponse rejectRequest(Long memberId, Long requestId, Long projectId, RequestRejectRequest requestRejectRequest) {
-        Member member = memberRepository.findWithProjectsById(memberId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
+    public RequestRejectResponse rejectRequest(Long memberId, Long requestId, RequestRejectRequest requestRejectRequest) {
+        Member member = getMemberWithProjectOrThrow(memberId);
         Request request = getRequestOrThrow(requestId);
 
-        if(!isCliInCurrentProject(projectId, member) && !isAdmin(member)) {
+        if(!isCliInCurrentProject(requestRejectRequest.getProjectId(), member) && !isAdmin(member)) {
             throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_CLI);
         }
 
-        Rejection rejection = Rejection.builder()
+        Response rejection = Response.builder()
                 .member(member)
                 .request(request)
-                .comment(approveRequestRequest.getcomment())
-                .files()
-                .links()
+                .comment(requestRejectRequest.getComment())
                 .build();
+
+        List<ResponseLink> rejectionLinks = requestRejectRequest.getLinkList().stream()
+                .map(dto -> ResponseLink.builder()
+                        .urlAddress(dto.getUrlAddress())
+                        .urlDescription(dto.getUrlDescription())
+                        .response(rejection)
+                        .build())
+                .toList();
+        rejection.updateLink(rejectionLinks);
+        responseRepository.save(rejection);
+
+        request.reject();
+
+        return RequestRejectResponse.fromEntity(rejection);
     }
 
     // 분리한 메서드들
+    private Member getMemberWithProjectOrThrow(Long memberId) {
+        return memberRepository.findWithProjectsById(memberId)
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
+    }
+
     private Request getRequestOrThrow(Long requestId) {
         return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(CommonErrorCode.REQUEST_NOT_FOUND));
     }

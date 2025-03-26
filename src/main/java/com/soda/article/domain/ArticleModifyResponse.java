@@ -1,5 +1,6 @@
 package com.soda.article.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.article.enums.PriorityType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ArticleModifyResponse {
 
     private String title;

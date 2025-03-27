@@ -36,12 +36,10 @@ public class RequestService {
     Request 데이터 생성 전에, 요청한 member가 현재 프로젝트에 속한 "개발사"의 멤버이거나 ADMIN유저인지 확인해야함.
     */
     @Transactional
-    public RequestCreateResponse createRequest(UserDetailsImpl userDetails, RequestCreateRequest requestCreateRequest) throws GeneralException {
+    public RequestCreateResponse createRequest(Long memberId, RequestCreateRequest requestCreateRequest) throws GeneralException {
         // isDevInCurrentProject에서 memberProject를 조회해 userDetails.getMember로 멤버객체를 그대로 사용하면 "LazyInitializationException"이 발생해
         // userDetails.getMember.getId를 바탕으로 (레프트)페치조인해 memberProject와 함께 영속성 컨텍스트에 등록
-        System.out.println(userDetails.getMember().getId());
-        Member member = memberRepository.findWithProjectsById(userDetails.getMember().getId())
-                .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
+        Member member = getMemberWithProjectOrThrow(memberId);
         Task task = getTaskOrThrow(requestCreateRequest.getTaskId());
 
         // 현재 프로젝트에 속한 "개발사"의 멤버가 아니고, 어드민도 아니면 USER_NOT_IN_PROJECT_DEV 반환
@@ -74,8 +72,8 @@ public class RequestService {
 
 
     @Transactional
-    public RequestUpdateResponse updateRequest(UserDetailsImpl userDetails, Long requestId, RequestUpdateRequest requestUpdateRequest) throws GeneralException {
-        Member member = userDetails.getMember();
+    public RequestUpdateResponse updateRequest(Long memberId, Long requestId, RequestUpdateRequest requestUpdateRequest) throws GeneralException {
+        Member member = getMemberOrThrow(memberId);
         Request request = getRequestOrThrow(requestId);
 
         // update요청을 한 member가 승인요청을 작성했던 member인지 확인
@@ -106,6 +104,15 @@ public class RequestService {
 
 
     // 분리한 메서드들
+    private Member getMemberOrThrow(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
+    }
+
+    private Member getMemberWithProjectOrThrow(Long memberId) {
+        return memberRepository.findWithProjectsById(memberId)
+                .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
+    }
+
     private Task getTaskOrThrow(Long taskId) {
         return taskRepository.findById(taskId).orElseThrow(() -> new GeneralException(CommonErrorCode.TASK_NOT_FOUND));
     }

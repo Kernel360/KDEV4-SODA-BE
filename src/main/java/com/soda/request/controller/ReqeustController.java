@@ -5,6 +5,7 @@ import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.member.entity.Member;
 import com.soda.request.dto.*;
 import com.soda.request.service.RequestService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,8 +21,9 @@ public class ReqeustController {
 
     @PostMapping("/requests")
     public ResponseEntity<ApiResponseForm<?>> createRequest(@RequestBody RequestCreateRequest requestCreateRequest,
-                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        RequestCreateResponse requestCreateResponse = requestService.createRequest(userDetails, requestCreateRequest);
+                                                            HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        RequestCreateResponse requestCreateResponse = requestService.createRequest(memberId, requestCreateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestCreateResponse));
     }
 
@@ -40,8 +42,9 @@ public class ReqeustController {
     @PutMapping("/requests/{requestId}")
     public ResponseEntity<ApiResponseForm<?>> updateRequest(@RequestBody RequestUpdateRequest requestUpdateRequest,
                                                             @PathVariable Long requestId,
-                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        RequestUpdateResponse requestUpdateResponse = requestService.updateRequest(userDetails, requestId, requestUpdateRequest);
+                                                            HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        RequestUpdateResponse requestUpdateResponse = requestService.updateRequest(memberId, requestId, requestUpdateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestUpdateResponse));
     }
 

@@ -1,8 +1,6 @@
 package com.soda.article.controller;
 
-import com.soda.article.domain.CommentCreateRequest;
-import com.soda.article.domain.CommentCreateResponse;
-import com.soda.article.domain.CommentDTO;
+import com.soda.article.domain.*;
 import com.soda.article.service.CommentService;
 import com.soda.global.response.ApiResponseForm;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,5 +32,12 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(HttpServletRequest user, @PathVariable Long commentId) {
         commentService.deleteComment(user, commentId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/comments/{commentId}")
+    public ResponseEntity<ApiResponseForm<CommentUpdateResponse>> updateComment(HttpServletRequest user,
+                                                                                @RequestBody CommentUpdateRequest request, @PathVariable Long commentId) {
+        CommentUpdateResponse response = commentService.updateComment(user, request, commentId);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "댓글 수정 성공"));
     }
 }

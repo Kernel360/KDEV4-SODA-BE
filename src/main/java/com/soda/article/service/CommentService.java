@@ -1,8 +1,6 @@
 package com.soda.article.service;
 
-import com.soda.article.domain.CommentCreateRequest;
-import com.soda.article.domain.CommentCreateResponse;
-import com.soda.article.domain.CommentDTO;
+import com.soda.article.domain.*;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.Comment;
 import com.soda.article.error.ArticleErrorCode;
@@ -18,7 +16,6 @@ import com.soda.project.repository.MemberProjectRepository;
 import com.soda.project.repository.ProjectRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
@@ -154,17 +150,47 @@ public class CommentService {
             }
         }
 
-        log.info("Processed commentDTO with id {}: {}", commentDTO.getId(), commentDTO);
-
         return commentDTO;
     }
 
     @Transactional
     public void deleteComment(HttpServletRequest user, Long commentId) {
-        Comment comment = commentRepository.findByIdAndIsDeletedFalse(commentId)
-                .orElseThrow(() -> new GeneralException(CommentErrorCode.COMMENT_NOT_FOUND));
+        Comment comment = getCommentAndValidateMember(user, commentId);
+
+        checkIfUserIsCommentAuthor(comment.getMember(), comment);
 
         // isDeleted = true
         comment.delete();
+    }
+
+    @Transactional
+    public CommentUpdateResponse updateComment(HttpServletRequest user, CommentUpdateRequest request, Long commentId) {
+        Comment comment = getCommentAndValidateMember(user, commentId);
+
+        checkIfUserIsCommentAuthor(comment.getMember(), comment);
+
+        comment.update(request.getContent());
+
+        return CommentUpdateResponse.builder()
+                .commentId(comment.getId())
+                .content(comment.getContent())
+                .build();
+    }
+
+    // 댓글 조회와 사용자 검증을 함께 처리하는 메서드
+    private Comment getCommentAndValidateMember(HttpServletRequest user, Long commentId) {
+        // 로그인한 사용자 확인
+        Member member = validateMember(user);
+
+        // 댓글 조회
+        return commentRepository.findByIdAndIsDeletedFalse(commentId)
+                .orElseThrow(() -> new GeneralException(CommentErrorCode.COMMENT_NOT_FOUND));
+    }
+
+    // 댓글 작성자와 현재 로그인한 사용자가 동일한지 확인하는 메서드
+    private void checkIfUserIsCommentAuthor(Member member, Comment comment) {
+        if(!comment.getMember().getId().equals(member.getId())) {
+            throw new GeneralException(CommentErrorCode.FORBIDDEN_ACTION);
+        }
     }
 }

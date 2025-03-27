@@ -102,6 +102,16 @@ public class RequestService {
         return RequestDeleteResponse.fromEntity(request);
     }
 
+    @Transactional
+    public void approve(Request request) {
+        request.approve();
+    }
+
+    @Transactional
+    public void reject(Request request) {
+        request.reject();
+    }
+
 
     // 분리한 메서드들
     private Task getTaskOrThrow(Long taskId) {
@@ -140,4 +150,5 @@ public class RequestService {
             request.updateContent(requestUpdateRequest.getContent());
         }
     }
+
 }

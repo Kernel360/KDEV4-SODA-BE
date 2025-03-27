@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ResponseService {
+    private final RequestService requestService;
+
     private final RequestRepository requestRepository;
     private final ResponseRepository responseRepository;
     private final MemberRepository memberRepository;
@@ -37,12 +39,15 @@ public class ResponseService {
         Member member = getMemberWithProjectOrThrow(memberId);
         Request request = getRequestOrThrow(requestId);
 
+        // 본 메서드 호출의 주체인 멤버가 승인할 권한이 있는지 확인
         validateProjectAuthority(member, requestApproveRequest.getProjectId());
 
+        // Request(승인요청)에 대한 Response(응답-승인) 데이터를 생성 및 저장
         Response approval = createResponse(member, request, requestApproveRequest.getComment(), requestApproveRequest.getLinks());
         responseRepository.save(approval);
 
-        request.approve();
+        // Request(승인요청)의 상태를 'APPROVED' 변경
+        requestService.approve(request);
 
         return RequestApproveResponse.fromEntity(approval);
     }
@@ -57,10 +62,11 @@ public class ResponseService {
         Response rejection = createResponse(member, request, requestRejectRequest.getComment(), requestRejectRequest.getLinks());
         responseRepository.save(rejection);
 
-        request.reject();
+        requestService.reject(request);
 
         return RequestRejectResponse.fromEntity(rejection);
     }
+
 
     // 분리한 메서드들
     private Member getMemberWithProjectOrThrow(Long memberId) {

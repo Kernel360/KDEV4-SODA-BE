@@ -2,6 +2,7 @@ package com.soda.article.service;
 
 import com.soda.article.domain.CommentCreateRequest;
 import com.soda.article.domain.CommentCreateResponse;
+import com.soda.article.domain.CommentDTO;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.Comment;
 import com.soda.article.error.ArticleErrorCode;
@@ -17,9 +18,15 @@ import com.soda.project.repository.MemberProjectRepository;
 import com.soda.project.repository.ProjectRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Slf4j
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
@@ -95,5 +102,60 @@ public class CommentService {
     private Article validateArticle(Long articleId) {
         return articleRepository.findByIdAndIsDeletedFalse(articleId)
                 .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
+    }
+
+
+    public List<CommentDTO> getCommentList(HttpServletRequest user, Long articleId) {
+        // 1. 유저의 접근 권한 확인
+        Member member = validateMember(user);
+        Article article = validateArticle(articleId);
+
+        Project project = article.getStage().getProject();
+        checkMemberInProject(user, member, project);
+
+        // 2. 댓글 조회
+        List<Comment> comments = commentRepository.findByArticleAndIsDeletedFalse(article);
+
+        List<CommentDTO> commentDTOList = comments.stream()
+                .map(CommentDTO::fromEntity) // Comment 엔티티를 DTO로 변환
+                .toList();
+
+        // 3. 부모 댓글과 자식 댓글 관계 설정
+        Map<Long, List<CommentDTO>> parentToChildMap = commentDTOList.stream()
+                .filter(commentDTO -> commentDTO.getParentCommentId() != null) // 자식 댓글만 필터링
+                .collect(Collectors.groupingBy(CommentDTO::getParentCommentId)); // 부모 댓글 ID로 자식 댓글 그룹화
+
+        // 4. 자식 댓글을 부모 댓글에 설정하는 재귀적 메소드
+        List<CommentDTO> finalCommentDTOList = commentDTOList.stream()
+                .map(commentDTO -> addChildCommentsToParent(commentDTO, parentToChildMap)) // 각 댓글에 자식 댓글 추가
+                .toList();
+
+        // 5. 최종적으로 부모 댓글만 반환 (대댓글을 포함한 전체 트리 형태로 반환)
+        return finalCommentDTOList.stream()
+                .filter(commentDTO -> commentDTO.getParentCommentId() == null) // 부모 댓글만 반환
+                .collect(Collectors.toList());
+    }
+
+
+    // 자식 댓글을 부모 댓글에 추가하는 재귀 메소드
+    private CommentDTO addChildCommentsToParent(CommentDTO commentDTO, Map<Long, List<CommentDTO>> parentToChildMap) {
+        // 부모 댓글에 해당하는 자식 댓글을 찾음
+        List<CommentDTO> childComments = parentToChildMap.get(commentDTO.getId());
+
+        // 자식 댓글이 있는 경우
+        if (childComments != null && !childComments.isEmpty()) {
+            // 자식 댓글을 부모 댓글에 설정
+            commentDTO = commentDTO.withChildComments(childComments);  // 기존 댓글의 childComments 필드를 갱신
+
+            // 자식 댓글에도 자식 댓글이 있을 수 있으므로 재귀적으로 자식 댓글을 처리
+            for (CommentDTO childComment : childComments) {
+                // 자식 댓글에 대해서도 재귀 호출하여 자식 댓글을 추가
+                addChildCommentsToParent(childComment, parentToChildMap); // 재귀 호출
+            }
+        }
+
+        log.info("Processed commentDTO with id {}: {}", commentDTO.getId(), commentDTO);
+
+        return commentDTO;
     }
 }

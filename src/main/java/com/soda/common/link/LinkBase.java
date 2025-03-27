@@ -1,4 +1,4 @@
-package com.soda.common.file;
+package com.soda.common.link;
 
 import com.soda.common.BaseEntity;
 import jakarta.persistence.Column;

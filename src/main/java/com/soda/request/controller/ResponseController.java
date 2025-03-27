@@ -1,14 +1,14 @@
 package com.soda.request.controller;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.global.security.auth.UserDetailsImpl;
-import com.soda.request.dto.*;
+import com.soda.request.dto.response.RequestApproveRequest;
+import com.soda.request.dto.response.RequestApproveResponse;
+import com.soda.request.dto.response.RequestRejectRequest;
+import com.soda.request.dto.response.RequestRejectResponse;
 import com.soda.request.service.ResponseService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

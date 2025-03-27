@@ -1,4 +1,4 @@
-package com.soda.request.dto;
+package com.soda.request.dto.response;
 
 import com.soda.request.entity.ResponseLink;
 import lombok.Builder;

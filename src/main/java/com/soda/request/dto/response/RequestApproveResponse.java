@@ -1,7 +1,6 @@
-package com.soda.request.dto;
+package com.soda.request.dto.response;
 
 import com.soda.request.entity.Response;
-import com.soda.request.entity.ResponseLink;
 import com.soda.request.enums.RequestStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Builder
-public class RequestRejectResponse {
+public class RequestApproveResponse {
     private Long responseId;
     private Long requestId;
     private Long memberId;
@@ -23,8 +22,8 @@ public class RequestRejectResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static RequestRejectResponse fromEntity(Response response) {
-        return RequestRejectResponse.builder()
+    public static RequestApproveResponse fromEntity(Response response) {
+        return RequestApproveResponse.builder()
                 .responseId(response.getId())
                 .requestId(response.getRequest().getId())
                 .memberId(response.getMember().getId())

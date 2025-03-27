@@ -2,16 +2,22 @@ package com.soda.request.service;
 
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
+import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.error.ProjectErrorCode;
+import com.soda.request.dto.request.RequestDTO;
+import com.soda.request.dto.request.RequestDeleteResponse;
+import com.soda.request.dto.request.RequestUpdateRequest;
+import com.soda.request.dto.request.RequestUpdateResponse;
 import com.soda.request.dto.response.*;
 import com.soda.request.entity.Request;
 import com.soda.request.entity.Response;
 import com.soda.request.entity.ResponseLink;
 import com.soda.request.error.RequestErrorCode;
+import com.soda.request.error.ResponseErrorCode;
 import com.soda.request.repository.RequestRepository;
 import com.soda.request.repository.ResponseRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -62,6 +69,45 @@ public class ResponseService {
         requestService.reject(request);
 
         return RequestRejectResponse.fromEntity(rejection);
+    }
+
+    public List<ResponseDTO> findAllByRequestId(Long requestId) {
+        List<Response> response = responseRepository.findAllByRequest_IdAndIsDeletedFalse(requestId);
+        return response.stream().map(ResponseDTO::fromEntity).collect(Collectors.toList());
+    }
+
+    public ResponseDTO findById(Long responseId) {
+        Response response = responseRepository.findById(responseId).orElseThrow(() -> new GeneralException(ResponseErrorCode.RESPONSE_NOT_FOUND));
+        return ResponseDTO.fromEntity(response);
+    }
+
+    @Transactional
+    public ResponseUpdateResponse updateRequest(Long memberId, Long responseId, ResponseUpdateRequest responseUpdateRequest) throws GeneralException {
+        Response response = getResponseOrThrow(responseId);
+
+        // update요청을 한 member가 Response를 작성했던 member인지 확인
+        validateResponseWriter(response, memberId);
+
+        // response의 제목, 내용을 수정
+        updateResponseFields(responseUpdateRequest, response);
+
+        responseRepository.save(response);
+        responseRepository.flush();
+
+        return ResponseUpdateResponse.fromEntity(response);
+    }
+
+    @Transactional
+    public ResponseDeleteResponse deleteResponse(Long memberId, Long responseId) throws GeneralException {
+        Response response = getResponseOrThrow(responseId);
+
+        // delete요청을 한 member가 승인요청을 작성했던 member인지 확인
+        validateResponseWriter(response, memberId);
+
+        // request 소프트 삭제
+        response.delete();
+
+        return ResponseDeleteResponse.fromEntity(response);
     }
 
 
@@ -113,4 +159,18 @@ public class ResponseService {
         return member.getRole() == MemberRole.ADMIN;
     }
 
+    private void updateResponseFields(ResponseUpdateRequest responseUpdateRequest, Response response) {
+        if(responseUpdateRequest.getComment() != null) {
+            response.updateComment(responseUpdateRequest.getComment());
+        }
+    }
+
+    private Response getResponseOrThrow(Long responseId) {
+        return responseRepository.findById(responseId).orElseThrow(() -> new GeneralException(ResponseErrorCode.RESPONSE_NOT_FOUND));
+    }
+
+    private void validateResponseWriter(Response response, Long memberId) throws GeneralException {
+        boolean isRequestWriter = response.getMember().getId().equals(memberId);
+        if (!isRequestWriter) { throw new GeneralException(ResponseErrorCode.USER_NOT_WRITE_RESPONSE); }
+    }
 }

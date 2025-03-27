@@ -46,4 +46,12 @@ public class Response extends BaseEntity {
         }
         this.links.addAll(links);
     }
+
+    public void updateComment(String comment) {
+        this.comment = comment;
+    }
+
+    public void delete() {
+        markAsDeleted();
+    }
 }

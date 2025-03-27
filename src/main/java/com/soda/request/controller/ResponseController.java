@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class ResponseController {
     private final ResponseService responseService;
 
-    @PatchMapping("/requests/{requestId}/approve")
+    @PostMapping("/requests/{requestId}/approval")
     public ResponseEntity<ApiResponseForm<?>> approveRequest(@RequestBody RequestApproveRequest requestApproveRequest,
                                                             @PathVariable Long requestId,
                                                             HttpServletRequest request) {
@@ -25,7 +25,7 @@ public class ResponseController {
         return ResponseEntity.ok(ApiResponseForm.success(requestApproveResponse));
     }
 
-    @PatchMapping("/requests/{requestId}/reject")
+    @PostMapping("/requests/{requestId}/rejection")
     public ResponseEntity<ApiResponseForm<?>> rejectRequest(@RequestBody RequestRejectRequest requestRejectRequest,
                                                             @PathVariable Long requestId,
                                                             HttpServletRequest request) {

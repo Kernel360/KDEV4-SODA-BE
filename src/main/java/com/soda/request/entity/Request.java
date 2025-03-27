@@ -4,10 +4,12 @@ import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
 import com.soda.member.entity.Member;
 import com.soda.project.entity.Task;
+import com.soda.request.dto.link.LinkDTO;
 import com.soda.request.enums.RequestStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -33,9 +35,11 @@ public class Request extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @TrackUpdate
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
     private List<RequestFile> files;
 
+    @TrackUpdate
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
     private List<RequestLink> links;
 
@@ -55,6 +59,20 @@ public class Request extends BaseEntity {
     }
     public void updateContent(String content) {
         this.content = content;
+    }
+    public void updateLinks(List<LinkDTO> links) {
+        if(this.links == null) {
+            this.links = new ArrayList<>();
+        }
+        this.links.addAll(
+                links.stream()
+                        .map(dto -> RequestLink.builder()
+                                .urlAddress(dto.getUrlAddress())
+                                .urlDescription(dto.getUrlDescription())
+                                .request(this)
+                                .build())
+                        .toList()
+        );
     }
 
     public void delete() {

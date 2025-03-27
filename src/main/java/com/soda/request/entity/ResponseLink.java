@@ -1,6 +1,7 @@
 package com.soda.request.entity;
 
 import com.soda.common.BaseEntity;
+import com.soda.common.LinkBase;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ResponseLink extends BaseEntity {
+public class ResponseLink extends LinkBase {
     private String urlAddress;
 
     private String urlDescription;

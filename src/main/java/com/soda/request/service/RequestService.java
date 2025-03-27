@@ -10,8 +10,11 @@ import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.entity.Task;
 import com.soda.project.repository.TaskRepository;
+import com.soda.request.dto.link.LinkDTO;
 import com.soda.request.dto.request.*;
 import com.soda.request.entity.Request;
+import com.soda.request.entity.RequestLink;
+import com.soda.request.entity.ResponseLink;
 import com.soda.request.enums.RequestStatus;
 import com.soda.request.error.RequestErrorCode;
 import com.soda.request.repository.RequestRepository;
@@ -36,25 +39,14 @@ public class RequestService {
     Request 데이터 생성 전에, 요청한 member가 현재 프로젝트에 속한 "개발사"의 멤버이거나 ADMIN유저인지 확인해야함.
     */
     @Transactional
-    public RequestCreateResponse createRequest(UserDetailsImpl userDetails, RequestCreateRequest requestCreateRequest) throws GeneralException {
-        // isDevInCurrentProject에서 memberProject를 조회해 userDetails.getMember로 멤버객체를 그대로 사용하면 "LazyInitializationException"이 발생해
-        // userDetails.getMember.getId를 바탕으로 (레프트)페치조인해 memberProject와 함께 영속성 컨텍스트에 등록
-        Member member = memberRepository.findWithProjectsById(userDetails.getMember().getId())
-                .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
+    public RequestCreateResponse createRequest(Long memberId, RequestCreateRequest requestCreateRequest) throws GeneralException {
+        Member member = getMemberWithProjectOrThrow(memberId);
         Task task = getTaskOrThrow(requestCreateRequest.getTaskId());
 
         // 현재 프로젝트에 속한 "개발사"의 멤버가 아니고, 어드민도 아니면 USER_NOT_IN_PROJECT_DEV 반환
-        if (!isDevInCurrentProject(requestCreateRequest.getProjectId(), member) && !isAdmin(member)) {
-            throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_DEV);
-        }
+        validateProjectAuthority(member, requestCreateRequest.getProjectId());
 
-        Request request = Request.builder()
-                .member(member)
-                .task(task)
-                .title(requestCreateRequest.getTitle())
-                .content(requestCreateRequest.getContent())
-                .status(RequestStatus.PENDING)
-                .build();
+        Request request = createRequest(requestCreateRequest, member, task);
         requestRepository.save(request);
 
         return RequestCreateResponse.fromEntity(request);
@@ -73,8 +65,8 @@ public class RequestService {
 
 
     @Transactional
-    public RequestUpdateResponse updateRequest(UserDetailsImpl userDetails, Long requestId, RequestUpdateRequest requestUpdateRequest) throws GeneralException {
-        Member member = userDetails.getMember();
+    public RequestUpdateResponse updateRequest(Long memberId, Long requestId, RequestUpdateRequest requestUpdateRequest) throws GeneralException {
+        Member member = getMemberOrThrow(memberId);
         Request request = getRequestOrThrow(requestId);
 
         // update요청을 한 member가 승인요청을 작성했던 member인지 확인
@@ -115,12 +107,29 @@ public class RequestService {
 
 
     // 분리한 메서드들
+    private Member getMemberOrThrow(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
+    }
+
+    // isDevInCurrentProject에서 memberProject를 조회해 userDetails.getMember로 멤버객체를 그대로 사용하면 "LazyInitializationException"이 발생해
+    // memberId를 바탕으로 (레프트)페치조인해 memberProject와 함께 영속성 컨텍스트에 등록
+    private Member getMemberWithProjectOrThrow(Long memberId) {
+        return memberRepository.findWithProjectsById(memberId)
+                .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
+    }
+
     private Task getTaskOrThrow(Long taskId) {
         return taskRepository.findById(taskId).orElseThrow(() -> new GeneralException(CommonErrorCode.TASK_NOT_FOUND));
     }
 
     private Request getRequestOrThrow(Long requestId) {
         return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_NOT_FOUND));
+    }
+
+    private static void validateProjectAuthority(Member member, Long projectId) {
+        if (!isDevInCurrentProject(projectId, member) && !isAdmin(member)) {
+            throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_DEV);
+        }
     }
 
     // member가 현재 프로젝트에 속한 "개발사"의 멤버인지 확인하는 메서드
@@ -150,6 +159,32 @@ public class RequestService {
         if(requestUpdateRequest.getContent() != null) {
             request.updateContent(requestUpdateRequest.getContent());
         }
+        if(requestUpdateRequest.getLinks() != null) {
+            request.updateLinks(requestUpdateRequest.getLinks());
+        }
+    }
+
+    private Request createRequest(RequestCreateRequest requestCreateRequest, Member member, Task task) {
+        Request request = Request.builder()
+                .member(member)
+                .task(task)
+                .title(requestCreateRequest.getTitle())
+                .content(requestCreateRequest.getContent())
+                .status(RequestStatus.PENDING)
+                .build();
+
+        List<LinkDTO> linkDTOs = requestCreateRequest.getLinks();
+        List<RequestLink> links = linkDTOs.stream()
+                .map(linkDto -> RequestLink.builder()
+                        .urlAddress(linkDto.getUrlAddress())
+                        .urlDescription(linkDto.getUrlDescription())
+                        .request(request)
+                        .build())
+                .toList();
+
+        request.updateLinks(linkDTOs);
+
+        return request;
     }
 
 }

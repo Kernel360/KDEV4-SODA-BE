@@ -158,4 +158,13 @@ public class CommentService {
 
         return commentDTO;
     }
+
+    @Transactional
+    public void deleteComment(HttpServletRequest user, Long commentId) {
+        Comment comment = commentRepository.findByIdAndIsDeletedFalse(commentId)
+                .orElseThrow(() -> new GeneralException(CommentErrorCode.COMMENT_NOT_FOUND));
+
+        // isDeleted = true
+        comment.delete();
+    }
 }

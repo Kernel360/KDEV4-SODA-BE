@@ -29,4 +29,10 @@ public class CommentController {
         List<CommentDTO> response = commentService.getCommentList(user, articleId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
+
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(HttpServletRequest user, @PathVariable Long commentId) {
+        commentService.deleteComment(user, commentId);
+        return ResponseEntity.noContent().build();
+    }
 }

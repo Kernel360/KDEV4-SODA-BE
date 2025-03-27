@@ -159,6 +159,9 @@ public class RequestService {
         if(requestUpdateRequest.getContent() != null) {
             request.updateContent(requestUpdateRequest.getContent());
         }
+        if(requestUpdateRequest.getLinks() != null) {
+            request.updateLinks(requestUpdateRequest.getLinks());
+        }
     }
 
     private Request createRequest(RequestCreateRequest requestCreateRequest, Member member, Task task) {
@@ -178,6 +181,8 @@ public class RequestService {
                         .request(request)
                         .build())
                 .toList();
+
+        request.updateLinks(linkDTOs);
 
         return request;
     }

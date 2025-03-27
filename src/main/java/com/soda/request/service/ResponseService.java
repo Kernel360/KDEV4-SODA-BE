@@ -11,6 +11,7 @@ import com.soda.request.dto.response.*;
 import com.soda.request.entity.Request;
 import com.soda.request.entity.Response;
 import com.soda.request.entity.ResponseLink;
+import com.soda.request.error.RequestErrorCode;
 import com.soda.request.repository.RequestRepository;
 import com.soda.request.repository.ResponseRepository;
 import lombok.RequiredArgsConstructor;
@@ -71,7 +72,7 @@ public class ResponseService {
     }
 
     private Request getRequestOrThrow(Long requestId) {
-        return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(CommonErrorCode.REQUEST_NOT_FOUND));
+        return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_NOT_FOUND));
     }
 
     private void validateProjectAuthority(Member member, Long projectId) {

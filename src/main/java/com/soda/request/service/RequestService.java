@@ -13,6 +13,7 @@ import com.soda.project.repository.TaskRepository;
 import com.soda.request.dto.request.*;
 import com.soda.request.entity.Request;
 import com.soda.request.enums.RequestStatus;
+import com.soda.request.error.RequestErrorCode;
 import com.soda.request.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -119,7 +120,7 @@ public class RequestService {
     }
 
     private Request getRequestOrThrow(Long requestId) {
-        return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(CommonErrorCode.REQUEST_NOT_FOUND));
+        return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_NOT_FOUND));
     }
 
     // member가 현재 프로젝트에 속한 "개발사"의 멤버인지 확인하는 메서드
@@ -138,7 +139,7 @@ public class RequestService {
     // Request(승인요청)을 작성한 멤버가 (인자의) Member인지 확인하는 메서드
     private static void validateRequestWriter(Request request, Member member) {
         boolean isRequestWriter = request.getMember().getId().equals(member.getId());
-        if (!isRequestWriter) { throw new GeneralException(CommonErrorCode.USER_NOT_WRITE_REQUEST); }
+        if (!isRequestWriter) { throw new GeneralException(RequestErrorCode.USER_NOT_WRITE_REQUEST); }
     }
 
     // Request(승인요청)의 제목이나 내용을 수정하는 메서드

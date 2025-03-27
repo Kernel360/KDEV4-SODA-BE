@@ -4,6 +4,7 @@ import com.soda.global.response.ApiResponseForm;
 import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.request.dto.request.*;
 import com.soda.request.service.RequestService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,13 +14,14 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-public class ReqeustController {
+public class RequestController {
     private final RequestService requestService;
 
     @PostMapping("/requests")
     public ResponseEntity<ApiResponseForm<?>> createRequest(@RequestBody RequestCreateRequest requestCreateRequest,
-                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        RequestCreateResponse requestCreateResponse = requestService.createRequest(userDetails, requestCreateRequest);
+                                                            HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        RequestCreateResponse requestCreateResponse = requestService.createRequest(memberId, requestCreateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestCreateResponse));
     }
 
@@ -38,8 +40,9 @@ public class ReqeustController {
     @PutMapping("/requests/{requestId}")
     public ResponseEntity<ApiResponseForm<?>> updateRequest(@RequestBody RequestUpdateRequest requestUpdateRequest,
                                                             @PathVariable Long requestId,
-                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        RequestUpdateResponse requestUpdateResponse = requestService.updateRequest(userDetails, requestId, requestUpdateRequest);
+                                                            HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        RequestUpdateResponse requestUpdateResponse = requestService.updateRequest(memberId, requestId, requestUpdateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestUpdateResponse));
     }
 

@@ -1,4 +1,4 @@
-package com.soda.request.dto;
+package com.soda.request.dto.request;
 
 import com.soda.request.entity.Request;
 import com.soda.request.enums.RequestStatus;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
-public class RequestDeleteResponse {
+public class RequestUpdateResponse {
     private Long requestId;
     private Long taskId;
     private Long memberId;
@@ -18,10 +18,10 @@ public class RequestDeleteResponse {
     private String content;
     private RequestStatus status;
     private LocalDateTime createdAt;
-    private Boolean isDeleted;
+    private LocalDateTime updatedAt;
 
-    public static RequestDeleteResponse fromEntity(Request request) {
-        return RequestDeleteResponse.builder()
+    public static RequestUpdateResponse fromEntity(Request request) {
+        return RequestUpdateResponse.builder()
                 .requestId(request.getId())
                 .taskId(request.getTask().getId())
                 .memberId(request.getMember().getId())
@@ -30,7 +30,7 @@ public class RequestDeleteResponse {
                 .content(request.getContent())
                 .status(request.getStatus())
                 .createdAt(request.getCreatedAt())
-                .isDeleted(request.getIsDeleted())
+                .updatedAt(request.getUpdatedAt())
                 .build();
     }
 }

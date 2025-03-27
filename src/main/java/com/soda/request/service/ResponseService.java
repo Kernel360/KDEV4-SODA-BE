@@ -16,6 +16,7 @@ import com.soda.request.entity.RequestLink;
 import com.soda.request.entity.Response;
 import com.soda.request.entity.ResponseLink;
 import com.soda.request.repository.RequestRepository;
+import com.soda.request.repository.ResponseLinkRepository;
 import com.soda.request.repository.ResponseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,7 @@ public class ResponseService {
         Response approval = Response.builder()
                 .member(member)
                 .request(request)
+                .comment(requestApproveRequest.getComment())
                 .build();
 
         List<ResponseLink> approvalLinks = requestApproveRequest.getLinkList().stream()
@@ -60,10 +62,7 @@ public class ResponseService {
 
         request.approve();
 
-        requestRepository.save(request);
-        requestRepository.flush();
-
-        return RequestApproveResponse.fromEntity(request);
+        return RequestApproveResponse.fromEntity(approval);
     }
 
     @Transactional

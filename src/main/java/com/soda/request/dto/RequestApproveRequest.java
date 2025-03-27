@@ -7,6 +7,7 @@ import java.util.List;
 
 @Getter
 public class RequestApproveRequest {
-    public Long projectId;
+    private String comment;
+    private Long projectId;
     private List<ResponseLinkDTO> linkList;
 }

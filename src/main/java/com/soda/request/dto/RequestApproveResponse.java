@@ -1,35 +1,43 @@
 package com.soda.request.dto;
 
 import com.soda.request.entity.Request;
+import com.soda.request.entity.Response;
 import com.soda.request.enums.RequestStatus;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Builder
 public class RequestApproveResponse {
+    private Long responseId;
     private Long requestId;
-    private Long taskId;
     private Long memberId;
     private String memberName;
-    private String title;
-    private String content;
     private RequestStatus status;
+    private String comment;
+    private List<ResponseLinkDTO> links;
     private LocalDateTime createdAt;
-    private Boolean isDeleted;
+    private LocalDateTime updatedAt;
 
-    public static RequestApproveResponse fromEntity(Request request) {
+    public static RequestApproveResponse fromEntity(Response response) {
         return RequestApproveResponse.builder()
-                .requestId(request.getId())
-                .taskId(request.getTask().getId())
-                .memberId(request.getMember().getId())
-                .memberName(request.getMember().getName())
-                .title(request.getTitle())
-                .content(request.getContent())
-                .status(request.getStatus())
-                .createdAt(request.getCreatedAt())
+                .responseId(response.getId())
+                .requestId(response.getRequest().getId())
+                .memberId(response.getMember().getId())
+                .memberName(response.getMember().getName())
+                .status(response.getRequest().getStatus())
+                .comment(response.getComment())
+                .links(
+                        response.getLinks().stream()
+                                .map(ResponseLinkDTO::fromEntity)
+                                .collect(Collectors.toList())
+                )
+                .createdAt(response.getCreatedAt())
+                .updatedAt(response.getUpdatedAt())
                 .build();
     }
 }

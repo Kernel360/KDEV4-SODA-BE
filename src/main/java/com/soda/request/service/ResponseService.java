@@ -7,11 +7,8 @@ import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.error.ProjectErrorCode;
-import com.soda.request.dto.RequestApproveRequest;
-import com.soda.request.dto.RequestApproveResponse;
-import com.soda.request.dto.RequestRejectRequest;
+import com.soda.request.dto.*;
 import com.soda.request.entity.Request;
-import com.soda.request.dto.RequestRejectResponse;
 import com.soda.request.entity.RequestLink;
 import com.soda.request.entity.Response;
 import com.soda.request.entity.ResponseLink;
@@ -40,24 +37,9 @@ public class ResponseService {
         Member member = getMemberWithProjectOrThrow(memberId);
         Request request = getRequestOrThrow(requestId);
 
-        if(!isCliInCurrentProject(requestApproveRequest.getProjectId(), member) && !isAdmin(member)) {
-            throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_CLI);
-        }
+        validateProjectAuthority(member, requestApproveRequest.getProjectId());
 
-        Response approval = Response.builder()
-                .member(member)
-                .request(request)
-                .comment(requestApproveRequest.getComment())
-                .build();
-
-        List<ResponseLink> approvalLinks = requestApproveRequest.getLinkList().stream()
-                .map(dto -> ResponseLink.builder()
-                        .urlAddress(dto.getUrlAddress())
-                        .urlDescription(dto.getUrlDescription())
-                        .response(approval)
-                        .build())
-                .toList();
-        approval.updateLink(approvalLinks);
+        Response approval = createResponse(member, request, requestApproveRequest.getComment(), requestApproveRequest.getLinks());
         responseRepository.save(approval);
 
         request.approve();
@@ -70,24 +52,9 @@ public class ResponseService {
         Member member = getMemberWithProjectOrThrow(memberId);
         Request request = getRequestOrThrow(requestId);
 
-        if(!isCliInCurrentProject(requestRejectRequest.getProjectId(), member) && !isAdmin(member)) {
-            throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_CLI);
-        }
+        validateProjectAuthority(member, requestRejectRequest.getProjectId());
 
-        Response rejection = Response.builder()
-                .member(member)
-                .request(request)
-                .comment(requestRejectRequest.getComment())
-                .build();
-
-        List<ResponseLink> rejectionLinks = requestRejectRequest.getLinkList().stream()
-                .map(dto -> ResponseLink.builder()
-                        .urlAddress(dto.getUrlAddress())
-                        .urlDescription(dto.getUrlDescription())
-                        .response(rejection)
-                        .build())
-                .toList();
-        rejection.updateLink(rejectionLinks);
+        Response rejection = createResponse(member, request, requestRejectRequest.getComment(), requestRejectRequest.getLinks());
         responseRepository.save(rejection);
 
         request.reject();
@@ -103,6 +70,31 @@ public class ResponseService {
 
     private Request getRequestOrThrow(Long requestId) {
         return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(CommonErrorCode.REQUEST_NOT_FOUND));
+    }
+
+    private void validateProjectAuthority(Member member, Long projectId) {
+        if (!isCliInCurrentProject(projectId, member) && !isAdmin(member)) {
+            throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_CLI);
+        }
+    }
+
+    private Response createResponse(Member member, Request request, String comment, List<ResponseLinkDTO> linkDTOs) {
+        Response response = Response.builder()
+                .member(member)
+                .request(request)
+                .comment(comment)
+                .build();
+
+        List<ResponseLink> links = linkDTOs.stream()
+                .map(linkDto -> ResponseLink.builder()
+                        .urlAddress(linkDto.getUrlAddress())
+                        .urlDescription(linkDto.getUrlDescription())
+                        .response(response)
+                        .build())
+                .toList();
+
+        response.updateLink(links);
+        return response;
     }
 
     // member가 현재 프로젝트에 속한 "개발사"의 멤버인지 확인하는 메서드

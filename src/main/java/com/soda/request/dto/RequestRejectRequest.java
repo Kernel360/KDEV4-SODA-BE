@@ -10,5 +10,5 @@ import java.util.List;
 public class RequestRejectRequest {
     private String comment;
     private Long projectId;
-    private List<ResponseLinkDTO> linkList;
+    private List<ResponseLinkDTO> links;
 }

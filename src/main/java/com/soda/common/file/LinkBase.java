@@ -1,5 +1,6 @@
-package com.soda.common;
+package com.soda.common.file;
 
+import com.soda.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;

@@ -1,8 +1,6 @@
 package com.soda.request.dto.link;
 
-import com.soda.common.LinkBase;
-import com.soda.request.entity.ResponseLink;
-import io.swagger.v3.oas.models.links.Link;
+import com.soda.common.file.LinkBase;
 import lombok.Builder;
 import lombok.Getter;
 

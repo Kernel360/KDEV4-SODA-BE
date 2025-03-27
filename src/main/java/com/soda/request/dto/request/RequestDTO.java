@@ -1,4 +1,4 @@
-package com.soda.request.dto;
+package com.soda.request.dto.request;
 
 import com.soda.request.entity.Request;
 import com.soda.request.enums.RequestStatus;

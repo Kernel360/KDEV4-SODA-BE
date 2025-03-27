@@ -1,10 +1,7 @@
 package com.soda.member.service;
 
-<<<<<<< HEAD
-=======
+
 import com.soda.global.response.CommonErrorCode;
-import com.soda.global.response.ErrorCode;
->>>>>>> c342b1d (chore: 에러코드 관련 에러 해결)
 import com.soda.global.response.GeneralException;
 import com.soda.member.dto.company.CompanyCreateRequest;
 import com.soda.member.dto.company.CompanyUpdateRequest;

@@ -1,4 +1,4 @@
-package com.soda.request.dto;
+package com.soda.request.dto.request;
 
 import lombok.Getter;
 

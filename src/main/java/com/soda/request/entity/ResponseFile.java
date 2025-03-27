@@ -9,7 +9,7 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class RejectionFile extends BaseEntity {
+public class ResponseFile extends BaseEntity {
 
     private String name;
 
@@ -17,5 +17,5 @@ public class RejectionFile extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rejection_id", nullable = false)
-    private Rejection rejection;
+    private Response response;
 }

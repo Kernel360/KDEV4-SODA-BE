@@ -37,6 +37,8 @@ public class Comment extends BaseEntity {
         return parentComment != null;
     }
 
+    public Comment() {}
+
     @Builder
     public Comment (String content, Article article, Member member, Comment parentComment) {
         this.content = content;

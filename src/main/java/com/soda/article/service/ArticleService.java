@@ -263,7 +263,7 @@ public class ArticleService {
     }
 
     private void checkMemberInProject(HttpServletRequest user, Member member, Project project) {
-        String userRole = (String) user.getAttribute("userRole");
+        String userRole = (String) user.getAttribute("userRole").toString();
 
         if (!isAdminOrMember(userRole, member, project)) {
             throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);

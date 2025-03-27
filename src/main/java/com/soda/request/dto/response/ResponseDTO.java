@@ -1,6 +1,7 @@
 package com.soda.request.dto.response;
 
 import com.soda.article.domain.ArticleDTO;
+import com.soda.request.dto.link.LinkDTO;
 import com.soda.request.dto.request.RequestDTO;
 import com.soda.request.entity.Request;
 import com.soda.request.entity.Response;
@@ -20,7 +21,7 @@ public class ResponseDTO {
     private Long memberId;
     private String memberName;
     private String comment;
-    private List<ResponseLinkDTO> links;
+    private List<LinkDTO> links;
     private RequestStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -34,7 +35,7 @@ public class ResponseDTO {
                 .memberName(response.getMember().getName())
                 .comment(response.getComment())
                 .links(response.getLinks().stream()
-                                .map(ResponseLinkDTO::fromEntity)
+                                .map(LinkDTO::fromEntity)
                                 .collect(Collectors.toList()))
                 .status(response.getRequest().getStatus())
                 .createdAt(response.getCreatedAt())

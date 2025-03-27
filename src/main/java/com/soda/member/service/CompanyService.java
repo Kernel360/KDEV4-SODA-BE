@@ -1,5 +1,7 @@
 package com.soda.member.service;
 
+
+import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.dto.company.CompanyCreateRequest;
 import com.soda.member.dto.company.CompanyUpdateRequest;

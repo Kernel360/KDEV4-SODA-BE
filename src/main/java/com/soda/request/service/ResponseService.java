@@ -7,6 +7,7 @@ import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.error.ProjectErrorCode;
+import com.soda.request.dto.link.LinkDTO;
 import com.soda.request.dto.response.*;
 import com.soda.request.entity.Request;
 import com.soda.request.entity.Response;
@@ -81,7 +82,7 @@ public class ResponseService {
         }
     }
 
-    private Response createResponse(Member member, Request request, String comment, List<ResponseLinkDTO> linkDTOs) {
+    private Response createResponse(Member member, Request request, String comment, List<LinkDTO> linkDTOs) {
         Response response = Response.builder()
                 .member(member)
                 .request(request)

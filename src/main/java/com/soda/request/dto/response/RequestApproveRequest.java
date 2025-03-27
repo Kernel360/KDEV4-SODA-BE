@@ -1,5 +1,6 @@
 package com.soda.request.dto.response;
 
+import com.soda.request.dto.link.LinkDTO;
 import lombok.Getter;
 
 import java.util.List;
@@ -8,5 +9,5 @@ import java.util.List;
 public class RequestApproveRequest {
     private String comment;
     private Long projectId;
-    private List<ResponseLinkDTO> links;
+    private List<LinkDTO> links;
 }

@@ -1,6 +1,6 @@
 package com.soda.article.controller;
 
-import com.soda.article.domain.*;
+import com.soda.article.domain.comment.*;
 import com.soda.article.service.CommentService;
 import com.soda.global.response.ApiResponseForm;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,26 +18,32 @@ public class CommentController {
 
     @PostMapping("/comments")
     public ResponseEntity<ApiResponseForm<CommentCreateResponse>> createComment(HttpServletRequest user, @RequestBody CommentCreateRequest request) {
-        CommentCreateResponse response = commentService.createComment(user, request);
+        Long userId = (Long) user.getAttribute("memberId");
+        String userRole = (String) user.getAttribute("userRole").toString();
+        CommentCreateResponse response = commentService.createComment(userId, userRole, request);
         return ResponseEntity.ok(ApiResponseForm.success(response, "댓글 생성 성공"));
     }
 
     @GetMapping("/articles/{articleId}/comments")
     public ResponseEntity<ApiResponseForm<List<CommentDTO>>> getCommentList(HttpServletRequest user, @PathVariable Long articleId) {
-        List<CommentDTO> response = commentService.getCommentList(user, articleId);
+        Long userId = (Long) user.getAttribute("memberId");
+        String userRole = (String) user.getAttribute("userRole").toString();
+        List<CommentDTO> response = commentService.getCommentList(userId, userRole, articleId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(HttpServletRequest user, @PathVariable Long commentId) {
-        commentService.deleteComment(user, commentId);
+        Long userId = (Long) user.getAttribute("memberId");
+        commentService.deleteComment(userId, commentId);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/comments/{commentId}")
     public ResponseEntity<ApiResponseForm<CommentUpdateResponse>> updateComment(HttpServletRequest user,
                                                                                 @RequestBody CommentUpdateRequest request, @PathVariable Long commentId) {
-        CommentUpdateResponse response = commentService.updateComment(user, request, commentId);
+        Long userId = (Long) user.getAttribute("memberId");
+        CommentUpdateResponse response = commentService.updateComment(userId, request, commentId);
         return ResponseEntity.ok(ApiResponseForm.success(response, "댓글 수정 성공"));
     }
 }

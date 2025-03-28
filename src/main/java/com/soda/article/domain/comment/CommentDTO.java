@@ -1,18 +1,16 @@
-package com.soda.article.domain;
+package com.soda.article.domain.comment;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.article.entity.Comment;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommentDTO {
     private Long id; // 댓글 ID
     private String content; // 댓글 내용

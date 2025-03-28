@@ -44,7 +44,10 @@ public class Comment extends BaseEntity {
         this.content = content;
         this.article = article;
         this.member = member;
-        this.parentComment = parentComment;
+        if (parentComment != null) {
+            this.parentComment = parentComment;
+            parentComment.addChildComment(this);
+        }
     }
 
     public void delete() {
@@ -53,6 +56,10 @@ public class Comment extends BaseEntity {
 
     public void update(String content) {
         this.content = content;
+    }
+
+    public void addChildComment(Comment childComment) {
+        this.childComments.add(childComment);
     }
 
 }

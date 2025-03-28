@@ -1,6 +1,5 @@
 package com.soda.global.config;
 
-import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.repository.CompanyRepository;

@@ -5,9 +5,9 @@ import com.soda.global.response.ErrorCode;
 import org.springframework.http.HttpStatus;
 
 public enum ArticleErrorCode implements ErrorCode {
-    INVALID_INPUT("1011", "Invalid Input", HttpStatus.BAD_REQUEST),
-    ARTICLE_ALREADY_DELETED("1012","This article is already deleted", HttpStatus.NOT_FOUND),
-    INVALID_ARTICLE("1013", "The Article does not exist", HttpStatus.NOT_FOUND),
+    INVALID_INPUT("1101", "Invalid Input", HttpStatus.BAD_REQUEST),
+    ARTICLE_ALREADY_DELETED("1102","This article is already deleted", HttpStatus.NOT_FOUND),
+    INVALID_ARTICLE("1103", "The Article does not exist", HttpStatus.NOT_FOUND),
     ;
 
     private final String code;

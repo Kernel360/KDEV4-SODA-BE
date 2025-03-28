@@ -30,4 +30,11 @@ public class StageController {
         List<StageReadResponse> stageReadResponseList = stageService.getStages(projectId);
         return ResponseEntity.ok(ApiResponseForm.success(stageReadResponseList, "단계 조회 성공"));
     }
+
+    @PutMapping("/{stageId}/move")
+    public ResponseEntity<ApiResponseForm<Void>> moveStage(@PathVariable Long stageId,
+                                                           @RequestBody StageMoveRequest request) {
+        stageService.moveStage(stageId, request);
+        return ResponseEntity.ok(ApiResponseForm.success(null, "단계 이동 성공"));
+    }
 }

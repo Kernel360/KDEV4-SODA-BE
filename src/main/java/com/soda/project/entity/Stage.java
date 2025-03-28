@@ -18,13 +18,12 @@ public class Stage extends BaseEntity {
 
     private String name;
 
-    private Long nextStageId;
-
-    private String description;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
+
+    @Column(nullable = false)
+    private Float stageOrder;
 
     @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
     private List<Article> articleList = new ArrayList<>();
@@ -33,10 +32,17 @@ public class Stage extends BaseEntity {
     private List<Task> taskList = new ArrayList<>();
 
     @Builder
-    public Stage(String name, Long nextStageId, String description, Project project) {
+    public Stage(String name, Float stageOrder, Project project) {
         this.name = name;
-        this.nextStageId = nextStageId;
-        this.description = description;
+        this.stageOrder = stageOrder;
         this.project = project;
+    }
+
+    public void delete() {
+        this.markAsDeleted();
+    }
+
+    public void moveStageOrder(Float stageOrder) {
+        this.stageOrder = stageOrder;
     }
 }

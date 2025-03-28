@@ -84,4 +84,23 @@ public class StageService {
                 .map(StageReadResponse::fromEntity)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * 특정 단계의 순서를 변경하는 메서드
+     *
+     * @param stageId 순서를 변경할 단계의 ID
+     * @param request 새로운 순서 값을 포함하는 요청 객체 (newOrder 필드 사용)
+     * @throws GeneralException 단계를 찾을 수 없는 경우 발생
+     */
+    @Transactional
+    public void moveStage(Long stageId, StageMoveRequest request) {
+        Stage stage = stageRepository.findById(stageId)
+                .orElseThrow(() -> {
+                    log.error("단계 이동 실패: 단계 ID {} 를 찾을 수 없음", stageId);
+                    return new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
+                });
+        log.info("단계 이동 요청: 단계 ID {}, 이전 순서 {}, 새 순서 {}", stageId, stage.getStageOrder(), request.getNewOrder());
+        stage.moveStageOrder(request.getNewOrder());
+        stageRepository.save(stage);
+    }
 }

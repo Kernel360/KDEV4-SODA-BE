@@ -1,4 +1,4 @@
-package com.soda.article.domain;
+package com.soda.article.domain.comment;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

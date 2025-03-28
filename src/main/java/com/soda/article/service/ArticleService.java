@@ -1,6 +1,7 @@
 package com.soda.article.service;
 
-import com.soda.article.domain.*;
+import com.soda.article.domain.article.*;
+import com.soda.article.domain.comment.CommentDTO;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.ArticleFile;
 import com.soda.article.entity.ArticleLink;

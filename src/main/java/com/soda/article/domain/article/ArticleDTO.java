@@ -1,4 +1,4 @@
-package com.soda.article.domain;
+package com.soda.article.domain.article;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.article.enums.ArticleStatus;

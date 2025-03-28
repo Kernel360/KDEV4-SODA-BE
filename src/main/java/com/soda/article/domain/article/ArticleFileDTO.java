@@ -1,4 +1,4 @@
-package com.soda.article.domain;
+package com.soda.article.domain.article;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,10 +7,9 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class ArticleLinkDTO {
-
-    private String urlAddress;
-    private String urlDescription;
+@AllArgsConstructor
+public class ArticleFileDTO {
+    private String name;
+    private String url;
 }

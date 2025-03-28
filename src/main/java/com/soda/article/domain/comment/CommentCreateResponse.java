@@ -1,4 +1,4 @@
-package com.soda.article.domain;
+package com.soda.article.domain.comment;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

@@ -1,7 +1,6 @@
-package com.soda.article.domain;
+package com.soda.article.domain.article;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.soda.article.enums.ArticleStatus;
 import com.soda.article.enums.PriorityType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,16 +15,14 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ArticleModifyRequest {
+public class ArticleModifyResponse {
 
-    private Long projectId;
     private String title;
     private String content;
     private PriorityType priority;
     private LocalDateTime deadLine;
-    private Long memberId;
-    private Long stageId;
+    private String memberName;
+    private String stageName;
     private List<ArticleFileDTO> fileList;
     private List<ArticleLinkDTO> linkList;
-
 }

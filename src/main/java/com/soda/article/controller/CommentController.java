@@ -1,6 +1,6 @@
 package com.soda.article.controller;
 
-import com.soda.article.domain.*;
+import com.soda.article.domain.comment.*;
 import com.soda.article.service.CommentService;
 import com.soda.global.response.ApiResponseForm;
 import jakarta.servlet.http.HttpServletRequest;

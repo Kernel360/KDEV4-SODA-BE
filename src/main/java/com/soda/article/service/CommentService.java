@@ -1,6 +1,6 @@
 package com.soda.article.service;
 
-import com.soda.article.domain.*;
+import com.soda.article.domain.comment.*;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.Comment;
 import com.soda.article.error.ArticleErrorCode;

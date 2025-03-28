@@ -1,5 +1,6 @@
 package com.soda.article.domain.comment;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.article.entity.Comment;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommentDTO {
     private Long id; // 댓글 ID
     private String content; // 댓글 내용

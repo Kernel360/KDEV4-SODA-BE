@@ -1,7 +1,6 @@
 package com.soda.article.service;
 
 import com.soda.article.domain.article.*;
-import com.soda.article.domain.comment.CommentDTO;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.ArticleFile;
 import com.soda.article.entity.ArticleLink;
@@ -20,11 +19,9 @@ import com.soda.project.repository.MemberProjectRepository;
 import com.soda.project.repository.ProjectRepository;
 import com.soda.project.repository.StageRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -276,7 +273,7 @@ public class ArticleService {
 
         Article article = findArticleById(articleId);
 
-        return buildArticleViewResponse(article);
+        return ArticleViewResponse.fromEntity(article);
     }
 
     private void checkMemberInProject(String userRole, Member member, Project project) {
@@ -306,29 +303,4 @@ public class ArticleService {
         return articleRepository.findByIsDeletedFalseAndStage_Project(project);
     }
 
-    private ArticleViewResponse buildArticleViewResponse(Article article) {
-        return ArticleViewResponse.builder()
-                .title(article.getTitle())
-                .content(article.getContent())
-                .priority(article.getPriority())
-                .deadLine(article.getDeadline())
-                .memberName(article.getMember().getName())
-                .stageName(article.getStage().getName())
-                .fileList(article.getArticleFileList().stream()
-                        .map(file -> ArticleFileDTO.builder()
-                                .name(file.getName())
-                                .url(file.getUrl())
-                                .build())
-                        .collect(Collectors.toList()))
-                .linkList(article.getArticleLinkList().stream()
-                        .map(link -> ArticleLinkDTO.builder()
-                                .urlAddress(link.getUrlAddress())
-                                .urlDescription(link.getUrlDescription())
-                                .build())
-                        .collect(Collectors.toList()))
-                .commentList(article.getCommentList().stream()
-                        .map(CommentDTO::fromEntity)
-                        .collect(Collectors.toList()))
-                .build();
-    }
 }

@@ -53,12 +53,12 @@ public class ArticleService {
                     .orElseThrow(() -> new GeneralException(ArticleErrorCode.PARENT_ARTICLE_NOT_FOUND));
         }
 
-        validateFileAndLinkSize(request);
+        validateFileAndLinkSize(request.getFileList(), request.getLinkList());
 
         Article article = saveArticle(request, member, stage, parentArticle);
 
         // file & link 저장
-        processFilesAndLinks(request, article);
+        processFilesAndLinks(request.getFileList(), request.getLinkList(), article);
 
         return ArticleCreateResponse.fromEntity(article);
     }
@@ -72,7 +72,7 @@ public class ArticleService {
 
         Article article = findArticleById(articleId);
 
-        //validateFileAndLinkSize(request);
+        validateFileAndLinkSize(request.getFileList(), request.getLinkList());
 
         article.updateArticle(request.getTitle(), request.getContent(), request.getPriority(), request.getDeadLine());
 
@@ -80,10 +80,37 @@ public class ArticleService {
         processDeletionForFilesAndLinks(articleId, article);
 
         // 새 파일 및 링크 추가 또는 복원
-        //processFilesAndLinks(request, article);
+        processFilesAndLinks(request.getFileList(), request.getLinkList(), article);
 
-        //return buildArticleModifyResponse(article);
-        return null;
+        return ArticleModifyResponse.fromEntity(article);
+    }
+
+    private void validateFileAndLinkSize(List<ArticleFileDTO> fileList, List<ArticleLinkDTO> linkList) {
+        if (fileList != null && fileList.size() > 10) {
+            throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
+        }
+
+        if (linkList != null && linkList.size() > 10) {
+            throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
+        }
+    }
+
+    private void processFilesAndLinks(List<ArticleFileDTO> fileList, List<ArticleLinkDTO> linkList, Article article) {
+        if (fileList != null) {
+            fileList.forEach(articleFileDTO -> {
+                ArticleFile file = processFile(articleFileDTO, article);
+                articleFileRepository.save(file);
+                article.getArticleFileList().add(file);
+            });
+        }
+
+        if (linkList != null) {
+            linkList.forEach(articleLinkDTO -> {
+                ArticleLink link = processLink(articleLinkDTO, article);
+                articleLinkRepository.save(link);
+                article.getArticleLinkList().add(link);
+            });
+        }
     }
 
     @Transactional
@@ -116,26 +143,6 @@ public class ArticleService {
                 .build();
 
         return articleRepository.save(article);
-    }
-
-    private void processFilesAndLinks(ArticleCreateRequest request, Article article) {
-        // 파일 처리
-        if (request.getFileList() != null) {
-            request.getFileList().forEach(fileDTO -> {
-                ArticleFile file = processFile(fileDTO, article);
-                articleFileRepository.save(file);
-                article.getArticleFileList().add(file);
-            });
-        }
-
-        // 링크 처리
-        if (request.getLinkList() != null) {
-            request.getLinkList().forEach(linkDTO -> {
-                ArticleLink link = processLink(linkDTO, article);
-                articleLinkRepository.save(link);
-                article.getArticleLinkList().add(link);
-            });
-        }
     }
 
     private void processDeletionForFilesAndLinks(Long articleId, Article article) {
@@ -186,15 +193,7 @@ public class ArticleService {
         return link;
     }
 
-    private void validateFileAndLinkSize(ArticleCreateRequest request) {
-        if (request.getFileList() != null && request.getFileList().size() > 10) {
-            throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
-        }
 
-        if (request.getLinkList() != null && request.getLinkList().size() > 10) {
-            throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
-        }
-    }
 
     private Project validateProject(Long projectId) {
         return projectRepository.findByIdAndIsDeletedFalse(projectId)

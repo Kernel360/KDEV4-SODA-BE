@@ -20,12 +20,14 @@ import com.soda.project.repository.MemberProjectRepository;
 import com.soda.project.repository.ProjectRepository;
 import com.soda.project.repository.StageRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
@@ -40,21 +42,29 @@ public class ArticleService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public ArticleModifyResponse createArticle(ArticleModifyRequest request, Long userId, String userRole) {
+    public ArticleCreateResponse createArticle(ArticleCreateRequest request, Long userId, String userRole) {
         Member member = validateMember(userId);
         Project project = validateProject(request.getProjectId());
         Stage stage = validateStage(request.getStageId(), project);
 
         checkMemberInProject(userRole, member, project);
 
+        Article parentArticle = null;
+        if (request.getParentArticleId() != null) {
+            parentArticle = articleRepository.findById(request.getParentArticleId())
+                    .orElseThrow(() -> new GeneralException(ArticleErrorCode.PARENT_ARTICLE_NOT_FOUND));
+        }
+
+        log.info("parentArticle: {}", parentArticle.getId());
+
         validateFileAndLinkSize(request);
 
-        Article article = saveArticle(request, member, stage);
+        Article article = saveArticle(request, member, stage, parentArticle);
 
         // file & link 저장
         processFilesAndLinks(request, article);
 
-        return buildArticleModifyResponse(article);
+        return ArticleCreateResponse.fromEntity(article);
     }
 
     @Transactional
@@ -66,7 +76,7 @@ public class ArticleService {
 
         Article article = findArticleById(articleId);
 
-        validateFileAndLinkSize(request);
+        //validateFileAndLinkSize(request);
 
         article.updateArticle(request.getTitle(), request.getContent(), request.getPriority(), request.getDeadLine());
 
@@ -74,9 +84,10 @@ public class ArticleService {
         processDeletionForFilesAndLinks(articleId, article);
 
         // 새 파일 및 링크 추가 또는 복원
-        processFilesAndLinks(request, article);
+        //processFilesAndLinks(request, article);
 
-        return buildArticleModifyResponse(article);
+        //return buildArticleModifyResponse(article);
+        return null;
     }
 
     @Transactional
@@ -96,7 +107,7 @@ public class ArticleService {
         processDeletionForFilesAndLinks(articleId, article);
     }
 
-    private Article saveArticle(ArticleModifyRequest request, Member member, Stage stage) {
+    private Article saveArticle(ArticleCreateRequest request, Member member, Stage stage, Article parentArticle) {
         Article article = Article.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -105,12 +116,13 @@ public class ArticleService {
                 .member(member)
                 .stage(stage)
                 .status(ArticleStatus.PENDING)
+                .parentArticle(parentArticle)
                 .build();
 
         return articleRepository.save(article);
     }
 
-    private void processFilesAndLinks(ArticleModifyRequest request, Article article) {
+    private void processFilesAndLinks(ArticleCreateRequest request, Article article) {
         // 파일 처리
         if (request.getFileList() != null) {
             request.getFileList().forEach(fileDTO -> {
@@ -178,7 +190,7 @@ public class ArticleService {
         return link;
     }
 
-    private void validateFileAndLinkSize(ArticleModifyRequest request) {
+    private void validateFileAndLinkSize(ArticleCreateRequest request) {
         if (request.getFileList() != null && request.getFileList().size() > 10) {
             throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
         }
@@ -215,28 +227,6 @@ public class ArticleService {
         }
     }
 
-    private ArticleModifyResponse buildArticleModifyResponse(Article article) {
-        return ArticleModifyResponse.builder()
-                .title(article.getTitle())
-                .content(article.getContent())
-                .priority(article.getPriority())
-                .deadLine(article.getDeadline())
-                .memberName(article.getMember().getName())
-                .stageName(article.getStage().getName())
-                .fileList(article.getArticleFileList().stream()
-                        .map(file -> ArticleFileDTO.builder()
-                                .name(file.getName())
-                                .url(file.getUrl())
-                                .build())
-                        .collect(Collectors.toList()))
-                .linkList(article.getArticleLinkList().stream()
-                        .map(link -> ArticleLinkDTO.builder()
-                                .urlAddress(link.getUrlAddress())
-                                .urlDescription(link.getUrlDescription())
-                                .build())
-                        .collect(Collectors.toList()))
-                .build();
-    }
 
     public List<ArticleViewResponse> getAllArticles(Long userId, String userRole, Long projectId, Long stageId) {
         Member member = validateMember(userId);

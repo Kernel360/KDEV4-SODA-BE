@@ -1,8 +1,6 @@
 package com.soda.article.controller;
 
-import com.soda.article.domain.article.ArticleModifyRequest;
-import com.soda.article.domain.article.ArticleModifyResponse;
-import com.soda.article.domain.article.ArticleViewResponse;
+import com.soda.article.domain.article.*;
 import com.soda.article.service.ArticleService;
 import com.soda.global.response.ApiResponseForm;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,10 +17,10 @@ public class ArticleController {
     private final ArticleService articleService;
 
     @PostMapping("/articles")
-    public ResponseEntity<ApiResponseForm<ArticleModifyResponse>> createArticle(@RequestBody ArticleModifyRequest request, HttpServletRequest user) {
+    public ResponseEntity<ApiResponseForm<ArticleCreateResponse>> createArticle(@RequestBody ArticleCreateRequest request, HttpServletRequest user) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        ArticleModifyResponse response = articleService.createArticle(request, userId, userRole);
+        ArticleCreateResponse response = articleService.createArticle(request, userId, userRole);
         return ResponseEntity.ok(ApiResponseForm.success(response, "게시글 생성 성공"));
     }
 

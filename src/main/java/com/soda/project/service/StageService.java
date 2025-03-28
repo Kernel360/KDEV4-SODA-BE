@@ -103,4 +103,24 @@ public class StageService {
         stage.moveStageOrder(request.getNewOrder());
         stageRepository.save(stage);
     }
+
+    /**
+     * 특정 단계를 (논리적으로) 삭제하는 메서드
+     * 실제 데이터베이스에서 행을 지우는 것이 아니라, isDeleted 같은 플래그를 변경합니다.
+     *
+     * @param stageId 삭제할 단계의 ID
+     * @throws GeneralException 단계를 찾을 수 없는 경우 발생
+     */
+    @Transactional
+    public void deleteStage(Long stageId) {
+        Stage stage = stageRepository.findById(stageId)
+                .orElseThrow(() -> {
+                    log.error("단계 삭제 실패: 단계 ID {} 를 찾을 수 없음", stageId);
+                    return new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
+                });
+        stage.delete();
+        log.info("단계 삭제 성공: 단계 ID {}", stageId);
+        stageRepository.save(stage);
+    }
+
 }

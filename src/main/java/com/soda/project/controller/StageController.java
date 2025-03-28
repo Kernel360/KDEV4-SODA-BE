@@ -37,4 +37,10 @@ public class StageController {
         stageService.moveStage(stageId, request);
         return ResponseEntity.ok(ApiResponseForm.success(null, "단계 이동 성공"));
     }
+
+    @DeleteMapping("/{stageId}")
+    public ResponseEntity<ApiResponseForm<Void>> deleteStage(@PathVariable Long stageId) {
+        stageService.deleteStage(stageId);
+        return ResponseEntity.ok(ApiResponseForm.success(null, "단계 삭제 성공"));
+    }
 }

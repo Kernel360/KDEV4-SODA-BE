@@ -26,12 +26,12 @@ public class ArticleController {
 
     // 전체 article 조회 & stage 별 article 조회
     @GetMapping("/projects/{projectId}/articles")
-    public ResponseEntity<ApiResponseForm<List<ArticleViewResponse>>> getAllArticles(HttpServletRequest user,
+    public ResponseEntity<ApiResponseForm<List<ArticleListViewResponse>>> getAllArticles(HttpServletRequest user,
                                                                                      @PathVariable Long projectId,
                                                                                      @RequestParam(required = false) Long stageId) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        List<ArticleViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, stageId);
+        List<ArticleListViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, stageId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

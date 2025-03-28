@@ -24,10 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
@@ -54,8 +55,6 @@ public class ArticleService {
             parentArticle = articleRepository.findById(request.getParentArticleId())
                     .orElseThrow(() -> new GeneralException(ArticleErrorCode.PARENT_ARTICLE_NOT_FOUND));
         }
-
-        log.info("parentArticle: {}", parentArticle.getId());
 
         validateFileAndLinkSize(request);
 
@@ -228,7 +227,7 @@ public class ArticleService {
     }
 
 
-    public List<ArticleViewResponse> getAllArticles(Long userId, String userRole, Long projectId, Long stageId) {
+    public List<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, Long stageId) {
         Member member = validateMember(userId);
         Project project = validateProject(projectId);
 
@@ -236,9 +235,37 @@ public class ArticleService {
 
         List<Article> articles = getArticlesByStageAndProject(stageId, project);
 
-        return articles.stream()
-                .map(this::buildArticleViewResponse)
+        List<ArticleListViewResponse> articleDTOList = articles.stream()
+                .map(ArticleListViewResponse::fromEntity)
+                .toList();
+
+        Map<Long, List<ArticleListViewResponse>> parentToChildMap = articleDTOList.stream()
+                .filter(articleDTO -> articleDTO.getParentArticleId() != null)
+                .collect(Collectors.groupingBy(ArticleListViewResponse::getParentArticleId));
+
+        List<ArticleListViewResponse> finalArticleDTOList = articleDTOList.stream()
+                .map(articleDTO -> addChildArticleToParent(articleDTO, parentToChildMap))
+                .toList();
+
+        return finalArticleDTOList.stream()
+                .filter(articleDTO -> articleDTO.getParentArticleId() == null)
                 .collect(Collectors.toList());
+    }
+
+    // 답글을 게시글에 추가하는 재귀 메소드
+    private ArticleListViewResponse addChildArticleToParent(ArticleListViewResponse articleDTO, Map<Long, List<ArticleListViewResponse>> parentToChildMap) {
+        List<ArticleListViewResponse> childArticles = parentToChildMap.get(articleDTO.getId());
+
+        // 답글이 있는 경우
+        if (childArticles != null && !childArticles.isEmpty()) {
+            articleDTO = articleDTO.withChildArticles(childArticles);
+
+            for (ArticleListViewResponse childArticle : childArticles) {
+                addChildArticleToParent(childArticle, parentToChildMap);
+            }
+        }
+
+        return articleDTO;
     }
 
     public ArticleViewResponse getArticle(Long projectId, Long userId, String userRole, Long articleId) {

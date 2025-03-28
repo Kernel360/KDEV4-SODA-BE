@@ -18,7 +18,6 @@ import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.MemberProjectRepository;
 import com.soda.project.repository.ProjectRepository;
 import com.soda.project.repository.StageRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,12 +39,12 @@ public class ArticleService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public ArticleModifyResponse createArticle(ArticleModifyRequest request, HttpServletRequest user) {
-        Member member = validateMember(user);
+    public ArticleModifyResponse createArticle(ArticleModifyRequest request, Long userId, String userRole) {
+        Member member = validateMember(userId);
         Project project = validateProject(request.getProjectId());
         Stage stage = validateStage(request.getStageId(), project);
 
-        checkMemberInProject(user, member, project);
+        checkMemberInProject(userRole, member, project);
 
         validateFileAndLinkSize(request);
 
@@ -58,11 +57,11 @@ public class ArticleService {
     }
 
     @Transactional
-    public ArticleModifyResponse updateArticle(HttpServletRequest user, Long articleId, ArticleModifyRequest request) {
-        Member member = validateMember(user);
+    public ArticleModifyResponse updateArticle(Long userId, String userRole, Long articleId, ArticleModifyRequest request) {
+        Member member = validateMember(userId);
         Project project = validateProject(request.getProjectId());
 
-        checkMemberInProject(user, member, project);
+        checkMemberInProject(userRole, member, project);
 
         Article article = findArticleById(articleId);
 
@@ -80,11 +79,11 @@ public class ArticleService {
     }
 
     @Transactional
-    public void deleteArticle(Long projectId, HttpServletRequest user, Long articleId) {
-        Member member = validateMember(user);
+    public void deleteArticle(Long projectId, Long userId, String userRole, Long articleId) {
+        Member member = validateMember(userId);
         Project project = validateProject(projectId);
 
-        checkMemberInProject(user, member, project);
+        checkMemberInProject(userRole, member, project);
 
         Article article = findArticleById(articleId);
         validateArticleNotDeleted(article);
@@ -238,11 +237,11 @@ public class ArticleService {
                 .build();
     }
 
-    public List<ArticleViewResponse> getAllArticles(HttpServletRequest user, Long projectId, Long stageId) {
-        Member member = validateMember(user);
+    public List<ArticleViewResponse> getAllArticles(Long userId, String userRole, Long projectId, Long stageId) {
+        Member member = validateMember(userId);
         Project project = validateProject(projectId);
 
-        checkMemberInProject(user, member, project);
+        checkMemberInProject(userRole, member, project);
 
         List<Article> articles = getArticlesByStageAndProject(stageId, project);
 
@@ -251,20 +250,18 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
-    public ArticleViewResponse getArticle(Long projectId, HttpServletRequest user, Long articleId) {
-        Member member = validateMember(user);
+    public ArticleViewResponse getArticle(Long projectId, Long userId, String userRole, Long articleId) {
+        Member member = validateMember(userId);
         Project project = validateProject(projectId);
 
-        checkMemberInProject(user, member, project);
+        checkMemberInProject(userRole, member, project);
 
         Article article = findArticleById(articleId);
 
         return buildArticleViewResponse(article);
     }
 
-    private void checkMemberInProject(HttpServletRequest user, Member member, Project project) {
-        String userRole = (String) user.getAttribute("userRole").toString();
-
+    private void checkMemberInProject(String userRole, Member member, Project project) {
         if (!isAdminOrMember(userRole, member, project)) {
             throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
         }
@@ -277,8 +274,7 @@ public class ArticleService {
         return memberProjectRepository.existsByMemberAndProjectAndIsDeletedFalse(member, project);
     }
 
-    private Member validateMember(HttpServletRequest user) {
-        Long userId = (Long) user.getAttribute("memberId");
+    private Member validateMember(Long userId) {
         return memberRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
     }

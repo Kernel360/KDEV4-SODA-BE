@@ -51,7 +51,7 @@ public class CommentService {
                     .orElseThrow(() -> new GeneralException(CommentErrorCode.PARENT_COMMENT_NOT_FOUND));
         }
 
-        // 3. 댓글 생성 및 저장
+        // 4. 댓글 생성 및 저장
         Comment comment = Comment.builder()
                 .content(request.getContent())
                 .article(article)
@@ -60,14 +60,7 @@ public class CommentService {
                 .build();
         commentRepository.save(comment);
 
-        Long parentCommentId = (parentComment != null) ? parentComment.getId() : null;
-
-        return CommentCreateResponse.builder()
-                .commentId(comment.getId())
-                .content(comment.getContent())
-                .memberName(member.getName())
-                .parentCommentId(parentCommentId)
-                .build();
+        return CommentCreateResponse.fromEntity(comment);
     }
 
     private Member validateMember(Long userId) {
@@ -169,10 +162,7 @@ public class CommentService {
 
         comment.update(request.getContent());
 
-        return CommentUpdateResponse.builder()
-                .commentId(comment.getId())
-                .content(comment.getContent())
-                .build();
+        return CommentUpdateResponse.fromEntity(comment);
     }
 
     // 댓글 조회와 사용자 검증을 함께 처리하는 메서드

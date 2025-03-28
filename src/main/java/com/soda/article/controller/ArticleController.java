@@ -1,12 +1,13 @@
 package com.soda.article.controller;
 
-import com.soda.article.domain.*;
+import com.soda.article.domain.article.ArticleModifyRequest;
+import com.soda.article.domain.article.ArticleModifyResponse;
+import com.soda.article.domain.article.ArticleViewResponse;
 import com.soda.article.service.ArticleService;
 import com.soda.global.response.ApiResponseForm;
-import com.soda.global.security.auth.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,39 +19,48 @@ public class ArticleController {
     private final ArticleService articleService;
 
     @PostMapping("/articles")
-    public ResponseEntity<ApiResponseForm<ArticleModifyResponse>> createArticle(@RequestBody ArticleModifyRequest request,
-                                                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        ArticleModifyResponse response = articleService.createArticle(request, userDetails);
+    public ResponseEntity<ApiResponseForm<ArticleModifyResponse>> createArticle(@RequestBody ArticleModifyRequest request, HttpServletRequest user) {
+        Long userId = (Long) user.getAttribute("memberId");
+        String userRole = (String) user.getAttribute("userRole").toString();
+        ArticleModifyResponse response = articleService.createArticle(request, userId, userRole);
         return ResponseEntity.ok(ApiResponseForm.success(response, "게시글 생성 성공"));
     }
 
     // 전체 article 조회 & stage 별 article 조회
-    @GetMapping("projects/{projectId}/articles")
-    public ResponseEntity<ApiResponseForm<List<ArticleViewResponse>>> getAllArticles(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    @GetMapping("/projects/{projectId}/articles")
+    public ResponseEntity<ApiResponseForm<List<ArticleViewResponse>>> getAllArticles(HttpServletRequest user,
                                                                                      @PathVariable Long projectId,
                                                                                      @RequestParam(required = false) Long stageId) {
-        List<ArticleViewResponse> response = articleService.getAllArticles(userDetails, projectId, stageId);
+        Long userId = (Long) user.getAttribute("memberId");
+        String userRole = (String) user.getAttribute("userRole").toString();
+        List<ArticleViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, stageId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
-    @GetMapping("/{projectId}/articles/{articleId}")
-    public ResponseEntity<ApiResponseForm<ArticleViewResponse>> getArticle(@PathVariable Long projectId, @AuthenticationPrincipal UserDetailsImpl userDetails,
+    @GetMapping("/projects/{projectId}/articles/{articleId}")
+    public ResponseEntity<ApiResponseForm<ArticleViewResponse>> getArticle(@PathVariable Long projectId, HttpServletRequest user,
                                                                            @PathVariable Long articleId) {
-        ArticleViewResponse response = articleService.getArticle(projectId, userDetails, articleId);
+        Long userId = (Long) user.getAttribute("memberId");
+        String userRole = (String) user.getAttribute("userRole").toString();
+        ArticleViewResponse response = articleService.getArticle(projectId, userId, userRole, articleId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
-    @DeleteMapping("/{projectId}/articles/{articleId}")
-    public ResponseEntity<Void> deleteArticle(@PathVariable Long projectId, @AuthenticationPrincipal UserDetailsImpl userDetails,
+    @DeleteMapping("/projects/{projectId}/articles/{articleId}")
+    public ResponseEntity<Void> deleteArticle(@PathVariable Long projectId, HttpServletRequest user,
                                               @PathVariable Long articleId) {
-        articleService.deleteArticle(projectId, userDetails, articleId);
+        Long userId = (Long) user.getAttribute("memberId");
+        String userRole = (String) user.getAttribute("userRole").toString();
+        articleService.deleteArticle(projectId, userId, userRole, articleId);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/articles/{articleId}")
-    public ResponseEntity<ApiResponseForm<ArticleModifyResponse>> updateArticle(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<ApiResponseForm<ArticleModifyResponse>> updateArticle(HttpServletRequest user,
                                                                                 @PathVariable Long articleId, @RequestBody ArticleModifyRequest request) {
-        ArticleModifyResponse response = articleService.updateArticle(userDetails, articleId, request);
+        Long userId = (Long) user.getAttribute("memberId");
+        String userRole = (String) user.getAttribute("userRole").toString();
+        ArticleModifyResponse response = articleService.updateArticle(userId, userRole, articleId, request);
         return ResponseEntity.ok(ApiResponseForm.success(response, "Article 수정 성공"));
     }
 

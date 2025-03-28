@@ -1,20 +1,18 @@
 package com.soda.article.error;
 
-import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.ErrorCode;
 import org.springframework.http.HttpStatus;
 
-public enum ArticleErrorCode implements ErrorCode {
-    INVALID_INPUT("1101", "Invalid Input", HttpStatus.BAD_REQUEST),
-    ARTICLE_ALREADY_DELETED("1102","This article is already deleted", HttpStatus.NOT_FOUND),
-    INVALID_ARTICLE("1103", "The Article does not exist", HttpStatus.NOT_FOUND),
-    ;
+public enum CommentErrorCode implements ErrorCode {
+    PARENT_COMMENT_NOT_FOUND("1201", "This comment does not have parent comment", HttpStatus.NOT_FOUND),
+    COMMENT_NOT_FOUND("1202", "This comment does not exist", HttpStatus.NOT_FOUND ),
+    FORBIDDEN_ACTION("1203", "You do not have permission to edit or delete this comment.", HttpStatus.FORBIDDEN);
 
     private final String code;
     private final String message;
     private final HttpStatus httpStatus;
 
-    ArticleErrorCode (String code, String message, HttpStatus httpStatus) {
+    CommentErrorCode (String code, String message, HttpStatus httpStatus) {
         this.code = code;
         this.message = message;
         this.httpStatus = httpStatus;

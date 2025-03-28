@@ -1,6 +1,7 @@
 package com.soda.article.service;
 
-import com.soda.article.domain.*;
+import com.soda.article.domain.article.*;
+import com.soda.article.domain.comment.CommentDTO;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.ArticleFile;
 import com.soda.article.entity.ArticleLink;
@@ -10,8 +11,8 @@ import com.soda.article.repository.ArticleFileRepository;
 import com.soda.article.repository.ArticleLinkRepository;
 import com.soda.article.repository.ArticleRepository;
 import com.soda.global.response.GeneralException;
-import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.member.entity.Member;
+import com.soda.member.repository.MemberRepository;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
 import com.soda.project.error.ProjectErrorCode;
@@ -285,7 +286,7 @@ public class ArticleService {
     private List<Article> getArticlesByStageAndProject(Long stageId, Project project) {
         if (stageId != null) {
             Stage stage = stageRepository.findById(stageId)
-                    .orElseThrow(() -> new GeneralException(ProjectErrorCode.STAGE_NOT_FOUND));
+                    .orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
             return articleRepository.findByIsDeletedFalseAndStageAndStage_Project(stage, project);
         }
         return articleRepository.findByIsDeletedFalseAndStage_Project(project);

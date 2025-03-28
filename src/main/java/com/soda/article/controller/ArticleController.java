@@ -1,8 +1,6 @@
 package com.soda.article.controller;
 
-import com.soda.article.domain.article.ArticleModifyRequest;
-import com.soda.article.domain.article.ArticleModifyResponse;
-import com.soda.article.domain.article.ArticleViewResponse;
+import com.soda.article.domain.article.*;
 import com.soda.article.service.ArticleService;
 import com.soda.global.response.ApiResponseForm;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,21 +17,21 @@ public class ArticleController {
     private final ArticleService articleService;
 
     @PostMapping("/articles")
-    public ResponseEntity<ApiResponseForm<ArticleModifyResponse>> createArticle(@RequestBody ArticleModifyRequest request, HttpServletRequest user) {
+    public ResponseEntity<ApiResponseForm<ArticleCreateResponse>> createArticle(@RequestBody ArticleCreateRequest request, HttpServletRequest user) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        ArticleModifyResponse response = articleService.createArticle(request, userId, userRole);
+        ArticleCreateResponse response = articleService.createArticle(request, userId, userRole);
         return ResponseEntity.ok(ApiResponseForm.success(response, "게시글 생성 성공"));
     }
 
     // 전체 article 조회 & stage 별 article 조회
     @GetMapping("/projects/{projectId}/articles")
-    public ResponseEntity<ApiResponseForm<List<ArticleViewResponse>>> getAllArticles(HttpServletRequest user,
+    public ResponseEntity<ApiResponseForm<List<ArticleListViewResponse>>> getAllArticles(HttpServletRequest user,
                                                                                      @PathVariable Long projectId,
                                                                                      @RequestParam(required = false) Long stageId) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        List<ArticleViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, stageId);
+        List<ArticleListViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, stageId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

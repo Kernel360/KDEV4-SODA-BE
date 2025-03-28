@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Getter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ArticleModifyResponse {
+public class ArticleCreateResponse {
 
     private String title;
     private String content;
@@ -21,17 +21,19 @@ public class ArticleModifyResponse {
     private LocalDateTime deadLine;
     private String memberName;
     private String stageName;
+    private Long parentArticleId;           // 답글인 경우를 나타내기 위해서
     private List<ArticleFileDTO> fileList;
     private List<ArticleLinkDTO> linkList;
 
-    public static ArticleModifyResponse fromEntity(Article article) {
-        return ArticleModifyResponse.builder()
+    public static ArticleCreateResponse fromEntity(Article article) {
+        return ArticleCreateResponse.builder()
                 .title(article.getTitle())
                 .content(article.getContent())
                 .priority(article.getPriority())
                 .deadLine(article.getDeadline())
                 .memberName(article.getMember().getName())
                 .stageName(article.getStage().getName())
+                .parentArticleId(article.getParentArticle().getId())
                 .fileList(article.getArticleFileList().stream()
                         .map(file -> ArticleFileDTO.builder()
                                 .name(file.getName())
@@ -46,4 +48,5 @@ public class ArticleModifyResponse {
                         .collect(Collectors.toList()))
                 .build();
     }
+
 }

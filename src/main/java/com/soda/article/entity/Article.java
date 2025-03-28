@@ -65,7 +65,7 @@ public class Article extends BaseEntity {
 
     @Builder
     public Article(String title, String content, PriorityType priority, LocalDateTime deadline, Member member, Stage stage, ArticleStatus status,
-                   List<ArticleFile> articleFileList, List<ArticleLink> articleLinkList) {
+                   List<ArticleFile> articleFileList, List<ArticleLink> articleLinkList, Article parentArticle) {
         this.title = title;
         this.content = content;
         this.priority = priority;
@@ -75,6 +75,7 @@ public class Article extends BaseEntity {
         this.status = status;
         this.articleFileList = articleFileList != null ? articleFileList : new ArrayList<>();
         this.articleLinkList = articleLinkList != null ? articleLinkList : new ArrayList<>();
+        this.parentArticle = parentArticle;
     }
 
     public void delete() {

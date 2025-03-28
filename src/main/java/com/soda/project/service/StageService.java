@@ -30,6 +30,10 @@ public class StageService {
     private final StageRepository stageRepository;
     private final ProjectRepository projectRepository;
 
+    // 초기 단계 이름 목록 정의
+    private static final List<String> INITIAL_STAGE_NAMES = Arrays.asList(
+            "요구사항 정의", "화면 설계", "디자인", "퍼블리싱", "개발", "검수"
+    );
 
     /**
      * 새로운 단계를 프로젝트에 추가하는 메서드
@@ -123,4 +127,51 @@ public class StageService {
         stageRepository.save(stage);
     }
 
+    /**
+     * 특정 프로젝트에 미리 정의된 초기 단계들을 생성하는 메서드
+     * (예: 요구사항 정의, 화면 설계 등)
+     *
+     * @param projectId 초기 단계를 생성할 프로젝트의 ID
+     * @return 생성된 초기 단계들의 DTO 리스트 (StageReadResponse 형태)
+     * @throws GeneralException 프로젝트를 찾을 수 없는 경우 발생
+     */
+    @Transactional
+    public List<StageReadResponse> createInitialStages(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> {
+                    log.error("초기 단계 생성 실패: 프로젝트 ID {} 를 찾을 수 없음", projectId);
+                    return new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);
+                });
+
+        List<Stage> initialStages = createStages(project);
+        stageRepository.saveAll(initialStages);
+        log.info("초기 단계 생성 성공: 프로젝트 ID {}, {}개 단계 생성됨", projectId, initialStages.size());
+
+        return initialStages.stream()
+                .map(StageReadResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 주어진 프로젝트에 대해 초기 단계 엔티티 리스트를 생성하는 내부 헬퍼 메서드
+     *
+     * @param project 단계를 생성할 프로젝트 엔티티
+     * @return 생성된 Stage 엔티티 리스트 (아직 DB에 저장되지 않은 상태)
+     */
+    private List<Stage> createStages(Project project) {
+        List<Stage> stages = new ArrayList<>();
+        float order = 1.0f;
+
+        for (String name : INITIAL_STAGE_NAMES) {
+            Stage stage = Stage.builder()
+                    .project(project)
+                    .name(name)
+                    .stageOrder(order)
+                    .build();
+            stages.add(stage);
+            order += 1.0f;
+        }
+
+        return stages;
+    }
 }

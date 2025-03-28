@@ -34,12 +34,15 @@ public class ProjectService {
     private final MemberRepository memberRepository;
     private final CompanyRepository companyRepository;
 
+    private final StageService stageService;
+
     /*
         프로젝트 생성하기
         - 기본 정보 생성
         - 개발사 지정, 관리자/직원 지정
         - 고객사 지정, 관리자/직원 지정
      */
+    @Transactional
     public ProjectCreateResponse createProject(ProjectCreateRequest request) {
         // 1. 프로젝트 제목 중복 체크
         if (projectRepository.existsByTitle(request.getTitle())) {
@@ -58,6 +61,8 @@ public class ProjectService {
                 CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_MANAGER);
         List<Member> clientMembers = assignCompanyAndMembers(request.getClientCompanyId(), request.getClientMembers(), project,
                 CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_PARTICIPANT);
+
+        stageService.createInitialStages(project.getId());
 
         // 4. response DTO 생성
         return createProjectCreateResponse(project, devManagers, devMembers, clientManagers, clientMembers);

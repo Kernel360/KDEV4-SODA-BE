@@ -35,11 +35,11 @@ public class CommentService {
     private final ArticleRepository articleRepository;
 
     @Transactional
-    public CommentCreateResponse createComment(HttpServletRequest user, CommentCreateRequest request) {
+    public CommentCreateResponse createComment(Long userId, String userRole, CommentCreateRequest request) {
         // 1. 유저가 해당 프로젝트에 참여하는지 / 관리자인지 체크
-        Member member = validateMember(user);
+        Member member = validateMember(userId);
         Project project = validateProject(request.getProjectId());
-        checkMemberInProject(user, member, project);
+        checkMemberInProject(userRole, member, project);
 
         // 2. 해당 게시글이 프로젝트에 포함되어있는지 체크
         Article article = validateArticle(request.getArticleId());
@@ -70,8 +70,7 @@ public class CommentService {
                 .build();
     }
 
-    private Member validateMember(HttpServletRequest user) {
-        Long userId = (Long) user.getAttribute("memberId");
+    private Member validateMember(Long userId) {
         return memberRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
     }
@@ -81,8 +80,7 @@ public class CommentService {
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
     }
 
-    private void checkMemberInProject(HttpServletRequest user, Member member, Project project) {
-        String userRole = (String) user.getAttribute("userRole").toString();
+    private void checkMemberInProject(String userRole, Member member, Project project) {
         if (!isAdminOrMember(userRole, member, project)) {
             throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
         }
@@ -101,13 +99,13 @@ public class CommentService {
     }
 
 
-    public List<CommentDTO> getCommentList(HttpServletRequest user, Long articleId) {
+    public List<CommentDTO> getCommentList(Long userId, String userRole, Long articleId) {
         // 1. 유저의 접근 권한 확인
-        Member member = validateMember(user);
+        Member member = validateMember(userId);
         Article article = validateArticle(articleId);
 
         Project project = article.getStage().getProject();
-        checkMemberInProject(user, member, project);
+        checkMemberInProject(userRole, member, project);
 
         // 2. 댓글 조회
         List<Comment> comments = commentRepository.findByArticleAndIsDeletedFalse(article);
@@ -154,8 +152,8 @@ public class CommentService {
     }
 
     @Transactional
-    public void deleteComment(HttpServletRequest user, Long commentId) {
-        Comment comment = getCommentAndValidateMember(user, commentId);
+    public void deleteComment(Long userId, Long commentId) {
+        Comment comment = getCommentAndValidateMember(userId, commentId);
 
         checkIfUserIsCommentAuthor(comment.getMember(), comment);
 
@@ -164,8 +162,8 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentUpdateResponse updateComment(HttpServletRequest user, CommentUpdateRequest request, Long commentId) {
-        Comment comment = getCommentAndValidateMember(user, commentId);
+    public CommentUpdateResponse updateComment(Long userId, CommentUpdateRequest request, Long commentId) {
+        Comment comment = getCommentAndValidateMember(userId, commentId);
 
         checkIfUserIsCommentAuthor(comment.getMember(), comment);
 
@@ -178,9 +176,9 @@ public class CommentService {
     }
 
     // 댓글 조회와 사용자 검증을 함께 처리하는 메서드
-    private Comment getCommentAndValidateMember(HttpServletRequest user, Long commentId) {
+    private Comment getCommentAndValidateMember(Long userId, Long commentId) {
         // 로그인한 사용자 확인
-        Member member = validateMember(user);
+        Member member = validateMember(userId);
 
         // 댓글 조회
         return commentRepository.findByIdAndIsDeletedFalse(commentId)

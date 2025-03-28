@@ -84,7 +84,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             sendErrorResponse(response, MemberErrorCode.NOT_FOUND_MEMBER);
         } catch (Exception e) {
             log.error("JWT 인증 필터 중 인증 실패 에러 발생: {}", e.getMessage(), e);
-            sendErrorResponse(response, CommonErrorCode.UNEXPECTED_ERROR);
+            filterChain.doFilter(request, response);
         }
     }
 

@@ -65,5 +65,23 @@ public class StageService {
         return StageResponse.fromEntity(savedStage);
     }
 
+    /**
+     * 특정 프로젝트의 모든 단계(삭제되지 않은)를 순서대로 조회하는 메서드
+     *
+     * @param projectId 프로젝트 ID
+     * @return 해당 프로젝트의 단계 목록 DTO 리스트 (StageReadResponse 형태)
+     */
 
+    public List<StageReadResponse> getStages(Long projectId) {
+        if (!projectRepository.existsById(projectId)) {
+            log.warn("단계 조회 실패: 프로젝트 ID {} 를 찾을 수 없음", projectId);
+            throw new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);
+        }
+        List<Stage> stages = stageRepository.findByProjectIdAndIsDeletedFalseOrderByStageOrderAsc(projectId);
+        log.info("프로젝트 ID {} 의 단계 {}개 조회 성공", projectId, stages.size());
+
+        return stages.stream()
+                .map(StageReadResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
 }

@@ -25,5 +25,9 @@ public class StageController {
         return ResponseEntity.ok(ApiResponseForm.success(stage, "단계 추가 성공"));
     }
 
-
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ApiResponseForm<List<StageReadResponse>>> getStages(@PathVariable Long projectId) {
+        List<StageReadResponse> stageReadResponseList = stageService.getStages(projectId);
+        return ResponseEntity.ok(ApiResponseForm.success(stageReadResponseList, "단계 조회 성공"));
+    }
 }

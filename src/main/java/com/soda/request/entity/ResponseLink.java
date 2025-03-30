@@ -16,7 +16,7 @@ public class ResponseLink extends LinkBase {
     private String urlDescription;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rejection_id", nullable = false)
+    @JoinColumn(name = "response_id", nullable = false)
     private Response response;
 
     @Builder

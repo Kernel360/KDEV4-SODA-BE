@@ -11,6 +11,7 @@ public class FileDeleteResponse {
     private Long requestId;
     private String name;
     private String url;
+    private Boolean isDeleted;
 
     public static FileDeleteResponse fromEntity(RequestFile requestFile) {
         return FileDeleteResponse.builder()
@@ -18,6 +19,7 @@ public class FileDeleteResponse {
                 .requestId(requestFile.getRequest().getId())
                 .name(requestFile.getName())
                 .url(requestFile.getUrl())
+                .isDeleted(requestFile.getIsDeleted())
                 .build();
     }
 }

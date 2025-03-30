@@ -2,11 +2,14 @@ package com.soda.request.entity;
 
 import com.soda.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RequestFile extends BaseEntity {
 
     private String name;

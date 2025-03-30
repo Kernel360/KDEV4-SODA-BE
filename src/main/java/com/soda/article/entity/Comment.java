@@ -3,6 +3,7 @@ package com.soda.article.entity;
 import com.soda.common.BaseEntity;
 import com.soda.member.entity.Member;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -34,6 +35,31 @@ public class Comment extends BaseEntity {
     // 부모 댓글이 없으면 일반 댓글, 있으면 대댓글
     public boolean isChildComment() {
         return parentComment != null;
+    }
+
+    public Comment() {}
+
+    @Builder
+    public Comment (String content, Article article, Member member, Comment parentComment) {
+        this.content = content;
+        this.article = article;
+        this.member = member;
+        if (parentComment != null) {
+            this.parentComment = parentComment;
+            parentComment.addChildComment(this);
+        }
+    }
+
+    public void delete() {
+        this.markAsDeleted();
+    }
+
+    public void update(String content) {
+        this.content = content;
+    }
+
+    public void addChildComment(Comment childComment) {
+        this.childComments.add(childComment);
     }
 
 }

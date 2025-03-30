@@ -7,11 +7,13 @@ import lombok.Getter;
 @Getter
 @Builder
 public class FileDTO {
+    private Long id;
     private String name;
     private String url;
 
     public static FileDTO fromEntity(RequestFile requestFile) {
         return FileDTO.builder()
+                .id(requestFile.getId())
                 .name(requestFile.getName())
                 .url(requestFile.getUrl())
                 .build();

@@ -1,5 +1,6 @@
 package com.soda.request.dto.request;
 
+import com.soda.request.dto.file.FileDTO;
 import com.soda.request.dto.link.LinkDTO;
 import com.soda.request.entity.Request;
 import com.soda.request.enums.RequestStatus;
@@ -20,6 +21,7 @@ public class RequestDTO {
     private String title;
     private String content;
     private List<LinkDTO> links;
+    private List<FileDTO> files;
     private RequestStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -36,6 +38,11 @@ public class RequestDTO {
                 .links(
                         request.getLinks().stream()
                                 .map(LinkDTO::fromEntity)
+                                .collect(Collectors.toList())
+                )
+                .files(
+                        request.getFiles().stream()
+                                .map(FileDTO::fromEntity)
                                 .collect(Collectors.toList())
                 )
                 .status(request.getStatus())

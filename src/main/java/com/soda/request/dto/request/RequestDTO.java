@@ -1,7 +1,7 @@
 package com.soda.request.dto.request;
 
 import com.soda.common.file.dto.FileDTO;
-import com.soda.request.dto.link.LinkDTO;
+import com.soda.common.link.dto.LinkDTO;
 import com.soda.request.entity.Request;
 import com.soda.request.enums.RequestStatus;
 import lombok.Builder;

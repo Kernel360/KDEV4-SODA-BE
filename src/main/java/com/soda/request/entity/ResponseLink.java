@@ -1,6 +1,6 @@
 package com.soda.request.entity;
 
-import com.soda.common.link.LinkBase;
+import com.soda.common.link.model.LinkBase;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

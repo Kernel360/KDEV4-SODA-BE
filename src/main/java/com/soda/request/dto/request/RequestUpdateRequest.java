@@ -1,6 +1,6 @@
 package com.soda.request.dto.request;
 
-import com.soda.request.dto.link.LinkDTO;
+import com.soda.common.link.dto.LinkDTO;
 import lombok.Getter;
 
 import java.util.List;

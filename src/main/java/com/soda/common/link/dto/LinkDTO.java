@@ -1,6 +1,6 @@
-package com.soda.request.dto.link;
+package com.soda.common.link.dto;
 
-import com.soda.common.link.LinkBase;
+import com.soda.common.link.model.LinkBase;
 import lombok.Builder;
 import lombok.Getter;
 

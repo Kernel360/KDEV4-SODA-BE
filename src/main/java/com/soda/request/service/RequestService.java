@@ -10,7 +10,7 @@ import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.entity.Task;
 import com.soda.project.repository.TaskRepository;
-import com.soda.request.dto.link.LinkDTO;
+import com.soda.common.link.dto.LinkDTO;
 import com.soda.request.dto.request.*;
 import com.soda.request.entity.Request;
 import com.soda.request.entity.RequestFile;

@@ -10,6 +10,7 @@ import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.entity.Task;
 import com.soda.project.repository.TaskRepository;
+import com.soda.request.dto.file.FileDeleteResponse;
 import com.soda.request.dto.file.FileUploadResponse;
 import com.soda.request.dto.link.LinkDTO;
 import com.soda.request.dto.request.*;
@@ -139,6 +140,17 @@ public class RequestService {
         return FileUploadResponse.fromEntity(savedFiles);
     }
 
+    @Transactional
+    public FileDeleteResponse fileDelete(Long memberId, Long fileId) {
+        RequestFile file = getFileOrThrow(fileId);
+
+        validateFileUploader(memberId, file);
+
+        file.delete();
+
+        return FileDeleteResponse.fromEntity(file);
+    }
+
 
     // 분리한 메서드들
     private Member getMemberOrThrow(Long memberId) {
@@ -219,6 +231,20 @@ public class RequestService {
         request.updateLinks(linkDTOs);
 
         return request;
+    }
+
+    private void validateFileUploader(Long memberId, RequestFile file) {
+        if(isFileUploader(memberId, file)) {
+            throw new GeneralException(CommonErrorCode.USER_NOT_UPLOAD_FILE);
+        }
+    }
+
+    private static boolean isFileUploader(Long memberId, RequestFile file) {
+        return memberId != file.getRequest().getMember().getId();
+    }
+
+    private RequestFile getFileOrThrow(Long fileId) {
+        return requestFileRepository.findById(fileId).orElseThrow(() -> new GeneralException(CommonErrorCode.FILE_NOT_FOUND));
     }
 
 }

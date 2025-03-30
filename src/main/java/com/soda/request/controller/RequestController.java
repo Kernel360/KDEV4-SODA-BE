@@ -1,6 +1,7 @@
 package com.soda.request.controller;
 
 import com.soda.global.response.ApiResponseForm;
+import com.soda.request.dto.file.FileDeleteResponse;
 import com.soda.request.dto.file.FileUploadResponse;
 import com.soda.request.dto.request.*;
 import com.soda.request.service.RequestService;
@@ -61,5 +62,13 @@ public class RequestController {
         Long memberId = (Long) request.getAttribute("memberId");
         FileUploadResponse fileUploadResponse = requestService.fileUpload(memberId, requestId, files);
         return ResponseEntity.ok(ApiResponseForm.success(fileUploadResponse));
+    }
+
+    @DeleteMapping("/files/{fileId}")
+    public ResponseEntity<ApiResponseForm<?>> deleteFile(@PathVariable Long fileId,
+                                                         HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        FileDeleteResponse fileDeleteResponse = requestService.fileDelete(memberId, fileId);
+        return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
     }
 }

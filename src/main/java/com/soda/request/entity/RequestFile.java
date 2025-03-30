@@ -23,4 +23,8 @@ public class RequestFile extends BaseEntity {
         this.url = url;
         this.request = request;
     }
+
+    public void delete() {
+        markAsDeleted();
+    }
 }

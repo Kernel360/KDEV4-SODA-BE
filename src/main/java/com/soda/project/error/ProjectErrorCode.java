@@ -10,8 +10,8 @@ public enum ProjectErrorCode implements ErrorCode {
     PROJECT_TITLE_DUPLICATED("1004", "Project title is duplicated: A project with the same title already exists.", HttpStatus.BAD_REQUEST),
     PROJECT_NOT_FOUND("1005", "Invalid project Id", HttpStatus.NOT_FOUND),
     PROJECT_ALREADY_DELETED("1006", "This Project is already deleted", HttpStatus.NOT_FOUND),
-    INVALID_STAGE_FOR_PROJECT("1008", "Invalid stage for project", HttpStatus.NOT_FOUND),
-    MEMBER_NOT_IN_PROJECT("1009", "This member does not exist in this project", HttpStatus.NOT_FOUND),
+    INVALID_STAGE_FOR_PROJECT("1007", "Invalid stage for project", HttpStatus.NOT_FOUND),
+    MEMBER_NOT_IN_PROJECT("1008", "This member does not exist in this project", HttpStatus.NOT_FOUND),
     ;
 
     private final String code;

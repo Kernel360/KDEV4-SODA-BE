@@ -1,8 +1,8 @@
 package com.soda.request.service;
 
+import com.soda.common.file.S3Service;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
-import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
@@ -10,18 +10,22 @@ import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.entity.Task;
 import com.soda.project.repository.TaskRepository;
+import com.soda.request.dto.file.FileUploadResponse;
 import com.soda.request.dto.link.LinkDTO;
 import com.soda.request.dto.request.*;
 import com.soda.request.entity.Request;
+import com.soda.request.entity.RequestFile;
 import com.soda.request.entity.RequestLink;
-import com.soda.request.entity.ResponseLink;
 import com.soda.request.enums.RequestStatus;
 import com.soda.request.error.RequestErrorCode;
+import com.soda.request.repository.RequestFileRepository;
 import com.soda.request.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +36,8 @@ public class RequestService {
     private final RequestRepository requestRepository;
     private final MemberRepository memberRepository;
     private final TaskRepository taskRepository;
+    private final S3Service s3Service;
+    private final RequestFileRepository requestFileRepository;
 
     /*
     Request(승인요청) 생성
@@ -70,7 +76,7 @@ public class RequestService {
         Request request = getRequestOrThrow(requestId);
 
         // update요청을 한 member가 승인요청을 작성했던 member인지 확인
-        validateRequestWriter(request, member);
+        validateRequestWriter(memberId, request);
 
         // request의 제목, 내용을 수정
         updateRequestFields(requestUpdateRequest, request);
@@ -82,12 +88,11 @@ public class RequestService {
     }
 
     @Transactional
-    public RequestDeleteResponse deleteRequest(UserDetailsImpl userDetails, Long requestId) throws GeneralException {
-        Member member = userDetails.getMember();
+    public RequestDeleteResponse deleteRequest(Long memberId, Long requestId) throws GeneralException {
         Request request = getRequestOrThrow(requestId);
 
         // delete요청을 한 member가 승인요청을 작성했던 member인지 확인
-        validateRequestWriter(request, member);
+        validateRequestWriter(memberId, request);
 
         // request 소프트 삭제
         request.delete();
@@ -103,6 +108,35 @@ public class RequestService {
     @Transactional
     public void reject(Request request) {
         request.reject();
+    }
+
+    /**
+     *
+     * 요청을 보낸 멤버가 requestId의 작성자인지 validate
+     * validate를 통과하면 파일을 업로드
+     */
+    @Transactional
+    public FileUploadResponse fileUpload(Long memberId, Long requestId, List<MultipartFile> files) {
+        Request request = getRequestOrThrow(requestId);
+
+        validateRequestWriter(memberId, request);
+
+        List<String> fileUrls = s3Service.uploadFiles(files);
+        List<RequestFile> requestFiles = new ArrayList<>();
+
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
+            String url = fileUrls.get(i);
+
+            requestFiles.add(RequestFile.builder()
+                    .name(file.getOriginalFilename())  // 파일명 그대로 저장
+                    .url(url)
+                    .request(request)
+                    .build());
+        }
+
+        List<RequestFile> savedFiles = requestFileRepository.saveAll(requestFiles);
+        return FileUploadResponse.fromEntity(savedFiles);
     }
 
 
@@ -146,8 +180,8 @@ public class RequestService {
     }
 
     // Request(승인요청)을 작성한 멤버가 (인자의) Member인지 확인하는 메서드
-    private static void validateRequestWriter(Request request, Member member) {
-        boolean isRequestWriter = request.getMember().getId().equals(member.getId());
+    private static void validateRequestWriter(Long memberId, Request request) {
+        boolean isRequestWriter = request.getMember().getId().equals(memberId);
         if (!isRequestWriter) { throw new GeneralException(RequestErrorCode.USER_NOT_WRITE_REQUEST); }
     }
 

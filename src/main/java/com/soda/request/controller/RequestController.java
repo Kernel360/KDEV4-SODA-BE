@@ -1,14 +1,14 @@
 package com.soda.request.controller;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.global.security.auth.UserDetailsImpl;
+import com.soda.request.dto.file.FileUploadResponse;
 import com.soda.request.dto.request.*;
 import com.soda.request.service.RequestService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -48,8 +48,18 @@ public class RequestController {
 
     @DeleteMapping("/requests/{requestId}")
     public ResponseEntity<ApiResponseForm<?>> deleteRequest(@PathVariable Long requestId,
-                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        RequestDeleteResponse requestDeleteResponse = requestService.deleteRequest(userDetails, requestId);
+                                                            HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        RequestDeleteResponse requestDeleteResponse = requestService.deleteRequest(memberId, requestId);
         return ResponseEntity.ok(ApiResponseForm.success(requestDeleteResponse));
+    }
+
+    @PostMapping("/requests/{requestId}/files")
+    public ResponseEntity<ApiResponseForm<?>> uploadFiles(@PathVariable Long requestId,
+                                                          @RequestPart("file") List<MultipartFile> files,
+                                                          HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        FileUploadResponse fileUploadResponse = requestService.fileUpload(memberId, requestId, files);
+        return ResponseEntity.ok(ApiResponseForm.success(fileUploadResponse));
     }
 }

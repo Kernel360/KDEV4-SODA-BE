@@ -1,6 +1,6 @@
 package com.soda.request.entity;
 
-import com.soda.common.BaseEntity;
+import com.soda.common.file.model.FileBase;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -10,11 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RequestFile extends BaseEntity {
-
-    private String name;
-
-    private String url;
+public class RequestFile extends FileBase {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id", nullable = false)
@@ -27,7 +23,8 @@ public class RequestFile extends BaseEntity {
         this.request = request;
     }
 
-    public void delete() {
-        markAsDeleted();
+    @Override
+    public Long getDomainId() {
+        return request.getId();
     }
 }

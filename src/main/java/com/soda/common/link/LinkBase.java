@@ -3,12 +3,13 @@ package com.soda.common.link;
 import com.soda.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @MappedSuperclass
 @Getter
-@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class LinkBase extends BaseEntity {
 
     @Column(nullable = false)

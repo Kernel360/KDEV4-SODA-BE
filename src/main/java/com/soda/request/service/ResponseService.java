@@ -2,7 +2,6 @@ package com.soda.request.service;
 
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
-import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;

@@ -1,4 +1,4 @@
-package com.soda.common.file;
+package com.soda.common.file.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;

@@ -1,6 +1,6 @@
 package com.soda.request.service;
 
-import com.soda.common.file.S3Service;
+import com.soda.common.file.service.S3Service;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
@@ -10,8 +10,6 @@ import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.entity.Task;
 import com.soda.project.repository.TaskRepository;
-import com.soda.request.dto.file.FileDeleteResponse;
-import com.soda.request.dto.file.FileUploadResponse;
 import com.soda.request.dto.link.LinkDTO;
 import com.soda.request.dto.request.*;
 import com.soda.request.entity.Request;
@@ -24,9 +22,7 @@ import com.soda.request.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -111,45 +107,7 @@ public class RequestService {
         request.reject();
     }
 
-    /**
-     *
-     * 요청을 보낸 멤버가 requestId의 작성자인지 validate
-     * validate를 통과하면 파일을 업로드
-     */
-    @Transactional
-    public FileUploadResponse fileUpload(Long memberId, Long requestId, List<MultipartFile> files) {
-        Request request = getRequestOrThrow(requestId);
 
-        validateRequestWriter(memberId, request);
-
-        List<String> fileUrls = s3Service.uploadFiles(files);
-        List<RequestFile> requestFiles = new ArrayList<>();
-
-        for (int i = 0; i < files.size(); i++) {
-            MultipartFile file = files.get(i);
-            String url = fileUrls.get(i);
-
-            requestFiles.add(RequestFile.builder()
-                    .name(file.getOriginalFilename())  // 파일명 그대로 저장
-                    .url(url)
-                    .request(request)
-                    .build());
-        }
-
-        List<RequestFile> savedFiles = requestFileRepository.saveAll(requestFiles);
-        return FileUploadResponse.fromEntity(savedFiles);
-    }
-
-    @Transactional
-    public FileDeleteResponse fileDelete(Long memberId, Long fileId) {
-        RequestFile file = getFileOrThrow(fileId);
-
-        validateFileUploader(memberId, file);
-
-        file.delete();
-
-        return FileDeleteResponse.fromEntity(file);
-    }
 
 
     // 분리한 메서드들
@@ -233,18 +191,8 @@ public class RequestService {
         return request;
     }
 
-    private void validateFileUploader(Long memberId, RequestFile file) {
-        if(isFileUploader(memberId, file)) {
-            throw new GeneralException(CommonErrorCode.USER_NOT_UPLOAD_FILE);
-        }
-    }
-
     private static boolean isFileUploader(Long memberId, RequestFile file) {
         return memberId != file.getRequest().getMember().getId();
-    }
-
-    private RequestFile getFileOrThrow(Long fileId) {
-        return requestFileRepository.findById(fileId).orElseThrow(() -> new GeneralException(CommonErrorCode.FILE_NOT_FOUND));
     }
 
 }

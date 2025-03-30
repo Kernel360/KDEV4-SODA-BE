@@ -1,8 +1,9 @@
 package com.soda.request.controller;
 
+import com.soda.common.file.service.FileService;
 import com.soda.global.response.ApiResponseForm;
-import com.soda.request.dto.file.FileDeleteResponse;
-import com.soda.request.dto.file.FileUploadResponse;
+import com.soda.common.file.dto.FileDeleteResponse;
+import com.soda.common.file.dto.FileUploadResponse;
 import com.soda.request.dto.request.*;
 import com.soda.request.service.RequestService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RequestController {
     private final RequestService requestService;
+    private final FileService fileService;
 
     @PostMapping("/requests")
     public ResponseEntity<ApiResponseForm<?>> createRequest(@RequestBody RequestCreateRequest requestCreateRequest,
@@ -60,15 +62,15 @@ public class RequestController {
                                                           @RequestPart("file") List<MultipartFile> files,
                                                           HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        FileUploadResponse fileUploadResponse = requestService.fileUpload(memberId, requestId, files);
+        FileUploadResponse fileUploadResponse = fileService.upload("request", requestId, memberId, files);
         return ResponseEntity.ok(ApiResponseForm.success(fileUploadResponse));
     }
 
-    @DeleteMapping("/files/{fileId}")
+    @DeleteMapping("requests/{requestId}/files/{fileId}")
     public ResponseEntity<ApiResponseForm<?>> deleteFile(@PathVariable Long fileId,
                                                          HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        FileDeleteResponse fileDeleteResponse = requestService.fileDelete(memberId, fileId);
+        FileDeleteResponse fileDeleteResponse = fileService.delete("request", memberId, fileId);
         return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
     }
 }

@@ -23,8 +23,6 @@ public enum CommonErrorCode implements ErrorCode {
     USER_NOT_IN_PROJECT_DEV("3000", "This user is not in current project or not in project's dev company", HttpStatus.BAD_REQUEST),
     TASK_NOT_FOUND("3003", "This task is not found", HttpStatus.NOT_FOUND),
     USER_NOT_IN_PROJECT_CLI("3004", "This user is not in current project or not in project's cli company, or not an admin", HttpStatus.NOT_FOUND ),
-    FILE_NOT_FOUND("3005", "This file is not found", HttpStatus.NOT_FOUND),
-    USER_NOT_UPLOAD_FILE("3006", "This user didn't upload the file", HttpStatus.BAD_REQUEST),
     ;
 
 

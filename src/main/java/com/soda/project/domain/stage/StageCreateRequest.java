@@ -6,5 +6,6 @@ import lombok.Getter;
 public class StageCreateRequest {
     private Long projectId;
     private String name;
-    private Float newOrder;
+    private Long prevStageId;
+    private Long nextStageId;
 }

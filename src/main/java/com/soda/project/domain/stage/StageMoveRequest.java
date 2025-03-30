@@ -4,5 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class StageMoveRequest {
-    private Float newOrder;
+    private Long prevStageId;
+    private Long nextStageId;
 }

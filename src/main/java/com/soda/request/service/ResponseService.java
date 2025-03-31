@@ -2,13 +2,12 @@ package com.soda.request.service;
 
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
-import com.soda.global.security.auth.UserDetailsImpl;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.error.ProjectErrorCode;
-import com.soda.request.dto.link.LinkDTO;
+import com.soda.common.link.dto.LinkDTO;
 import com.soda.request.dto.response.*;
 import com.soda.request.entity.Request;
 import com.soda.request.entity.Response;

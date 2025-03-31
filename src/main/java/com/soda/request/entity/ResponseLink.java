@@ -1,7 +1,6 @@
 package com.soda.request.entity;
 
-import com.soda.common.BaseEntity;
-import com.soda.common.LinkBase;
+import com.soda.common.link.model.LinkBase;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -17,7 +16,7 @@ public class ResponseLink extends LinkBase {
     private String urlDescription;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rejection_id", nullable = false)
+    @JoinColumn(name = "response_id", nullable = false)
     private Response response;
 
     @Builder

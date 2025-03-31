@@ -17,11 +17,12 @@ public enum CommonErrorCode implements ErrorCode {
 
     // 공통 에러
     UNEXPECTED_ERROR("1000", "Unexpected Error: An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
+    S3_UPLOAD_ERROR("1001", "S3 Upload Error: An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // 승인요청 관련 오류 메시지
     USER_NOT_IN_PROJECT_DEV("3000", "This user is not in current project or not in project's dev company", HttpStatus.BAD_REQUEST),
     TASK_NOT_FOUND("3003", "This task is not found", HttpStatus.NOT_FOUND),
-    USER_NOT_IN_PROJECT_CLI("3004", "This user is not in current project or not in project's cli company, or not an admin", HttpStatus.NOT_FOUND ),;
+    USER_NOT_IN_PROJECT_CLI("3004", "This user is not in current project or not in project's cli company, or not an admin", HttpStatus.NOT_FOUND ),
     ;
 
 
@@ -51,5 +52,4 @@ public enum CommonErrorCode implements ErrorCode {
     public HttpStatus getHttpStatus() {
         return httpStatus;
     }
-
 }

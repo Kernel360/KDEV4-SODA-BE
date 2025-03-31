@@ -1,6 +1,6 @@
 package com.soda.request.dto.response;
 
-import com.soda.request.dto.link.LinkDTO;
+import com.soda.common.link.dto.LinkDTO;
 import com.soda.request.entity.Response;
 import com.soda.request.enums.RequestStatus;
 import lombok.Builder;

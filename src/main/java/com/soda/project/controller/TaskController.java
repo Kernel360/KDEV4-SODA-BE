@@ -4,6 +4,7 @@ import com.soda.global.response.ApiResponseForm;
 import com.soda.project.domain.task.TaskCreateRequest;
 import com.soda.project.domain.task.TaskReadResponse;
 import com.soda.project.domain.task.TaskResponse;
+import com.soda.project.domain.task.TaskUpdateRequest;
 import com.soda.project.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,20 @@ public class TaskController {
     public ResponseEntity<ApiResponseForm<List<TaskReadResponse>>> getTasksByStage(@PathVariable Long stageId) {
         List<TaskReadResponse> tasks = taskService.getTasksByStage(stageId);
         return ResponseEntity.ok(ApiResponseForm.success(tasks, "스테이지 테스크 목록 조회 성공"));
+    }
+
+    /**
+     * 테스크 정보 수정 API (제목, 내용)
+     * @param taskId 수정할 테스크 ID (경로 변수)
+     * @param request 수정할 내용 DTO
+     * @return 수정된 테스크 정보
+     */
+    @PatchMapping("/{taskId}")
+    public ResponseEntity<ApiResponseForm<TaskResponse>> updateTask(
+            @PathVariable Long taskId,
+            @RequestBody TaskUpdateRequest request) {
+        TaskResponse updatedTask = taskService.updateTask(taskId, request);
+        return ResponseEntity.ok(ApiResponseForm.success(updatedTask, "테스크 정보 수정 성공"));
     }
 
 }

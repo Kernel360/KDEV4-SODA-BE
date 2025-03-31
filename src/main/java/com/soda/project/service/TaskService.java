@@ -4,6 +4,7 @@ import com.soda.global.response.GeneralException;
 import com.soda.project.domain.task.TaskCreateRequest;
 import com.soda.project.domain.task.TaskReadResponse;
 import com.soda.project.domain.task.TaskResponse;
+import com.soda.project.domain.task.TaskUpdateRequest;
 import com.soda.project.entity.Stage;
 import com.soda.project.entity.Task;
 import com.soda.project.error.StageErrorCode;
@@ -90,6 +91,18 @@ public class TaskService {
         return tasks.stream()
                 .map(TaskReadResponse::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 특정 태스크의 정보(제목, 내용)를 수정합니다.
+     */
+    @Transactional
+    public TaskResponse updateTask(Long taskId, TaskUpdateRequest request) {
+        Task task = findActiveTaskByIdOrThrow(taskId);
+        task.update(request.getTitle(), request.getContent());
+         taskRepository.save(task);
+        log.info("태스크 정보 수정 성공: {}", taskId);
+        return TaskResponse.fromEntity(task);
     }
 
 

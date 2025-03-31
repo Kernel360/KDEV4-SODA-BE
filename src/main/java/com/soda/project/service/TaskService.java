@@ -2,6 +2,7 @@ package com.soda.project.service;
 
 import com.soda.global.response.GeneralException;
 import com.soda.project.domain.task.TaskCreateRequest;
+import com.soda.project.domain.task.TaskReadResponse;
 import com.soda.project.domain.task.TaskResponse;
 import com.soda.project.entity.Stage;
 import com.soda.project.entity.Task;
@@ -13,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -38,7 +42,7 @@ public class TaskService {
      *                          참조된 태스크가 다른 스테이지 소속(`TaskErrorCode.TASK_STAGE_MISMATCH`)이거나,
      *                          순서 설정이 유효하지 않은(`TaskErrorCode.INVALID_TASK_ORDER`) 경우 발생합니다.
      */
-    @Transactional // 쓰기 작업
+    @Transactional
     public TaskResponse addTask(TaskCreateRequest request) {
         // 1. 대상 스테이지 조회 (StageRepository 사용)
         Stage stage = stageRepository.findByIdAndIsDeletedFalse(request.getStageId())
@@ -64,6 +68,28 @@ public class TaskService {
         log.info("태스크 추가 성공: 스테이지 ID {}, 새 태스크 ID {}, 순서 {}",
                 stage.getId(), savedTask.getId(), savedTask.getTaskOrder());
         return TaskResponse.fromEntity(savedTask);
+    }
+
+    /**
+     * 특정 스테이지에 속한 모든 활성(삭제되지 않은) 태스크를 순서대로 조회합니다.
+     * 스테이지 존재 여부는 StageRepository를 통해 직접 확인합니다.
+     *
+     * @param stageId 태스크를 조회할 스테이지의 ID
+     * @return 해당 스테이지의 태스크 DTO 목록 (`List<TaskReadResponse>`)
+     * @throws GeneralException 스테이지(`StageErrorCode.STAGE_NOT_FOUND`)를 찾을 수 없는 경우 발생합니다.
+     */
+    public List<TaskReadResponse> getTasksByStage(Long stageId) {
+        if (!stageRepository.existsByIdAndIsDeletedFalse(stageId)) {
+            log.warn("태스크 조회 실패: 스테이지 ID {} 를 찾을 수 없음", stageId);
+            throw new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
+        }
+
+        List<Task> tasks = taskRepository.findByStageIdAndIsDeletedFalseOrderByTaskOrderAsc(stageId);
+        log.info("스테이지 ID {} 의 활성 태스크 {}개 조회 성공", stageId, tasks.size());
+
+        return tasks.stream()
+                .map(TaskReadResponse::fromEntity)
+                .collect(Collectors.toList());
     }
 
 

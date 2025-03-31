@@ -245,4 +245,9 @@ public class ArticleService {
         return articleRepository.findByIsDeletedFalseAndStage_Project(project);
     }
 
+    public Article validateArticle(Long articleId) {
+        return articleRepository.findByIdAndIsDeletedFalse(articleId)
+                .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
+    }
+
 }

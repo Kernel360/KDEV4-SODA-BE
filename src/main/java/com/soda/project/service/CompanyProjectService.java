@@ -9,11 +9,13 @@ import com.soda.project.entity.CompanyProject;
 import com.soda.project.entity.Project;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.CompanyProjectRepository;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class CompanyProjectService {

@@ -13,7 +13,7 @@ import com.soda.project.entity.MemberProject;
 import com.soda.project.entity.Project;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.ProjectRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class  ProjectService {
@@ -216,6 +217,7 @@ public class  ProjectService {
         - 개발사 수정, 관리자/직원 수정
         - 고객사 수정, 관리자/직원 수정
      */
+    @Transactional
     public ProjectCreateResponse updateProject(Long projectId, ProjectCreateRequest request) {
         // 1. 프로젝트 존재 여부 체크
         Project project = getProjectById(projectId);

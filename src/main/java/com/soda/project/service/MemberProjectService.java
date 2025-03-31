@@ -5,12 +5,14 @@ import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.entity.MemberProject;
 import com.soda.project.entity.Project;
 import com.soda.project.repository.MemberProjectRepository;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class MemberProjectService {
@@ -45,7 +47,7 @@ public class MemberProjectService {
     public List<MemberProject> findByProject(Project project) {
         return memberProjectRepository.findByProject(project);
     }
-    
+
     public MemberProject createMemberProject(Member member, Project project, MemberProjectRole role) {
         return MemberProject.builder()
                 .member(member)

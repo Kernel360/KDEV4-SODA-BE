@@ -75,9 +75,9 @@ public class TestDataLoader {
         memberRepository.save(junbeom);
 
         // 단계 생성
-        Stage planning = stageRepository.save(new Stage("기획", null, "기획하기", soda));
-        Stage development = stageRepository.save(new Stage("개발", planning.getId(), "개발하기", soda));
-        Stage deployment = stageRepository.save(new Stage("배포", development.getId(), "배포하기", soda));
+        Stage planning = stageRepository.save(new Stage("기획", 1F, soda));
+        Stage development = stageRepository.save(new Stage("개발", 2.0F, soda));
+        Stage deployment = stageRepository.save(new Stage("배포", 3.0F, soda));
 
         // 작업 생성
         taskRepository.save(new Task("기획하기", "기획하기~~", planning));

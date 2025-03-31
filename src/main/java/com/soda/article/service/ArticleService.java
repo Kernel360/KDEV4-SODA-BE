@@ -15,6 +15,7 @@ import com.soda.member.repository.MemberRepository;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
 import com.soda.project.error.ProjectErrorCode;
+import com.soda.project.error.StageErrorCode;
 import com.soda.project.repository.MemberProjectRepository;
 import com.soda.project.repository.ProjectRepository;
 import com.soda.project.repository.StageRepository;
@@ -202,7 +203,7 @@ public class ArticleService {
 
     private Stage validateStage(Long stageId, Project project) {
         Stage stage = stageRepository.findById(stageId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.STAGE_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
 
         if (!stage.getProject().equals(project)) {
             throw new GeneralException(ProjectErrorCode.INVALID_STAGE_FOR_PROJECT);
@@ -296,7 +297,7 @@ public class ArticleService {
     private List<Article> getArticlesByStageAndProject(Long stageId, Project project) {
         if (stageId != null) {
             Stage stage = stageRepository.findById(stageId)
-                    .orElseThrow(() -> new GeneralException(ProjectErrorCode.STAGE_NOT_FOUND));
+                    .orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
             return articleRepository.findByIsDeletedFalseAndStageAndStage_Project(stage, project);
         }
         return articleRepository.findByIsDeletedFalseAndStage_Project(project);

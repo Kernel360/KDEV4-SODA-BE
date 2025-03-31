@@ -29,4 +29,8 @@ public class RequestLink extends LinkBase {
         this.urlDescription = urlDescription;
         this.request = request;
     }
+
+    public void updateRequest(Request request) {
+        this.request = request;
+    }
 }

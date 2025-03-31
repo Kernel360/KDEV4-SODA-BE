@@ -45,4 +45,12 @@ public class MemberProjectService {
     public List<MemberProject> findByProject(Project project) {
         return memberProjectRepository.findByProject(project);
     }
+    
+    public MemberProject createMemberProject(Member member, Project project, MemberProjectRole role) {
+        return MemberProject.builder()
+                .member(member)
+                .project(project)
+                .memberProjectRole(role)
+                .build();
+    }
 }

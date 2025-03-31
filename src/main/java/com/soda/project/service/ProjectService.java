@@ -98,7 +98,7 @@ public class  ProjectService {
             // 이미 멤버가 프로젝트에 존재하는지 확인
             if (!memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project)) {
                 members.add(member);
-                MemberProject memberProject = createMemberProject(member, project, memberRole);
+                MemberProject memberProject = memberProjectService.createMemberProject(member, project, memberRole);
                 memberProjectService.save(memberProject);  // 새로운 멤버를 프로젝트에 추가
             }
         }
@@ -304,21 +304,13 @@ public class  ProjectService {
                 }
             } else {
                 // 새 멤버 프로젝트는 새로 생성
-                MemberProject newMemberProject = createMemberProject(member, project, role);
+                MemberProject newMemberProject = memberProjectService.createMemberProject(member, project, role);
                 newMemberProjects.add(newMemberProject);
             }
         }
 
         // 새로 생성된 멤버 프로젝트들을 저장
         memberProjectService.saveAll(newMemberProjects);
-    }
-
-    private MemberProject createMemberProject(Member member, Project project, MemberProjectRole role) {
-        return MemberProject.builder()
-                .member(member)
-                .project(project)
-                .memberProjectRole(role)
-                .build();
     }
 
     public Project getProjectById(Long projectId) {

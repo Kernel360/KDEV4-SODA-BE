@@ -105,9 +105,6 @@ public class RequestService {
 
 
     // 분리한 메서드들
-    private Member getMemberOrThrow(Long memberId) {
-        return memberRepository.findById(memberId).orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
-    }
 
     // isDevInCurrentProject에서 memberProject를 조회해 userDetails.getMember로 멤버객체를 그대로 사용하면 "LazyInitializationException"이 발생해
     // memberId를 바탕으로 (레프트)페치조인해 memberProject와 함께 영속성 컨텍스트에 등록
@@ -120,7 +117,7 @@ public class RequestService {
         return taskRepository.findById(taskId).orElseThrow(() -> new GeneralException(CommonErrorCode.TASK_NOT_FOUND));
     }
 
-    private Request getRequestOrThrow(Long requestId) {
+    protected Request getRequestOrThrow(Long requestId) {
         return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_NOT_FOUND));
     }
 
@@ -180,6 +177,8 @@ public class RequestService {
     }
 
     private List<RequestLink> buildRequestLinks(List<LinkDTO> linkDTOs) {
+        if (linkDTOs == null) return List.of();
+
         return linkDTOs.stream()
                 .map(dto -> RequestLink.builder()
                         .urlAddress(dto.getUrlAddress())
@@ -187,5 +186,4 @@ public class RequestService {
                         .build())
                 .toList();
     }
-// 링크 처리하는거 여기서 한번에 할 지 고민해야함
 }

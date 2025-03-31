@@ -55,4 +55,14 @@ public class Response extends BaseEntity {
     public void delete() {
         markAsDeleted();
     }
+
+    public void addLinks(List<ResponseLink> newLinks) {
+        if ( this.links == null ) {
+            this.links = new ArrayList<>();
+        }
+        for (ResponseLink link : newLinks) {
+            link.updateResponse(this);
+            this.links.add(link);
+        }
+    }
 }

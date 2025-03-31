@@ -67,7 +67,7 @@ public class Request extends BaseEntity {
             this.links = new ArrayList<>();
         }
         for (RequestLink link : newLinks) {
-            link.updateRequest(this); // 역참조 설정
+            link.updateRequest(this);
             this.links.add(link);
         }
     }

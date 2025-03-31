@@ -1,4 +1,4 @@
-package com.soda.global.config;
+package com.soda.global.init;
 
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;

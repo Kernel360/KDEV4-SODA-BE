@@ -5,7 +5,9 @@ import org.springframework.http.HttpStatus;
 
 public enum RequestErrorCode implements ErrorCode {
     REQUEST_NOT_FOUND("3001", "This request id is not found in Requests", HttpStatus.NOT_FOUND),
-    USER_NOT_WRITE_REQUEST("3002", "This user doesn't write this request", HttpStatus.BAD_REQUEST)
+    USER_NOT_WRITE_REQUEST("3002", "This user doesn't write this request", HttpStatus.BAD_REQUEST),
+    REQUESTFILE_NOT_FOUND("3003", "This request_file is not found", HttpStatus.NOT_FOUND),
+    USER_NOT_UPLOAD_FILE("3004", "This user didn't upload the request_file", HttpStatus.BAD_REQUEST),
     ;
 
     private final String code;

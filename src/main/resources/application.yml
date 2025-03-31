@@ -62,6 +62,16 @@ init:
     authid: ${ADMIN_AUTH_ID}
     password: ${ADMIN_PASSWORD}
 
-
-
-
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ${AWS_REGION}
+    stack:
+      auto: false
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+    cloudfront:
+      domain: ${AWS_CLOUDFRONT_DOMAIN}

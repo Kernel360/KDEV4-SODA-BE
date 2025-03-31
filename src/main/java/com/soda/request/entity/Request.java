@@ -4,7 +4,7 @@ import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
 import com.soda.member.entity.Member;
 import com.soda.project.entity.Task;
-import com.soda.request.dto.link.LinkDTO;
+import com.soda.common.link.dto.LinkDTO;
 import com.soda.request.enums.RequestStatus;
 import jakarta.persistence.*;
 import lombok.*;

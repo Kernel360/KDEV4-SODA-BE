@@ -1,19 +1,19 @@
-package com.soda.request.dto.link;
+package com.soda.common.link.dto;
 
-import com.soda.common.LinkBase;
-import com.soda.request.entity.ResponseLink;
-import io.swagger.v3.oas.models.links.Link;
+import com.soda.common.link.model.LinkBase;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
 public class LinkDTO {
+    private Long id;
     private String urlAddress;
     private String urlDescription;
 
     public static LinkDTO fromEntity(LinkBase link) {
         return LinkDTO.builder()
+                .id(link.getId())
                 .urlAddress(link.getUrlAddress())
                 .urlDescription(link.getUrlDescription())
                 .build();

@@ -1,7 +1,6 @@
 package com.soda.request.entity;
 
-import com.soda.common.BaseEntity;
-import com.soda.common.LinkBase;
+import com.soda.common.link.model.LinkBase;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;

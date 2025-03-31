@@ -80,8 +80,8 @@ public class TestDataLoader {
         Stage deployment = stageRepository.save(new Stage("배포", 3.0F, soda));
 
         // 작업 생성
-        taskRepository.save(new Task("기획하기", "기획하기~~", planning));
-        taskRepository.save(new Task("백엔드 프론트 개발", "프론트 백엔드 개발", development));
-        taskRepository.save(new Task("cicd 구축", "배포하기 젠킨스 써서",deployment));
+        taskRepository.save(new Task("기획하기", "기획하기~~",1F, planning));
+        taskRepository.save(new Task("백엔드 프론트 개발", "프론트 백엔드 개발",2.0F, development));
+        taskRepository.save(new Task("cicd 구축", "배포하기 젠킨스 써서",3.0F,deployment));
     }
 }

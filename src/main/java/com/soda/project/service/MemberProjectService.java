@@ -1,29 +1,44 @@
 package com.soda.project.service;
 
+import com.soda.global.response.GeneralException;
+import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.entity.MemberProject;
 import com.soda.project.entity.Project;
+import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.MemberProjectRepository;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class MemberProjectService {
+
     private final MemberProjectRepository memberProjectRepository;
 
-    public boolean existsByMemberAndProjectAndIsDeletedFalse(Member member, Project project) {
-        return memberProjectRepository.existsByMemberAndProjectAndIsDeletedFalse(member, project);
+    public void assignMembersToProject(Company company, List<Member> members, Project project, MemberProjectRole role) {
+        members.forEach(member -> {
+            if (!member.getCompany().getId().equals(company.getId())) {
+                throw new GeneralException(ProjectErrorCode.INVALID_MEMBER_COMPANY);
+            }
+
+            if (!existsByMemberAndProjectAndIsDeletedFalse(member, project)) {
+                createAndSaveMemberProject(member, project, role);
+            }
+        });
     }
 
-    public void save(MemberProject memberProject) {
-        memberProjectRepository.save(memberProject);  // 새로운 멤버를 프로젝트에 추가
+    private void createAndSaveMemberProject(Member member, Project project, MemberProjectRole role) {
+        MemberProject memberProject = MemberProject.builder()
+                .member(member)
+                .project(project)
+                .memberProjectRole(role)
+                .build();
+        memberProjectRepository.save(memberProject);
     }
 
     public List<Member> getMembersByRole(Project project, MemberProjectRole role) {
@@ -32,27 +47,13 @@ public class MemberProjectService {
                 .collect(Collectors.toList());
     }
 
-    public List<MemberProject> findByProjectAndRole(Project project, MemberProjectRole role) {
-        return memberProjectRepository.findByProjectAndRole(project, role);
+    public boolean existsByMemberAndProjectAndIsDeletedFalse(Member member, Project project) {
+        return memberProjectRepository.existsByMemberAndProjectAndIsDeletedFalse(member, project);
     }
 
-    public void saveAll(List<MemberProject> memberProjects) {
+    public void deleteMemberProjects(Project project) {
+        List<MemberProject> memberProjects = memberProjectRepository.findByProject(project);
+        memberProjects.forEach(MemberProject::delete);
         memberProjectRepository.saveAll(memberProjects);
-    }
-
-    public MemberProject findByMemberAndProjectAndRole(Member member, Project project, MemberProjectRole role) {
-        return memberProjectRepository.findByMemberAndProjectAndRole(member, project, role);
-    }
-
-    public List<MemberProject> findByProject(Project project) {
-        return memberProjectRepository.findByProject(project);
-    }
-
-    public MemberProject createMemberProject(Member member, Project project, MemberProjectRole role) {
-        return MemberProject.builder()
-                .member(member)
-                .project(project)
-                .memberProjectRole(role)
-                .build();
     }
 }

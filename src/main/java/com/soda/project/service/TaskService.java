@@ -1,10 +1,7 @@
 package com.soda.project.service;
 
 import com.soda.global.response.GeneralException;
-import com.soda.project.domain.task.TaskCreateRequest;
-import com.soda.project.domain.task.TaskReadResponse;
-import com.soda.project.domain.task.TaskResponse;
-import com.soda.project.domain.task.TaskUpdateRequest;
+import com.soda.project.domain.task.*;
 import com.soda.project.entity.Stage;
 import com.soda.project.entity.Task;
 import com.soda.project.error.StageErrorCode;
@@ -103,6 +100,30 @@ public class TaskService {
          taskRepository.save(task);
         log.info("태스크 정보 수정 성공: {}", taskId);
         return TaskResponse.fromEntity(task);
+    }
+
+    /**
+     * 특정 태스크의 순서(위치)를 변경합니다.
+     * 이동할 태스크에서 스테이지 정보를 가져와 유효성을 검사합니다.
+     */
+    @Transactional // 쓰기 작업
+    public void moveTask(Long taskId, TaskMoveRequest request) {
+        Task taskToMove = findActiveTaskByIdOrThrow(taskId);
+
+        // 태스크가 속한 스테이지 확인
+        Stage stage = taskToMove.getStage();
+        if (stage == null || stage.getIsDeleted()) {
+            log.error("태스크 이동 실패: 태스크 ID {} 에 연결된 스테이지가 없거나 삭제됨.", taskId);
+            throw new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
+        }
+
+        float newTaskOrder = calculateNewTaskOrder(stage, request.getPrevTaskId(), request.getNextTaskId());
+
+        log.info("태스크 이동 실행: 태스크 ID {}, 이전 순서 {}, 새 순서 {}",
+                taskId, taskToMove.getTaskOrder(), newTaskOrder);
+        taskToMove.moveTaskOrder(newTaskOrder);
+
+        taskRepository.save(taskToMove);
     }
 
 

@@ -1,10 +1,7 @@
 package com.soda.project.controller;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.project.domain.task.TaskCreateRequest;
-import com.soda.project.domain.task.TaskReadResponse;
-import com.soda.project.domain.task.TaskResponse;
-import com.soda.project.domain.task.TaskUpdateRequest;
+import com.soda.project.domain.task.*;
 import com.soda.project.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +53,20 @@ public class TaskController {
             @RequestBody TaskUpdateRequest request) {
         TaskResponse updatedTask = taskService.updateTask(taskId, request);
         return ResponseEntity.ok(ApiResponseForm.success(updatedTask, "테스크 정보 수정 성공"));
+    }
+
+    /**
+     * 테스크 순서 변경 API
+     * @param taskId 순서를 변경할 테스크 ID (경로 변수)
+     * @param request 새로운 위치 정보 DTO
+     * @return 성공 응답 (내용 없음)
+     */
+    @PostMapping("/{taskId}/move")
+    public ResponseEntity<ApiResponseForm<Void>> moveTask(
+            @PathVariable Long taskId,
+            @RequestBody TaskMoveRequest request) {
+        taskService.moveTask(taskId, request);
+        return ResponseEntity.ok(ApiResponseForm.success(null, "테스크 순서 변경 성공"));
     }
 
 }

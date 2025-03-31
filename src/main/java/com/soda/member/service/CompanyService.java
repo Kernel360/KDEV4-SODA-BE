@@ -73,11 +73,7 @@ public class CompanyService {
      * @throws GeneralException 회사를 찾을 수 없는 경우 발생
      */
     public CompanyResponse getCompanyById(Long id) {
-        Company company = companyRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> {
-                    log.error("회사 조회 실패: 회사를 찾을 수 없음 - {}", id);
-                    return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
-                });
+        Company company = getCompany(id);
         return CompanyResponse.fromEntity(company);
     }
 
@@ -91,11 +87,7 @@ public class CompanyService {
      */
     @Transactional
     public CompanyResponse updateCompany(Long id, CompanyUpdateRequest request) {
-        Company company = companyRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> {
-                    log.error("회사 수정 실패: 회사를 찾을 수 없음 - {}", id);
-                    return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
-                });
+        Company company = getCompany(id);
 
         Optional<Company> existingCompany = companyRepository.findByCompanyNumber(request.getCompanyNumber());
         if (existingCompany.isPresent() && !existingCompany.get().getId().equals(id)) {
@@ -117,11 +109,7 @@ public class CompanyService {
      */
     @Transactional
     public void deleteCompany(Long id) {
-        Company company = companyRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> {
-                    log.error("회사 삭제 실패: 회사를 찾을 수 없음 - {}", id);
-                    return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
-                });
+        Company company = getCompany(id);
 
         company.delete();
         companyRepository.save(company);
@@ -137,11 +125,7 @@ public class CompanyService {
      */
     @Transactional
     public CompanyResponse restoreCompany(Long id) {
-        Company company = companyRepository.findByIdAndIsDeletedTrue(id)
-                .orElseThrow(() -> {
-                    log.error("회사 복구 실패: 삭제된 회사를 찾을 수 없음 - {}", id);
-                    return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
-                });
+        Company company = getCompany(id);
 
         company.markAsActive();
         Company restoredCompany = companyRepository.save(company);
@@ -157,14 +141,18 @@ public class CompanyService {
      * @throws GeneralException 회사를 찾을 수 없는 경우 발생
      */
     public List<MemberResponse> getCompanyMembers(Long companyId) {
-        Company company = companyRepository.findByIdAndIsDeletedFalse(companyId)
-                .orElseThrow(() -> {
-                    log.error("회사 멤버 조회 실패: 회사를 찾을 수 없음 - {}", companyId);
-                    return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
-                });
+        Company company = getCompany(companyId);
 
         return company.getMemberList().stream()
                 .map(MemberResponse::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    public Company getCompany(Long companyId) {
+        return companyRepository.findByIdAndIsDeletedFalse(companyId)
+                .orElseThrow(() -> {
+                    log.error("회사 멤버 조회 실패: 회사를 찾을 수 없음 - {}", companyId);
+                    return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
+                });
     }
 }

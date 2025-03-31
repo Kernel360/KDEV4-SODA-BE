@@ -1,22 +1,19 @@
 package com.soda.project.service;
 
-import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.CompanyProjectRole;
 import com.soda.member.enums.MemberProjectRole;
-import com.soda.member.repository.CompanyRepository;
-import com.soda.member.repository.MemberRepository;
+import com.soda.member.service.CompanyService;
+import com.soda.member.service.MemberService;
 import com.soda.project.domain.*;
 import com.soda.project.entity.CompanyProject;
 import com.soda.project.entity.MemberProject;
 import com.soda.project.entity.Project;
 import com.soda.project.error.ProjectErrorCode;
-import com.soda.project.repository.CompanyProjectRepository;
-import com.soda.project.repository.MemberProjectRepository;
 import com.soda.project.repository.ProjectRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,16 +21,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
-public class ProjectService {
+public class  ProjectService {
 
     private final ProjectRepository projectRepository;
-    private final CompanyProjectRepository companyProjectRepository;
-    private final MemberProjectRepository memberProjectRepository;
-    private final MemberRepository memberRepository;
-    private final CompanyRepository companyRepository;
-
+    private final CompanyProjectService companyProjectService;
+    private final MemberProjectService memberProjectService;
+    private final MemberService memberService;
+    private final CompanyService companyService;
     private final StageService stageService;
 
     /*
@@ -81,42 +78,29 @@ public class ProjectService {
     }
 
     private List<Member> assignCompanyAndMembers(Long companyId, List<Long> memberIds, Project project, CompanyProjectRole companyRole, MemberProjectRole memberRole) {
-        Company company = companyRepository.findByIdAndIsDeletedFalse(companyId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_NOT_FOUND));
+        Company company = companyService.getCompany(companyId);
 
         // 회사와 프로젝트가 연결되지 않은 경우 연결
-        assignCompanyToProject(company, project, companyRole);
+        companyProjectService.assignCompanyToProject(company.getId(), project.getId(), companyRole);
 
         // 멤버들을 프로젝트와 역할에 맞게 지정
         return assignMembersToProject(company, memberIds, project, memberRole);
     }
 
-    private void assignCompanyToProject(Company company, Project project, CompanyProjectRole companyRole) {
-        if (!company.getIsDeleted() && !companyProjectRepository.existsByCompanyAndProject(company, project)) {
-            CompanyProject companyProject = CompanyProjectDTO.builder()
-                    .companyId(company.getId())
-                    .projectId(project.getId())
-                    .companyProjectRole(companyRole)
-                    .build().toEntity(company, project, companyRole);
-            companyProjectRepository.save(companyProject);
-        }
-    }
-
     private List<Member> assignMembersToProject(Company company, List<Long> memberIds, Project project, MemberProjectRole memberRole) {
         List<Member> members = new ArrayList<>();
         for (Long memberId : memberIds) {
-            Member member = memberRepository.findByIdAndIsDeletedFalse(memberId)
-                    .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
+            Member member = memberService.findByIdAndIsDeletedFalse(memberId);
 
             if (!member.getCompany().getId().equals(company.getId())) {
                 throw new GeneralException(ProjectErrorCode.INVALID_MEMBER_COMPANY);
             }
 
             // 이미 멤버가 프로젝트에 존재하는지 확인
-            if (!memberProjectRepository.existsByMemberAndProjectAndIsDeletedFalse(member, project)) {
+            if (!memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project)) {
                 members.add(member);
-                MemberProject memberProject = createMemberProject(member, project, memberRole);
-                memberProjectRepository.save(memberProject);  // 새로운 멤버를 프로젝트에 추가
+                MemberProject memberProject = memberProjectService.createMemberProject(member, project, memberRole);
+                memberProjectService.save(memberProject);  // 새로운 멤버를 프로젝트에 추가
             }
         }
         return members;
@@ -167,8 +151,7 @@ public class ProjectService {
     }
 
     private String getCompanyNameByRole(Project project, CompanyProjectRole role) {
-        CompanyProject companyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, role)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_NOT_FOUND));
+        CompanyProject companyProject = companyProjectService.findByProjectAndCompanyProjectRole(project, role);
         return companyProject.getCompany().getName();
     }
 
@@ -180,11 +163,11 @@ public class ProjectService {
         String devCompanyName = getCompanyNameByRole(project, CompanyProjectRole.DEV_COMPANY);
         String clientCompanyName = getCompanyNameByRole(project, CompanyProjectRole.CLIENT_COMPANY);
 
-        List<Member> devManagers = getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
-        List<Member> devParticipants = getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
+        List<Member> devManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
+        List<Member> devParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
 
-        List<Member> clientManagers = getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
-        List<Member> clientParticipants = getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
+        List<Member> clientManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
+        List<Member> clientParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
 
         return ProjectResponse.builder()
                 .title(project.getTitle())
@@ -198,12 +181,6 @@ public class ProjectService {
                 .clientCompanyManagers(extractMemberNames(clientManagers))
                 .clientCompanyMembers(extractMemberNames(clientParticipants))
                 .build();
-    }
-
-    private List<Member> getMembersByRole(Project project, MemberProjectRole role) {
-        return memberProjectRepository.findByProjectAndRoleAndIsDeletedFalse(project, role).stream()
-                .map(MemberProject::getMember)
-                .collect(Collectors.toList());
     }
 
     // project 삭제 (연관된 company_project, member_project 같이 삭제)
@@ -222,16 +199,16 @@ public class ProjectService {
         project.delete(); // isDeleted 값을 true로 변경
 
         // 4. 프로젝트와 관련된 회사 프로젝트들 삭제 처리
-        List<CompanyProject> companyProjects = companyProjectRepository.findByProject(project);
+        List<CompanyProject> companyProjects = companyProjectService.findByProject(project);
         companyProjects.forEach(CompanyProject::delete); // isDeleted 값을 true로 설정
 
         // 5. 프로젝트와 관련된 멤버 프로젝트들 삭제 처리
-        List<MemberProject> memberProjects = memberProjectRepository.findByProject(project);
+        List<MemberProject> memberProjects = memberProjectService.findByProject(project);
         memberProjects.forEach(MemberProject::delete); // isDeleted 값을 true로 설정
 
         projectRepository.save(project);
-        companyProjectRepository.saveAll(companyProjects);
-        memberProjectRepository.saveAll(memberProjects);
+        companyProjectService.saveAll(companyProjects);
+        memberProjectService.saveAll(memberProjects);
     }
 
     /*
@@ -240,10 +217,10 @@ public class ProjectService {
         - 개발사 수정, 관리자/직원 수정
         - 고객사 수정, 관리자/직원 수정
      */
+    @Transactional
     public ProjectCreateResponse updateProject(Long projectId, ProjectCreateRequest request) {
         // 1. 프로젝트 존재 여부 체크
-        Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
+        Project project = getProjectById(projectId);
 
         // 2. 프로젝트 기본 정보 수정
         project.updateProject(request.getTitle(), request.getDescription(), request.getStartDate(), request.getEndDate());
@@ -254,21 +231,20 @@ public class ProjectService {
         updateCompanyProjectMembers(project, request.getClientCompanyId(), request.getClientManagers(), request.getClientMembers(), CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_MANAGER, MemberProjectRole.CLI_PARTICIPANT);
 
         // 4. response DTO 생성
-        List<Member> devManagers = getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
-        List<Member> devParticipants = getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
-        List<Member> clientManagers = getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
-        List<Member> clientParticipants = getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
+        List<Member> devManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
+        List<Member> devParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
+        List<Member> clientManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
+        List<Member> clientParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
 
         return createProjectCreateResponse(project, devManagers, devParticipants, clientManagers, clientParticipants);
     }
 
     private void updateCompanyProjectMembers(Project project, Long companyId, List<Long> managerIds, List<Long> participantIds, CompanyProjectRole companyRole, MemberProjectRole managerRole, MemberProjectRole participantRole) {
-        Company company = companyRepository.findByIdAndIsDeletedFalse(companyId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_NOT_FOUND));
+        Company company = companyService.getCompany(companyId);
 
         // 1. 회사와 프로젝트 연결 여부 확인 (이미 연결되어 있다면 새로운 저장 하지 않음)
-        if (!companyProjectRepository.existsByCompanyAndProject(company, project)) {
-            assignCompanyToProject(company, project, companyRole);  // 회사와 프로젝트 연결
+        if (!companyProjectService.existsByCompanyAndProject(company, project)) {
+            companyProjectService.assignCompanyToProject(company.getId(), project.getId(), companyRole);  // 회사와 프로젝트 연결
         }
 
         // 2. 기존의 담당자 및 참여자들을 비활성화 처리 (삭제하지 않고, isDeleted=true로 설정)
@@ -286,7 +262,7 @@ public class ProjectService {
 
     private void updateMemberProjects(Project project, List<Long> memberIds, MemberProjectRole role) {
         // 기존 멤버들 찾기 (isDeleted가 true인 멤버도 포함)
-        List<MemberProject> existingMemberProjects = memberProjectRepository.findByProjectAndRole(project, role);
+        List<MemberProject> existingMemberProjects = memberProjectService.findByProjectAndRole(project, role);
 
         // 기존 멤버들과 요청된 멤버들을 비교
         List<Long> currentMemberIds = existingMemberProjects.stream()
@@ -309,9 +285,9 @@ public class ProjectService {
         membersToReActivate.forEach(MemberProject::reActive); // 재활성화 (isDeleted = false)
 
         // 삭제된 멤버들을 저장
-        memberProjectRepository.saveAll(membersToRemove);
+        memberProjectService.saveAll(membersToRemove);
         // 재활성화한 멤버들을 저장
-        memberProjectRepository.saveAll(membersToReActivate);
+        memberProjectService.saveAll(membersToReActivate);
     }
 
     private void saveNewMemberProjects(List<Member> members, Project project, MemberProjectRole role) {
@@ -320,7 +296,7 @@ public class ProjectService {
         // 새로 추가할 멤버들 중에서 isDeleted가 true인 멤버가 있으면, 재활성화하여 추가
         for (Member member : members) {
             // 기존 멤버 프로젝트 조회
-            MemberProject existingMemberProject = memberProjectRepository.findByMemberAndProjectAndRole(member, project, role);
+            MemberProject existingMemberProject = memberProjectService.findByMemberAndProjectAndRole(member, project, role);
 
             if (existingMemberProject != null) {
                 // 기존 멤버 프로젝트가 존재하고, isDeleted가 true인 경우 재활성화
@@ -330,21 +306,18 @@ public class ProjectService {
                 }
             } else {
                 // 새 멤버 프로젝트는 새로 생성
-                MemberProject newMemberProject = createMemberProject(member, project, role);
+                MemberProject newMemberProject = memberProjectService.createMemberProject(member, project, role);
                 newMemberProjects.add(newMemberProject);
             }
         }
 
         // 새로 생성된 멤버 프로젝트들을 저장
-        memberProjectRepository.saveAll(newMemberProjects);
+        memberProjectService.saveAll(newMemberProjects);
     }
 
-    private MemberProject createMemberProject(Member member, Project project, MemberProjectRole role) {
-        return MemberProject.builder()
-                .member(member)
-                .project(project)
-                .memberProjectRole(role)
-                .build();
+    public Project getProjectById(Long projectId) {
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
     }
 
 }

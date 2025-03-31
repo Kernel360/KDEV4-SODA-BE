@@ -33,7 +33,7 @@ public class ArticleCreateResponse {
                 .deadLine(article.getDeadline())
                 .memberName(article.getMember().getName())
                 .stageName(article.getStage().getName())
-                .parentArticleId(article.getParentArticle().getId())
+                .parentArticleId(article.getParentArticle() == null ? null : article.getParentArticle().getId())
                 .fileList(article.getArticleFileList().stream()
                         .map(file -> ArticleFileDTO.builder()
                                 .name(file.getName())

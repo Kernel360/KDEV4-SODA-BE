@@ -6,19 +6,17 @@ import com.soda.article.entity.ArticleFile;
 import com.soda.article.entity.ArticleLink;
 import com.soda.article.enums.ArticleStatus;
 import com.soda.article.error.ArticleErrorCode;
-import com.soda.article.repository.ArticleFileRepository;
-import com.soda.article.repository.ArticleLinkRepository;
 import com.soda.article.repository.ArticleRepository;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
-import com.soda.member.repository.MemberRepository;
+import com.soda.member.service.MemberService;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.error.StageErrorCode;
-import com.soda.project.repository.MemberProjectRepository;
-import com.soda.project.repository.ProjectRepository;
-import com.soda.project.repository.StageRepository;
+import com.soda.project.service.MemberProjectService;
+import com.soda.project.service.ProjectService;
+import com.soda.project.service.StageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,17 +31,17 @@ import java.util.stream.Collectors;
 public class ArticleService {
 
     private final ArticleRepository articleRepository;
-    private final MemberProjectRepository memberProjectRepository;
-    private final StageRepository stageRepository;
-    private final ProjectRepository projectRepository;
-    private final ArticleFileRepository articleFileRepository;
-    private final ArticleLinkRepository articleLinkRepository;
-    private final MemberRepository memberRepository;
+    private final MemberProjectService memberProjectService;
+    private final StageService stageService;
+    private final ProjectService projectService;
+    private final ArticleFileService articleFileService;
+    private final ArticleLinkService articleLinkService;
+    private final MemberService memberService;
 
     @Transactional
     public ArticleCreateResponse createArticle(ArticleCreateRequest request, Long userId, String userRole) {
-        Member member = validateMember(userId);
-        Project project = validateProject(request.getProjectId());
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(request.getProjectId());
         Stage stage = validateStage(request.getStageId(), project);
 
         checkMemberInProject(userRole, member, project);
@@ -66,8 +64,8 @@ public class ArticleService {
 
     @Transactional
     public ArticleModifyResponse updateArticle(Long userId, String userRole, Long articleId, ArticleModifyRequest request) {
-        Member member = validateMember(userId);
-        Project project = validateProject(request.getProjectId());
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(request.getProjectId());
 
         checkMemberInProject(userRole, member, project);
 
@@ -99,16 +97,14 @@ public class ArticleService {
     private void processFilesAndLinks(List<ArticleFileDTO> fileList, List<ArticleLinkDTO> linkList, Article article) {
         if (fileList != null) {
             fileList.forEach(articleFileDTO -> {
-                ArticleFile file = processFile(articleFileDTO, article);
-                articleFileRepository.save(file);
+                ArticleFile file = articleFileService.processFile(articleFileDTO, article);
                 article.getArticleFileList().add(file);
             });
         }
 
         if (linkList != null) {
             linkList.forEach(articleLinkDTO -> {
-                ArticleLink link = processLink(articleLinkDTO, article);
-                articleLinkRepository.save(link);
+                ArticleLink link = articleLinkService.processLink(articleLinkDTO, article);
                 article.getArticleLinkList().add(link);
             });
         }
@@ -116,8 +112,8 @@ public class ArticleService {
 
     @Transactional
     public void deleteArticle(Long projectId, Long userId, String userRole, Long articleId) {
-        Member member = validateMember(userId);
-        Project project = validateProject(projectId);
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(projectId);
 
         checkMemberInProject(userRole, member, project);
 
@@ -147,58 +143,10 @@ public class ArticleService {
     }
 
     private void processDeletionForFilesAndLinks(Long articleId, Article article) {
-        deleteFilesAndLinks(articleId, article);
-    }
-
-    private void deleteFilesAndLinks(Long articleId, Article article) {
-        List<ArticleFile> existingFiles = articleFileRepository.findByArticleId(articleId);
-        existingFiles.forEach(ArticleFile::delete);
-        article.getArticleFileList().removeIf(existingFiles::contains);
-
-        List<ArticleLink> existingLinks = articleLinkRepository.findByArticleId(articleId);
-        existingLinks.forEach(ArticleLink::delete);
-        article.getArticleLinkList().removeIf(existingLinks::contains);
-    }
-
-    private ArticleFile processFile(ArticleFileDTO fileDTO, Article article) {
-        ArticleFile file = articleFileRepository.findByArticleIdAndNameAndIsDeletedTrue(article.getId(), fileDTO.getName())
-                .orElse(null);
-
-        if (file != null) {
-            file.reActive();
-        } else {
-            file = ArticleFile.builder()
-                    .name(fileDTO.getName())
-                    .url(fileDTO.getUrl())
-                    .article(article)
-                    .build();
-        }
-
-        return file;
-    }
-
-    private ArticleLink processLink(ArticleLinkDTO linkDTO, Article article) {
-        ArticleLink link = articleLinkRepository.findByArticleIdAndUrlAddressAndIsDeletedTrue(article.getId(), linkDTO.getUrlAddress())
-                .orElse(null);
-
-        if (link != null) {
-            link.reActive();
-        } else {
-            link = ArticleLink.builder()
-                    .urlAddress(linkDTO.getUrlAddress())
-                    .urlDescription(linkDTO.getUrlDescription())
-                    .article(article)
-                    .build();
-        }
-
-        return link;
-    }
-
-
-
-    private Project validateProject(Long projectId) {
-        return projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
+        // file delete
+        articleFileService.deleteFiles(articleId, article);
+        // link delete
+        articleLinkService.deleteLinks(articleId, article);
     }
 
     private Stage validateStage(Long stageId, Project project) {
@@ -223,10 +171,9 @@ public class ArticleService {
         }
     }
 
-
     public List<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, Long stageId) {
-        Member member = validateMember(userId);
-        Project project = validateProject(projectId);
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(projectId);
 
         checkMemberInProject(userRole, member, project);
 
@@ -266,8 +213,8 @@ public class ArticleService {
     }
 
     public ArticleViewResponse getArticle(Long projectId, Long userId, String userRole, Long articleId) {
-        Member member = validateMember(userId);
-        Project project = validateProject(projectId);
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(projectId);
 
         checkMemberInProject(userRole, member, project);
 
@@ -286,12 +233,7 @@ public class ArticleService {
         if ("ADMIN".equalsIgnoreCase(userRole)) {
             return true;
         }
-        return memberProjectRepository.existsByMemberAndProjectAndIsDeletedFalse(member, project);
-    }
-
-    private Member validateMember(Long userId) {
-        return memberRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
+        return memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
     }
 
     private List<Article> getArticlesByStageAndProject(Long stageId, Project project) {
@@ -301,6 +243,11 @@ public class ArticleService {
             return articleRepository.findByIsDeletedFalseAndStageAndStage_Project(stage, project);
         }
         return articleRepository.findByIsDeletedFalseAndStage_Project(project);
+    }
+
+    public Article validateArticle(Long articleId) {
+        return articleRepository.findByIdAndIsDeletedFalse(articleId)
+                .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
     }
 
 }

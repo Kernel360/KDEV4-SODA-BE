@@ -10,10 +10,13 @@ import com.soda.article.repository.CommentRepository;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.repository.MemberRepository;
+import com.soda.member.service.MemberService;
 import com.soda.project.entity.Project;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.MemberProjectRepository;
 import com.soda.project.repository.ProjectRepository;
+import com.soda.project.service.MemberProjectService;
+import com.soda.project.service.ProjectService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,20 +32,20 @@ import java.util.stream.Collectors;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final MemberRepository memberRepository;
-    private final ProjectRepository projectRepository;
-    private final MemberProjectRepository memberProjectRepository;
-    private final ArticleRepository articleRepository;
+    private final MemberService memberService;
+    private final ProjectService projectService;
+    private final MemberProjectService memberProjectService;
+    private final ArticleService articleService;
 
     @Transactional
     public CommentCreateResponse createComment(Long userId, String userRole, CommentCreateRequest request) {
         // 1. 유저가 해당 프로젝트에 참여하는지 / 관리자인지 체크
-        Member member = validateMember(userId);
-        Project project = validateProject(request.getProjectId());
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(request.getProjectId());
         checkMemberInProject(userRole, member, project);
 
         // 2. 해당 게시글이 프로젝트에 포함되어있는지 체크
-        Article article = validateArticle(request.getArticleId());
+        Article article = articleService.validateArticle(request.getArticleId());
 
         // 3. 해당 댓글이 대댓글인 경우 (아니면 null)
         Comment parentComment = null;
@@ -63,16 +66,6 @@ public class CommentService {
         return CommentCreateResponse.fromEntity(comment);
     }
 
-    private Member validateMember(Long userId) {
-        return memberRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
-    }
-
-    private Project validateProject(Long projectId) {
-        return projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
-    }
-
     private void checkMemberInProject(String userRole, Member member, Project project) {
         if (!isAdminOrMember(userRole, member, project)) {
             throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
@@ -83,19 +76,13 @@ public class CommentService {
         if ("ADMIN".equalsIgnoreCase(userRole)) {
             return true;
         }
-        return memberProjectRepository.existsByMemberAndProjectAndIsDeletedFalse(member, project);
+        return memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
     }
-
-    private Article validateArticle(Long articleId) {
-        return articleRepository.findByIdAndIsDeletedFalse(articleId)
-                .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
-    }
-
 
     public List<CommentDTO> getCommentList(Long userId, String userRole, Long articleId) {
         // 1. 유저의 접근 권한 확인
-        Member member = validateMember(userId);
-        Article article = validateArticle(articleId);
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Article article = articleService.validateArticle(articleId);
 
         Project project = article.getStage().getProject();
         checkMemberInProject(userRole, member, project);
@@ -168,7 +155,7 @@ public class CommentService {
     // 댓글 조회와 사용자 검증을 함께 처리하는 메서드
     private Comment getCommentAndValidateMember(Long userId, Long commentId) {
         // 로그인한 사용자 확인
-        Member member = validateMember(userId);
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
 
         // 댓글 조회
         return commentRepository.findByIdAndIsDeletedFalse(commentId)

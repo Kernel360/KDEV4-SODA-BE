@@ -69,4 +69,15 @@ public class TaskController {
         return ResponseEntity.ok(ApiResponseForm.success(null, "테스크 순서 변경 성공"));
     }
 
+    /**
+     * 테스크 삭제 API (논리적 삭제)
+     * @param taskId 삭제할 테스크 ID (경로 변수)
+     * @return 성공 응답 (내용 없음)
+     */
+    @DeleteMapping("/{taskId}")
+    public ResponseEntity<ApiResponseForm<Void>> deleteTask(@PathVariable Long taskId) {
+        taskService.deleteTask(taskId);
+        return ResponseEntity.ok(ApiResponseForm.success(null, "테스크 삭제 성공"));
+    }
+
 }

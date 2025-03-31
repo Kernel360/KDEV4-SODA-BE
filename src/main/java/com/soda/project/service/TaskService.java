@@ -106,7 +106,7 @@ public class TaskService {
      * 특정 태스크의 순서(위치)를 변경합니다.
      * 이동할 태스크에서 스테이지 정보를 가져와 유효성을 검사합니다.
      */
-    @Transactional // 쓰기 작업
+    @Transactional
     public void moveTask(Long taskId, TaskMoveRequest request) {
         Task taskToMove = findActiveTaskByIdOrThrow(taskId);
 
@@ -124,6 +124,18 @@ public class TaskService {
         taskToMove.moveTaskOrder(newTaskOrder);
 
         taskRepository.save(taskToMove);
+    }
+
+    /**
+     * 특정 태스크를 논리적으로 삭제합니다.
+     */
+    @Transactional
+    public void deleteTask(Long taskId) {
+        Task task = findActiveTaskByIdOrThrow(taskId);
+        task.delete();
+
+         taskRepository.save(task);
+        log.info("태스크 삭제 성공 (논리적): {}", taskId);
     }
 
 

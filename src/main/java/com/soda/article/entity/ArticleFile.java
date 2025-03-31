@@ -1,7 +1,10 @@
 package com.soda.article.entity;
 
-import com.soda.common.BaseEntity;
-import jakarta.persistence.*;
+import com.soda.common.file.model.FileBase;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-public class ArticleFile extends BaseEntity {
+public class ArticleFile extends FileBase {
 
     private String name;
 
@@ -29,6 +32,11 @@ public class ArticleFile extends BaseEntity {
 
     public void delete() {
         this.markAsDeleted();
+    }
+
+    @Override
+    public Long getDomainId() {
+        return article.getId();
     }
 
     public void reActive() {

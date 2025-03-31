@@ -81,10 +81,17 @@ public class  ProjectService {
         Company company = companyService.getCompany(companyId);
 
         // 회사와 프로젝트가 연결되지 않은 경우 연결
-        companyProjectService.assignCompanyToProject(company.getId(), project.getId(), companyRole);
+        assignCompanyToProject(company.getId(), project.getId(), companyRole);
 
         // 멤버들을 프로젝트와 역할에 맞게 지정
         return assignMembersToProject(company, memberIds, project, memberRole);
+    }
+
+    private void assignCompanyToProject(Long companyId, Long projectId, CompanyProjectRole role) {
+        Company company = companyService.getCompany(companyId);
+        Project project = getProjectById(projectId);
+
+        companyProjectService.assignCompanyToProject(company, project, role);
     }
 
     private List<Member> assignMembersToProject(Company company, List<Long> memberIds, Project project, MemberProjectRole memberRole) {
@@ -243,8 +250,8 @@ public class  ProjectService {
         Company company = companyService.getCompany(companyId);
 
         // 1. 회사와 프로젝트 연결 여부 확인 (이미 연결되어 있다면 새로운 저장 하지 않음)
-        if (!companyProjectService.existsByCompanyAndProject(company, project)) {
-            companyProjectService.assignCompanyToProject(company.getId(), project.getId(), companyRole);  // 회사와 프로젝트 연결
+        if (!companyProjectService.doesCompanyProjectExist(company, project)) {
+            assignCompanyToProject(company.getId(), project.getId(), companyRole);  // 회사와 프로젝트 연결
         }
 
         // 2. 기존의 담당자 및 참여자들을 비활성화 처리 (삭제하지 않고, isDeleted=true로 설정)

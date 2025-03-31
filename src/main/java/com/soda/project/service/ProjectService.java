@@ -191,13 +191,40 @@ public class  ProjectService {
         Project project = getValidProject(projectId);
 
         // 2. 프로젝트 기본 정보 수정
-        project.updateProject(request.getTitle(), request.getDescription(), request.getStartDate(), request.getEndDate());
-        projectRepository.save(project);  // 프로젝트 수정 사항 저장
+        updateProjectInfo(project, request);
 
         // 3. 개발사 및 고객사 담당자들 및 참여자들 수정
-        assignCompanyAndMembersToProject(request, project);
+        updateCompanyAndMembersForProject(request, project);
 
         return createProjectCreateResponse(project);
+    }
+
+    private void updateCompanyAndMembersForProject(ProjectCreateRequest request, Project project) {
+        // 4개의 역할에 대해 멤버를 추가하거나 수정
+        updateCompanyAndMembers(request.getDevCompanyId(), request.getDevManagers(), request.getDevMembers(), project,
+                CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_MANAGER, MemberProjectRole.DEV_PARTICIPANT);
+        updateCompanyAndMembers(request.getClientCompanyId(), request.getClientManagers(), request.getClientMembers(), project,
+                CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_MANAGER, MemberProjectRole.CLI_PARTICIPANT);
+    }
+
+    private void updateCompanyAndMembers(Long companyId, List<Long> managerIds, List<Long> memberIds, Project project,
+                                         CompanyProjectRole companyRole, MemberProjectRole managerRole, MemberProjectRole memberRole) {
+        // 1. 회사 지정
+        Company company = companyService.getCompany(companyId);
+        companyProjectService.assignCompanyToProject(company, project, companyRole);
+
+        // 2. 개발사/고객사 관리자 및 참여자 지정
+        List<Member> managers = memberService.findByIds(managerIds);
+        List<Member> members = memberService.findByIds(memberIds);
+
+        // 3. 관리자 및 참여자 멤버 추가/수정
+        memberProjectService.addOrUpdateMembersInProject(project, managers, managerRole);
+        memberProjectService.addOrUpdateMembersInProject(project, members, memberRole);
+    }
+
+    private void updateProjectInfo(Project project, ProjectCreateRequest request) {
+        project.updateProject(request.getTitle(), request.getDescription(), request.getStartDate(), request.getEndDate());
+        projectRepository.save(project);  // 프로젝트 수정 사항 저장
     }
 
     public Project getValidProject(Long projectId) {

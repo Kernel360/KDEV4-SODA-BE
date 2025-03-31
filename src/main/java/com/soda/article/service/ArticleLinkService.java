@@ -1,5 +1,8 @@
 package com.soda.article.service;
 
+import com.soda.article.domain.article.ArticleLinkDTO;
+import com.soda.article.entity.Article;
+import com.soda.article.entity.ArticleFile;
 import com.soda.article.entity.ArticleLink;
 import com.soda.article.repository.ArticleLinkRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +19,27 @@ public class ArticleLinkService {
 
     private final ArticleLinkRepository articleLinkRepository;
 
-    public void save(ArticleLink link) {
-        articleLinkRepository.save(link);
-    }
-
-    public List<ArticleLink> findByArticleId(Long articleId) {
-        return articleLinkRepository.findByArticleId(articleId);
-    }
-
-    public ArticleLink findByArticleIdAndUrlAddressAndIsDeletedTrue(Long id, String urlAddress) {
-        return articleLinkRepository.findByArticleIdAndUrlAddressAndIsDeletedTrue(id, urlAddress)
+    public ArticleLink processLink(ArticleLinkDTO linkDTO, Article article) {
+        ArticleLink link = articleLinkRepository.findByArticleIdAndUrlAddressAndIsDeletedTrue(article.getId(), linkDTO.getUrlAddress())
                 .orElse(null);
+
+        if (link != null) {
+            link.reActive();
+        } else {
+            link = ArticleLink.builder()
+                    .urlAddress(linkDTO.getUrlAddress())
+                    .urlDescription(linkDTO.getUrlDescription())
+                    .article(article)
+                    .build();
+        }
+
+        articleLinkRepository.save(link);
+        return link;
+    }
+
+    public void deleteLinks(Long articleId, Article article) {
+        List<ArticleLink> existingLinks = articleLinkRepository.findByArticleId(articleId);
+        existingLinks.forEach(ArticleLink::delete);
+        article.getArticleLinkList().removeIf(existingLinks::contains);
     }
 }

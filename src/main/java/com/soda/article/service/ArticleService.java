@@ -9,7 +9,6 @@ import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.repository.ArticleRepository;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
-import com.soda.member.repository.MemberRepository;
 import com.soda.member.service.MemberService;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
@@ -98,16 +97,14 @@ public class ArticleService {
     private void processFilesAndLinks(List<ArticleFileDTO> fileList, List<ArticleLinkDTO> linkList, Article article) {
         if (fileList != null) {
             fileList.forEach(articleFileDTO -> {
-                ArticleFile file = processFile(articleFileDTO, article);
-                articleFileService.save(file);
+                ArticleFile file = articleFileService.processFile(articleFileDTO, article);
                 article.getArticleFileList().add(file);
             });
         }
 
         if (linkList != null) {
             linkList.forEach(articleLinkDTO -> {
-                ArticleLink link = processLink(articleLinkDTO, article);
-                articleLinkService.save(link);
+                ArticleLink link = articleLinkService.processLink(articleLinkDTO, article);
                 article.getArticleLinkList().add(link);
             });
         }
@@ -146,49 +143,10 @@ public class ArticleService {
     }
 
     private void processDeletionForFilesAndLinks(Long articleId, Article article) {
-        deleteFilesAndLinks(articleId, article);
-    }
-
-    private void deleteFilesAndLinks(Long articleId, Article article) {
-        List<ArticleFile> existingFiles = articleFileService.findByArticleId(articleId);
-        existingFiles.forEach(ArticleFile::delete);
-        article.getArticleFileList().removeIf(existingFiles::contains);
-
-        List<ArticleLink> existingLinks = articleLinkService.findByArticleId(articleId);
-        existingLinks.forEach(ArticleLink::delete);
-        article.getArticleLinkList().removeIf(existingLinks::contains);
-    }
-
-    private ArticleFile processFile(ArticleFileDTO fileDTO, Article article) {
-        ArticleFile file = articleFileService.findByArticleIdAndNameAndIsDeletedTrue(article.getId(), fileDTO.getName());
-
-        if (file != null) {
-            file.reActive();
-        } else {
-            file = ArticleFile.builder()
-                    .name(fileDTO.getName())
-                    .url(fileDTO.getUrl())
-                    .article(article)
-                    .build();
-        }
-
-        return file;
-    }
-
-    private ArticleLink processLink(ArticleLinkDTO linkDTO, Article article) {
-        ArticleLink link = articleLinkService.findByArticleIdAndUrlAddressAndIsDeletedTrue(article.getId(), linkDTO.getUrlAddress());
-
-        if (link != null) {
-            link.reActive();
-        } else {
-            link = ArticleLink.builder()
-                    .urlAddress(linkDTO.getUrlAddress())
-                    .urlDescription(linkDTO.getUrlDescription())
-                    .article(article)
-                    .build();
-        }
-
-        return link;
+        // file delete
+        articleFileService.deleteFiles(articleId, article);
+        // link delete
+        articleLinkService.deleteLinks(articleId, article);
     }
 
     private Stage validateStage(Long stageId, Project project) {
@@ -212,7 +170,6 @@ public class ArticleService {
             throw new GeneralException(ArticleErrorCode.ARTICLE_ALREADY_DELETED);
         }
     }
-
 
     public List<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, Long stageId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);

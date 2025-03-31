@@ -20,6 +20,9 @@ public class Task extends BaseEntity {
 
     private String content;
 
+    @Column(nullable = false)
+    private Float taskOrder;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stage_id", nullable = false)
     private Stage stage;
@@ -28,9 +31,27 @@ public class Task extends BaseEntity {
     private List<Request> requestList = new ArrayList<>();
 
     @Builder
-    public Task(String title, String content, Stage stage) {
+    public Task(String title, String content, Float taskOrder, Stage stage) {
+        this.taskOrder = taskOrder;
         this.title = title;
         this.content = content;
         this.stage = stage;
+    }
+
+    public void update(String newTitle, String newContent) {
+        if (newTitle != null) {
+            this.title = newTitle;
+        }
+        if (newContent != null) {
+            this.content = newContent;
+        }
+    }
+
+    public void moveTaskOrder(Float newTaskOrder) {
+        this.taskOrder = newTaskOrder;
+    }
+
+    public void delete() {
+        this.markAsDeleted();
     }
 }

@@ -2,11 +2,15 @@ package com.soda.article.controller;
 
 import com.soda.article.domain.article.*;
 import com.soda.article.service.ArticleService;
+import com.soda.common.file.dto.FileDeleteResponse;
+import com.soda.common.file.dto.FileUploadResponse;
+import com.soda.common.file.service.FileService;
 import com.soda.global.response.ApiResponseForm;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,6 +19,7 @@ import java.util.List;
 public class ArticleController {
 
     private final ArticleService articleService;
+    private final FileService fileService;
 
     @PostMapping("/articles")
     public ResponseEntity<ApiResponseForm<ArticleCreateResponse>> createArticle(@RequestBody ArticleCreateRequest request, HttpServletRequest user) {
@@ -60,6 +65,23 @@ public class ArticleController {
         String userRole = (String) user.getAttribute("userRole").toString();
         ArticleModifyResponse response = articleService.updateArticle(userId, userRole, articleId, request);
         return ResponseEntity.ok(ApiResponseForm.success(response, "Article 수정 성공"));
+    }
+
+    @PostMapping("/articles/{articleId}/files")
+    public ResponseEntity<ApiResponseForm<?>> uploadFiles(@PathVariable Long articleId,
+                                                          @RequestPart("file") List<MultipartFile> files,
+                                                          HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        FileUploadResponse fileUploadResponse = fileService.upload("article", articleId, memberId, files);
+        return ResponseEntity.ok(ApiResponseForm.success(fileUploadResponse));
+    }
+
+    @DeleteMapping("articles/{articleId}/files/{fileId}")
+    public ResponseEntity<ApiResponseForm<?>> deleteFile(@PathVariable Long fileId,
+                                                         HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        FileDeleteResponse fileDeleteResponse = fileService.delete("article", memberId, fileId);
+        return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
     }
 
 }

@@ -1,6 +1,8 @@
 package com.soda.common.file.dto;
 
+import com.soda.common.file.error.FileErrorCode;
 import com.soda.common.file.model.FileBase;
+import com.soda.global.response.GeneralException;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,7 +17,7 @@ public class FileUploadResponse {
 
     public static <T extends FileBase> FileUploadResponse fromEntity(List<T> files) {
         if (files == null || files.isEmpty()) {
-            throw new IllegalArgumentException("파일 목록이 비어 있습니다.");
+            throw new GeneralException(FileErrorCode.FILE_LIST_EMPTY);
         }
 
         Long domainId = files.get(0).getDomainId();

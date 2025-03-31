@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 public enum FileErrorCode implements ErrorCode {
     FILE_DOMAIN_NOT_FOUND("3201", "The domain on this file does not exist", HttpStatus.NOT_FOUND),
+    FILE_LIST_EMPTY("3202", "The list of files is empty" , HttpStatus.BAD_REQUEST ),
     ;
 
     private final String code;

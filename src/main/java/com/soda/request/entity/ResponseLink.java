@@ -25,4 +25,8 @@ public class ResponseLink extends LinkBase {
         this.urlDescription = urlDescription;
         this.response = response;
     }
+
+    public void updateResponse(Response response) {
+        this.response = response;
+    }
 }

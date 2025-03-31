@@ -1,4 +1,4 @@
-package com.soda.request.service;
+package com.soda.request.strategy;
 
 import com.soda.common.file.strategy.FileStrategy;
 import com.soda.global.response.GeneralException;

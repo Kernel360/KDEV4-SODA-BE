@@ -157,8 +157,7 @@ public class  ProjectService {
 
     // 개별 프로젝트 조회
     public ProjectResponse getProject(Long projectId) {
-        Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
+        Project project = getValidProject(projectId);
 
         String devCompanyName = getCompanyNameByRole(project, CompanyProjectRole.DEV_COMPANY);
         String clientCompanyName = getCompanyNameByRole(project, CompanyProjectRole.CLIENT_COMPANY);
@@ -317,6 +316,11 @@ public class  ProjectService {
 
     public Project getProjectById(Long projectId) {
         return projectRepository.findById(projectId)
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
+    }
+
+    public Project getValidProject(Long projectId) {
+        return projectRepository.findByIdAndIsDeletedFalse(projectId)
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
     }
 

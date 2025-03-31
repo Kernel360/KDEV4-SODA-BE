@@ -4,10 +4,12 @@ import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
 import com.soda.member.entity.Member;
 import com.soda.project.entity.Task;
-import com.soda.common.link.dto.LinkDTO;
 import com.soda.request.enums.RequestStatus;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,19 +62,14 @@ public class Request extends BaseEntity {
     public void updateContent(String content) {
         this.content = content;
     }
-    public void updateLinks(List<LinkDTO> links) {
-        if(this.links == null) {
+    public void addLinks(List<RequestLink> newLinks) {
+        if ( this.links == null ) {
             this.links = new ArrayList<>();
         }
-        this.links.addAll(
-                links.stream()
-                        .map(dto -> RequestLink.builder()
-                                .urlAddress(dto.getUrlAddress())
-                                .urlDescription(dto.getUrlDescription())
-                                .request(this)
-                                .build())
-                        .toList()
-        );
+        for (RequestLink link : newLinks) {
+            link.updateRequest(this); // 역참조 설정
+            this.links.add(link);
+        }
     }
 
     public void delete() {

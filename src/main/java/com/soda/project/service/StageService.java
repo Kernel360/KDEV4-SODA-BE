@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -255,5 +256,11 @@ public class StageService {
             log.info("프로젝트 ID {} 에 첫 단계 추가 또는 이동. 초기 순서 {} 적용", project.getId(), INITIAL_ORDER);
             return INITIAL_ORDER;
         }
+    }
+
+
+    public Stage findById(Long stageId) {
+        return stageRepository.findById(stageId)
+                .orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
     }
 }

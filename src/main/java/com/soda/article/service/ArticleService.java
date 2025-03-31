@@ -150,8 +150,7 @@ public class ArticleService {
     }
 
     private Stage validateStage(Long stageId, Project project) {
-        Stage stage = stageRepository.findById(stageId)
-                .orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
+        Stage stage = stageService.findById(stageId);
 
         if (!stage.getProject().equals(project)) {
             throw new GeneralException(ProjectErrorCode.INVALID_STAGE_FOR_PROJECT);
@@ -238,8 +237,7 @@ public class ArticleService {
 
     private List<Article> getArticlesByStageAndProject(Long stageId, Project project) {
         if (stageId != null) {
-            Stage stage = stageRepository.findById(stageId)
-                    .orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
+            Stage stage = stageService.findById(stageId);
             return articleRepository.findByIsDeletedFalseAndStageAndStage_Project(stage, project);
         }
         return articleRepository.findByIsDeletedFalseAndStage_Project(project);

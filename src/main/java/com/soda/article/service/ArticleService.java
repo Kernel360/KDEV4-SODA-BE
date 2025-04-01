@@ -60,7 +60,8 @@ public class ArticleService {
 
         validateFileAndLinkSize(request.getFileList(), request.getLinkList());
 
-        Article article = saveArticle(request, member, stage, parentArticle);
+        Article article = request.toEntity(member, stage, parentArticle);
+        article = articleRepository.save(article);
 
         // file & link 저장
         processFilesAndLinks(request.getFileList(), request.getLinkList(), article);
@@ -157,29 +158,6 @@ public class ArticleService {
 
         // 연관된 파일 및 링크 삭제
         processDeletionForFilesAndLinks(articleId, article);
-    }
-
-    /**
-     * 새로운 게시글 저장
-     * @param request 생성할 게시글의 정보
-     * @param member 게시글을 생성한 사용자
-     * @param stage 게시글이 속한 단계
-     * @param parentArticle 부모 게시글 (있는 경우에만)
-     * @return 저장된 게시글
-     */
-    private Article saveArticle(ArticleCreateRequest request, Member member, Stage stage, Article parentArticle) {
-        Article article = Article.builder()
-                .title(request.getTitle())
-                .content(request.getContent())
-                .priority(request.getPriority())
-                .deadline(request.getDeadLine())
-                .member(member)
-                .stage(stage)
-                .status(ArticleStatus.PENDING)
-                .parentArticle(parentArticle)
-                .build();
-
-        return articleRepository.save(article);
     }
 
     /**

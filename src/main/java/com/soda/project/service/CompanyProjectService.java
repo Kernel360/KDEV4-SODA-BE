@@ -21,23 +21,6 @@ import java.util.List;
 public class CompanyProjectService {
     private final CompanyProjectRepository companyProjectRepository;
 
-    public CompanyProject findByProjectAndCompanyProjectRole(Project project, CompanyProjectRole role) {
-        return companyProjectRepository.findByProjectAndCompanyProjectRole(project, role)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_NOT_FOUND));
-    }
-
-    public List<CompanyProject> findByProject(Project project) {
-        return companyProjectRepository.findByProject(project);
-    }
-
-    public void saveAll(List<CompanyProject> companyProjects) {
-        companyProjectRepository.saveAll(companyProjects);
-    }
-
-    public boolean doesCompanyProjectExist(Company company, Project project) {
-        return companyProjectRepository.existsByCompanyAndProject(company, project);
-    }
-
     public void save(CompanyProject companyProject) {
         companyProjectRepository.save(companyProject);
     }
@@ -56,5 +39,30 @@ public class CompanyProjectService {
             // 데이터베이스에 회사-프로젝트 관계 저장
             companyProjectRepository.save(companyProject);
         }
+    }
+
+    public List<CompanyProject> findByProject(Project project) {
+        return companyProjectRepository.findByProject(project);
+    }
+
+    public boolean existsByCompanyAndProject(Company company, Project project) {
+        return companyProjectRepository.existsByCompanyAndProject(company, project);
+    }
+
+    public void deleteCompanyProjects(Project project) {
+        List<CompanyProject> companyProjects = findByProject(project);
+        companyProjects.forEach(CompanyProject::delete);
+        companyProjectRepository.saveAll(companyProjects);
+    }
+
+    public String getCompanyNameByRole(Project project, CompanyProjectRole role) {
+        CompanyProject companyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, role)
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_NOT_FOUND));
+        return companyProject.getCompany().getName();
+    }
+
+    private CompanyProject findByProjectAndCompanyProjectRole(Project project, CompanyProjectRole role) {
+        return companyProjectRepository.findByProjectAndCompanyProjectRole(project, role)
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_NOT_FOUND));
     }
 }

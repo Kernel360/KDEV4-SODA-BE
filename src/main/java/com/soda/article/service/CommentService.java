@@ -37,6 +37,14 @@ public class CommentService {
     private final MemberProjectService memberProjectService;
     private final ArticleService articleService;
 
+    /**
+     * 댓글 생성
+     * @param userId 댓글을 작성하는 사용자 ID
+     * @param userRole 댓글을 작성하는 사용자 역할
+     * @param request 댓글 생성 요청 정보
+     * @return 생성된 댓글의 정보
+     * @throws GeneralException 사용자가 프로젝트에 참여하지 않거나 댓글을 작성할 권한이 없는 경우 예외 발생
+     */
     @Transactional
     public CommentCreateResponse createComment(Long userId, String userRole, CommentCreateRequest request) {
         // 1. 유저가 해당 프로젝트에 참여하는지 / 관리자인지 체크
@@ -66,12 +74,26 @@ public class CommentService {
         return CommentCreateResponse.fromEntity(comment);
     }
 
+    /**
+     * 프로젝트에 사용자가 포함되어 있는지 확인
+     * @param userRole 사용자 역할
+     * @param member 사용자 정보
+     * @param project 프로젝트 정보
+     * @throws GeneralException 사용자가 프로젝트의 멤버가 아니거나 권한이 없을 경우 예외 발생
+     */
     private void checkMemberInProject(String userRole, Member member, Project project) {
         if (!isAdminOrMember(userRole, member, project)) {
             throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
         }
     }
 
+    /**
+     * 사용자가 관리자이거나 프로젝트 멤버인지 확인
+     * @param userRole 사용자의 역할
+     * @param member 사용자 정보
+     * @param project 프로젝트 정보
+     * @return 관리자 또는 프로젝트의 멤버일 경우 true, 그렇지 않으면 false
+     */
     private boolean isAdminOrMember(String userRole, Member member, Project project) {
         if ("ADMIN".equalsIgnoreCase(userRole)) {
             return true;
@@ -79,6 +101,14 @@ public class CommentService {
         return memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
     }
 
+    /**
+     * 특정 게시글에 달린 댓글 목록 조회
+     * @param userId 조회하는 사용자 ID
+     * @param userRole 조회하는 사용자 역할
+     * @param articleId 게시글 ID
+     * @return 게시글에 달린 댓글 목록
+     * @throws GeneralException 댓글을 조회할 권한이 없을 경우 예외 발생
+     */
     public List<CommentDTO> getCommentList(Long userId, String userRole, Long articleId) {
         // 1. 유저의 접근 권한 확인
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
@@ -111,7 +141,12 @@ public class CommentService {
     }
 
 
-    // 자식 댓글을 부모 댓글에 추가하는 재귀 메소드
+    /**
+     * 자식 댓글을 부모 댓글에 추가하는 재귀 메소드
+     * @param commentDTO 부모 댓글
+     * @param parentToChildMap 부모 댓글에 해당하는 자식 댓글 리스트를 포함한 맵
+     * @return 자식 댓글을 포함한 부모 댓글 DTO
+     */
     private CommentDTO addChildCommentsToParent(CommentDTO commentDTO, Map<Long, List<CommentDTO>> parentToChildMap) {
         // 부모 댓글에 해당하는 자식 댓글을 찾음
         List<CommentDTO> childComments = parentToChildMap.get(commentDTO.getId());
@@ -131,6 +166,12 @@ public class CommentService {
         return commentDTO;
     }
 
+    /**
+     * 댓글 삭제
+     * @param userId 삭제하는 사용자 ID
+     * @param commentId 삭제할 댓글 ID
+     * @throws GeneralException 댓글을 작성한 사용자가 아닌 경우 예외 발생
+     */
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
         Comment comment = getCommentAndValidateMember(userId, commentId);
@@ -141,6 +182,14 @@ public class CommentService {
         comment.delete();
     }
 
+    /**
+     * 댓글 수정
+     * @param userId 댓글을 수정하는 사용자 ID
+     * @param request 댓글 수정 요청 정보
+     * @param commentId 수정할 댓글 ID
+     * @return 수정된 댓글의 정보
+     * @throws GeneralException 댓글을 작성한 사용자가 아닌 경우 예외 발생
+     */
     @Transactional
     public CommentUpdateResponse updateComment(Long userId, CommentUpdateRequest request, Long commentId) {
         Comment comment = getCommentAndValidateMember(userId, commentId);
@@ -152,7 +201,13 @@ public class CommentService {
         return CommentUpdateResponse.fromEntity(comment);
     }
 
-    // 댓글 조회와 사용자 검증을 함께 처리하는 메서드
+    /**
+     * 댓글 조회하고, 해당 댓글을 작성한 사용자가 맞는지 확인
+     * @param userId 댓글 조회하는 사용자 ID
+     * @param commentId 조회할 댓글 ID
+     * @return 조회된 댓글 객체
+     * @throws GeneralException 댓글을 찾을 수 없거나 삭제된 댓글인 경우 예외 발생
+     */
     private Comment getCommentAndValidateMember(Long userId, Long commentId) {
         // 로그인한 사용자 확인
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
@@ -162,7 +217,12 @@ public class CommentService {
                 .orElseThrow(() -> new GeneralException(CommentErrorCode.COMMENT_NOT_FOUND));
     }
 
-    // 댓글 작성자와 현재 로그인한 사용자가 동일한지 확인하는 메서드
+    /**
+     * 현재 로그인한 사용자가 댓글 작성자인지 확인
+     * @param member 로그인한 사용자 정보
+     * @param comment 댓글 정보
+     * @throws GeneralException 댓글 작성자가 아닌 경우 예외 발생
+     */
     private void checkIfUserIsCommentAuthor(Member member, Comment comment) {
         if(!comment.getMember().getId().equals(member.getId())) {
             throw new GeneralException(CommentErrorCode.FORBIDDEN_ACTION);

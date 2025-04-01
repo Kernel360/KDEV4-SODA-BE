@@ -3,21 +3,17 @@ package com.soda.article.service;
 import com.soda.article.domain.comment.*;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.Comment;
-import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.error.CommentErrorCode;
-import com.soda.article.repository.ArticleRepository;
 import com.soda.article.repository.CommentRepository;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
-import com.soda.member.repository.MemberRepository;
+import com.soda.member.enums.MemberRole;
+import com.soda.member.error.MemberErrorCode;
 import com.soda.member.service.MemberService;
 import com.soda.project.entity.Project;
 import com.soda.project.error.ProjectErrorCode;
-import com.soda.project.repository.MemberProjectRepository;
-import com.soda.project.repository.ProjectRepository;
 import com.soda.project.service.MemberProjectService;
 import com.soda.project.service.ProjectService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,9 +44,10 @@ public class CommentService {
     @Transactional
     public CommentCreateResponse createComment(Long userId, String userRole, CommentCreateRequest request) {
         // 1. 유저가 해당 프로젝트에 참여하는지 / 관리자인지 체크
-        Member member = validateMember(userId);
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(request.getProjectId());
-        checkMemberInProject(userRole, member, project);
+        checkIfMemberIsAdmin(userRole);
+        checkMemberInProject(member, project);
 
         // 2. 해당 게시글이 프로젝트에 포함되어있는지 체크
         Article article = articleService.validateArticle(request.getArticleId());
@@ -75,30 +72,26 @@ public class CommentService {
     }
 
     /**
-     * 프로젝트에 사용자가 포함되어 있는지 확인
+     * 관리자 여부 체크
      * @param userRole 사용자 역할
-     * @param member 사용자 정보
-     * @param project 프로젝트 정보
-     * @throws GeneralException 사용자가 프로젝트의 멤버가 아니거나 권한이 없을 경우 예외 발생
+     * @throws GeneralException 사용자가 관리자 역할이 아니면 예외 발생
      */
-    private void checkMemberInProject(String userRole, Member member, Project project) {
-        if (!isAdminOrMember(userRole, member, project)) {
-            throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
+    private void checkIfMemberIsAdmin(String userRole) {
+        if (!memberService.isAdmin(MemberRole.valueOf(userRole))) {
+            throw new GeneralException(MemberErrorCode.MEMBER_NOT_ADMIN);
         }
     }
 
     /**
-     * 사용자가 관리자이거나 프로젝트 멤버인지 확인
-     * @param userRole 사용자의 역할
+     * 프로젝트에 사용자가 포함되어 있는지 확인
      * @param member 사용자 정보
      * @param project 프로젝트 정보
-     * @return 관리자 또는 프로젝트의 멤버일 경우 true, 그렇지 않으면 false
+     * @throws GeneralException 사용자가 프로젝트의 멤버가 아닌 경우 예외 발생
      */
-    private boolean isAdminOrMember(String userRole, Member member, Project project) {
-        if ("ADMIN".equalsIgnoreCase(userRole)) {
-            return true;
+    private void checkMemberInProject(Member member, Project project) {
+        if (!memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project)) {
+            throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
         }
-        return memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
     }
 
     /**
@@ -111,11 +104,12 @@ public class CommentService {
      */
     public List<CommentDTO> getCommentList(Long userId, String userRole, Long articleId) {
         // 1. 유저의 접근 권한 확인
-        Member member = validateMember(userId);
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Article article = articleService.validateArticle(articleId);
 
         Project project = article.getStage().getProject();
-        checkMemberInProject(userRole, member, project);
+        checkIfMemberIsAdmin(userRole);
+        checkMemberInProject(member, project);
 
         // 2. 댓글 조회
         List<Comment> comments = commentRepository.findByArticleAndIsDeletedFalse(article);
@@ -227,16 +221,6 @@ public class CommentService {
         if(!comment.getMember().getId().equals(member.getId())) {
             throw new GeneralException(CommentErrorCode.FORBIDDEN_ACTION);
         }
-    }
-
-    /**
-     * 사용자 검증
-     * @param userId 사용자 ID
-     * @return 검증된 Member 객체
-     * @throws GeneralException 사용자가 존재하지 않거나 삭제된 사용자일 경우 예외 발생
-     */
-    private Member validateMember(Long userId) {
-        return memberService.findByIdAndIsDeletedFalse(userId);
     }
 
 }

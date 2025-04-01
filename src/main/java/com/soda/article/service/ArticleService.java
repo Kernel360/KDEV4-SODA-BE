@@ -6,6 +6,8 @@ import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.repository.ArticleRepository;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
+import com.soda.member.enums.MemberRole;
+import com.soda.member.error.MemberErrorCode;
 import com.soda.member.service.MemberService;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
@@ -43,11 +45,12 @@ public class ArticleService {
      */
     @Transactional
     public ArticleCreateResponse createArticle(ArticleCreateRequest request, Long userId, String userRole) {
-        Member member = validateMember(userId);
-        Project project = validateProject(request.getProjectId());
-        Stage stage = validateStage(request.getStageId(), project);
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(request.getProjectId());
+        Stage stage = stageService.validateStage(request.getStageId(), project);
 
-        checkMemberInProject(userRole, member, project);
+        checkIfMemberIsAdmin(userRole);
+        checkMemberInProject(member, project);
 
         Article parentArticle = null;
         if (request.getParentArticleId() != null) {
@@ -77,12 +80,13 @@ public class ArticleService {
      */
     @Transactional
     public ArticleModifyResponse updateArticle(Long userId, String userRole, Long articleId, ArticleModifyRequest request) {
-        Member member = validateMember(userId);
-        Project project = validateProject(request.getProjectId());
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(request.getProjectId());
 
-        checkMemberInProject(userRole, member, project);
+        checkIfMemberIsAdmin(userRole);
+        checkMemberInProject(member, project);
 
-        Article article = findArticleById(articleId);
+        Article article = validateArticle(articleId);
 
         validateFileAndLinkSize(request.getFileList(), request.getLinkList());
 
@@ -123,12 +127,13 @@ public class ArticleService {
      */
     @Transactional
     public void deleteArticle(Long projectId, Long userId, String userRole, Long articleId) {
-        Member member = validateMember(userId);
-        Project project = validateProject(projectId);
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(projectId);
 
-        checkMemberInProject(userRole, member, project);
+        checkIfMemberIsAdmin(userRole);
+        checkMemberInProject(member, project);
 
-        Article article = findArticleById(articleId);
+        Article article = validateArticle(articleId);
         validateArticleNotDeleted(article);
 
         // 게시글 삭제
@@ -137,32 +142,6 @@ public class ArticleService {
         // 연관된 파일 및 링크 삭제
         articleFileService.deleteFiles(articleId, article);
         articleLinkService.deleteLinks(articleId, article);
-    }
-
-    /**
-     * 단계가 프로젝트에 적합한지 검증
-     * @param stageId 단계 ID
-     * @param project 프로젝트
-     * @return 검증된 단계
-     */
-    private Stage validateStage(Long stageId, Project project) {
-        Stage stage = stageService.findById(stageId);
-
-        if (!stage.getProject().equals(project)) {
-            throw new GeneralException(ProjectErrorCode.INVALID_STAGE_FOR_PROJECT);
-        }
-
-        return stage;
-    }
-
-    /**
-     * ID로 게시글 찾기
-     * @param articleId 게시글 ID
-     * @return 찾은 게시글
-     */
-    private Article findArticleById(Long articleId) {
-        return articleRepository.findByIdAndIsDeletedFalse(articleId)
-                .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
     }
 
     /**
@@ -184,10 +163,11 @@ public class ArticleService {
      * @return 해당 조건에 맞는 게시글 리스트
      */
     public List<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, Long stageId) {
-        Member member = validateMember(userId);
-        Project project = validateProject(projectId);
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(projectId);
 
-        checkMemberInProject(userRole, member, project);
+        checkIfMemberIsAdmin(userRole);
+        checkMemberInProject(member, project);
 
         List<Article> articles = getArticlesByStageAndProject(stageId, project);
 
@@ -238,41 +218,38 @@ public class ArticleService {
      * @return 조회된 게시글의 정보
      */
     public ArticleViewResponse getArticle(Long projectId, Long userId, String userRole, Long articleId) {
-        Member member = validateMember(userId);
-        Project project = validateProject(projectId);
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(projectId);
 
-        checkMemberInProject(userRole, member, project);
+        checkIfMemberIsAdmin(userRole);
+        checkMemberInProject(member, project);
 
-        Article article = findArticleById(articleId);
+        Article article = validateArticle(articleId);
 
         return ArticleViewResponse.fromEntity(article);
     }
 
     /**
-     * 사용자가 프로젝트의 일원이 맞는지 확인
-     * @param userRole 사용자의 역할
-     * @param member 사용자 정보
-     * @param project 프로젝트 정보
-     * @throws GeneralException 사용자가 해당 프로젝트의 일원이 아닌 경우 예외 발생
+     * 관리자 여부 체크
+     * @param userRole 사용자 역할
+     * @throws GeneralException 사용자가 관리자 역할이 아니면 예외 발생
      */
-    private void checkMemberInProject(String userRole, Member member, Project project) {
-        if (!isAdminOrMember(userRole, member, project)) {
-            throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
+    private void checkIfMemberIsAdmin(String userRole) {
+        if (!memberService.isAdmin(MemberRole.valueOf(userRole))) {
+            throw new GeneralException(MemberErrorCode.MEMBER_NOT_ADMIN);
         }
     }
 
     /**
-     * 사용자가 관리자 또는 프로젝트의 멤버인지 확인
-     * @param userRole 사용자의 역할
+     * 프로젝트에 사용자가 포함되어 있는지 확인
      * @param member 사용자 정보
      * @param project 프로젝트 정보
-     * @return 관리자/멤버일 경우 true, 그렇지 않으면 false
+     * @throws GeneralException 사용자가 프로젝트의 멤버가 아닌 경우 예외 발생
      */
-    private boolean isAdminOrMember(String userRole, Member member, Project project) {
-        if ("ADMIN".equalsIgnoreCase(userRole)) {
-            return true;
+    private void checkMemberInProject(Member member, Project project) {
+        if (!memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project)) {
+            throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
         }
-        return memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
     }
 
     /**
@@ -297,26 +274,6 @@ public class ArticleService {
     public Article validateArticle(Long articleId) {
         return articleRepository.findByIdAndIsDeletedFalse(articleId)
                 .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
-    }
-
-    /**
-     * 사용자 검증
-     * @param userId 사용자 ID
-     * @return 검증된 Member 객체
-     * @throws GeneralException 사용자가 존재하지 않거나 삭제된 사용자일 경우 예외 발생
-     */
-    private Member validateMember(Long userId) {
-        return memberService.findByIdAndIsDeletedFalse(userId);
-    }
-
-    /**
-     * 프로젝트 검증
-     * @param projectId 프로젝트 ID
-     * @return 검증된 Project 객체
-     * @throws GeneralException 프로젝트가 존재하지 않거나 유효하지 않은 경우 예외 발생
-     */
-    private Project validateProject(Long projectId) {
-        return projectService.getValidProject(projectId);
     }
 
 }

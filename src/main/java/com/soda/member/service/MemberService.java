@@ -110,6 +110,6 @@ public class MemberService {
 
 
     public List<Member> findByIds(List<Long> ids) {
-        return null;
+        return memberRepository.findByIdIn(ids);
     }
 }

@@ -73,14 +73,14 @@ public class RequestService {
 
 
     @Transactional
-    public RequestUpdateResponse updateRequest(Long memberId, Long requestId, RequestUpdateRequest requestUpdateRequest) throws GeneralException {
+    public RequestUpdateResponse updateRequest(Long memberId, Long requestId, RequestUpdateRequest requestUpdateRequest, List<MultipartFile> files) throws GeneralException {
         Request request = getRequestOrThrow(requestId);
 
         // update요청을 한 member가 승인요청을 작성했던 member인지 확인
         validateRequestWriter(memberId, request);
 
         // request의 제목, 내용을 수정
-        updateRequestFields(requestUpdateRequest, request);
+        updateRequestFields(requestUpdateRequest, files, request);
 
         requestRepository.save(request);
         requestRepository.flush();
@@ -157,7 +157,7 @@ public class RequestService {
     }
 
     // Request(승인요청)의 제목이나 내용을 수정하는 메서드
-    private void updateRequestFields(RequestUpdateRequest requestUpdateRequest, Request request) {
+    private void updateRequestFields(RequestUpdateRequest requestUpdateRequest, List<MultipartFile> files, Request request) {
         if(requestUpdateRequest.getTitle() != null) {
             request.updateTitle(requestUpdateRequest.getTitle());
         }
@@ -166,6 +166,9 @@ public class RequestService {
         }
         if(requestUpdateRequest.getLinks() != null) {
             request.addLinks(linkService.buildLinks("request", request, requestUpdateRequest.getLinks()));
+        }
+        if(files != null) {
+            request.addFiles(fileService.buildFiles("request", request, files));
         }
     }
 

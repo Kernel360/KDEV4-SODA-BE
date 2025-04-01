@@ -11,12 +11,8 @@ import java.util.Optional;
 public interface CompanyRepository extends JpaRepository<Company, Long> {
     Optional<Company> findByIdAndIsDeletedFalse(Long companyId);
 
-    Optional<Company> findByName(String companyName);
-
-    // 삭제되지 않은 회사 목록을 조회
     List<Company> findByIsDeletedFalse();
 
     Optional<Company> findByCompanyNumber(String companyNumber);
 
-    Optional<Company> findByIdAndIsDeletedTrue(Long id);
 }

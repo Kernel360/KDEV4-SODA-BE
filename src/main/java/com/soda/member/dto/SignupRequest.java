@@ -11,7 +11,7 @@ public class SignupRequest {
     private String authId;
     private String password;
     private MemberRole role;
-    private String companyName;
+    private Long companId;
     private String position;
     private String phoneNumber;
 }

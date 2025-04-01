@@ -1,11 +1,10 @@
 package com.soda.member.service;
 
 
-import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.dto.company.CompanyCreateRequest;
-import com.soda.member.dto.company.CompanyUpdateRequest;
 import com.soda.member.dto.company.CompanyResponse;
+import com.soda.member.dto.company.CompanyUpdateRequest;
 import com.soda.member.dto.company.MemberResponse;
 import com.soda.member.entity.Company;
 import com.soda.member.error.CompanyErrorCode;
@@ -148,10 +147,16 @@ public class CompanyService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 활성 상태인 회사 엔티티 조회 (ID 기반, 내부 또는 다른 서비스에서 사용)
+     * @param companyId 회사 ID
+     * @return Company 엔티티
+     * @throws GeneralException 회사를 찾을 수 없거나 삭제된 경우 발생
+     */
     public Company getCompany(Long companyId) {
         return companyRepository.findByIdAndIsDeletedFalse(companyId)
                 .orElseThrow(() -> {
-                    log.error("회사 멤버 조회 실패: 회사를 찾을 수 없음 - {}", companyId);
+                    log.error("회사 조회 실패: ID {} 에 해당하는 활성 회사를 찾을 수 없음", companyId);
                     return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
                 });
     }

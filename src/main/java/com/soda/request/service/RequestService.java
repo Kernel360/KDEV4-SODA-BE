@@ -48,8 +48,6 @@ public class RequestService {
     @Transactional
     public RequestCreateResponse createRequest(Long memberId, RequestCreateRequest requestCreateRequest, List<MultipartFile> files) {
         Member member = getMemberWithProjectOrThrow(memberId);
-        System.out.println(requestCreateRequest);
-        System.out.println(requestCreateRequest.getTaskId());
         Task task = getTaskOrThrow(requestCreateRequest.getTaskId());
 
         // 현재 프로젝트에 속한 "개발사"의 멤버가 아니고, 어드민도 아니면 USER_NOT_IN_PROJECT_DEV 반환

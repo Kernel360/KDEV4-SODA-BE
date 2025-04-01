@@ -87,7 +87,7 @@ public class ResponseController {
         return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
     }
 
-    @DeleteMapping("requests/{requestId}/links/{linkId}")
+    @DeleteMapping("responses/{responseId}/links/{linkId}")
     public ResponseEntity<ApiResponseForm<?>> deleteLink(@PathVariable Long linkId,
                                                          HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");

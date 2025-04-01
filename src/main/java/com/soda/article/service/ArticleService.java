@@ -13,7 +13,6 @@ import com.soda.member.service.MemberService;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
 import com.soda.project.error.ProjectErrorCode;
-import com.soda.project.error.StageErrorCode;
 import com.soda.project.service.MemberProjectService;
 import com.soda.project.service.ProjectService;
 import com.soda.project.service.StageService;
@@ -38,6 +37,13 @@ public class ArticleService {
     private final ArticleLinkService articleLinkService;
     private final MemberService memberService;
 
+    /**
+     * 게시글 생성하기
+     * @param request 생성할 게시글의 상세 정보
+     * @param userId 게시글을 생성하는 사용자 ID
+     * @param userRole 게시글을 생성하는 사용자의 역할
+     * @return 생성된 게시글의 정보
+     */
     @Transactional
     public ArticleCreateResponse createArticle(ArticleCreateRequest request, Long userId, String userRole) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
@@ -62,6 +68,14 @@ public class ArticleService {
         return ArticleCreateResponse.fromEntity(article);
     }
 
+    /**
+     * 기존 게시글 수정
+     * @param userId 수정하는 사용자 ID
+     * @param userRole 수정하는 사용자의 역할
+     * @param articleId 수정할 게시글의 ID
+     * @param request 수정할 게시글의 새로운 정보
+     * @return 수정된 게시글의 정보
+     */
     @Transactional
     public ArticleModifyResponse updateArticle(Long userId, String userRole, Long articleId, ArticleModifyRequest request) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
@@ -84,6 +98,11 @@ public class ArticleService {
         return ArticleModifyResponse.fromEntity(article);
     }
 
+    /**
+     * 게시글의 파일과 링크 크기 검증
+     * @param fileList 게시글에 첨부된 파일 리스트
+     * @param linkList 게시글에 첨부된 링크 리스트
+     */
     private void validateFileAndLinkSize(List<ArticleFileDTO> fileList, List<ArticleLinkDTO> linkList) {
         if (fileList != null && fileList.size() > 10) {
             throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
@@ -94,6 +113,12 @@ public class ArticleService {
         }
     }
 
+    /**
+     * 게시글에 첨부된 파일과 링크를 처리하여 저장
+     * @param fileList 게시글에 첨부된 파일 리스트
+     * @param linkList 게시글에 첨부된 링크 리스트
+     * @param article 해당 게시글
+     */
     private void processFilesAndLinks(List<ArticleFileDTO> fileList, List<ArticleLinkDTO> linkList, Article article) {
         if (fileList != null) {
             fileList.forEach(articleFileDTO -> {
@@ -110,6 +135,13 @@ public class ArticleService {
         }
     }
 
+    /**
+     * 게시글 삭제
+     * @param projectId 게시글이 속한 프로젝트 ID
+     * @param userId 삭제를 요청하는 사용자 ID
+     * @param userRole 삭제를 요청하는 사용자의 역할
+     * @param articleId 삭제할 게시글의 ID
+     */
     @Transactional
     public void deleteArticle(Long projectId, Long userId, String userRole, Long articleId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
@@ -127,6 +159,14 @@ public class ArticleService {
         processDeletionForFilesAndLinks(articleId, article);
     }
 
+    /**
+     * 새로운 게시글 저장
+     * @param request 생성할 게시글의 정보
+     * @param member 게시글을 생성한 사용자
+     * @param stage 게시글이 속한 단계
+     * @param parentArticle 부모 게시글 (있는 경우에만)
+     * @return 저장된 게시글
+     */
     private Article saveArticle(ArticleCreateRequest request, Member member, Stage stage, Article parentArticle) {
         Article article = Article.builder()
                 .title(request.getTitle())
@@ -142,6 +182,11 @@ public class ArticleService {
         return articleRepository.save(article);
     }
 
+    /**
+     * 게시글에 첨부된 파일 및 링킄 삭제
+     * @param articleId 삭제할 게시글 ID
+     * @param article 삭제할 게시글
+     */
     private void processDeletionForFilesAndLinks(Long articleId, Article article) {
         // file delete
         articleFileService.deleteFiles(articleId, article);
@@ -149,6 +194,12 @@ public class ArticleService {
         articleLinkService.deleteLinks(articleId, article);
     }
 
+    /**
+     * 단계가 프로젝트에 적합한지 검증
+     * @param stageId 단계 ID
+     * @param project 프로젝트
+     * @return 검증된 단계
+     */
     private Stage validateStage(Long stageId, Project project) {
         Stage stage = stageService.findById(stageId);
 
@@ -159,17 +210,34 @@ public class ArticleService {
         return stage;
     }
 
+    /**
+     * ID로 게시글 찾기
+     * @param articleId 게시글 ID
+     * @return 찾은 게시글
+     */
     private Article findArticleById(Long articleId) {
         return articleRepository.findByIdAndIsDeletedFalse(articleId)
                 .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
     }
 
+    /**
+     * 게시글이 이미 삭제되었는지 검증
+     * @param article 검증할 게시글
+     */
     private void validateArticleNotDeleted(Article article) {
         if (article.getIsDeleted()) {
             throw new GeneralException(ArticleErrorCode.ARTICLE_ALREADY_DELETED);
         }
     }
 
+    /**
+     * 특정 프로젝트 단계에 속한 모든 게시글 조회
+     * @param userId 게시글을 조회하는 사용자 ID
+     * @param userRole 게시글을 조회하는 사용자의 역할
+     * @param projectId 프로젝트 ID
+     * @param stageId 단계 ID
+     * @return 해당 조건에 맞는 게시글 리스트
+     */
     public List<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, Long stageId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(projectId);
@@ -195,7 +263,12 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
-    // 답글을 게시글에 추가하는 재귀 메소드
+    /**
+     * 부모 게시글에 자식 게시글을 재귀적으로 추가
+     * @param articleDTO 부모 게시글
+     * @param parentToChildMap 부모 게시글에 대한 자식 게시글의 맵
+     * @return 자식 게시글이 추가된 부모 게시글
+     */
     private ArticleListViewResponse addChildArticleToParent(ArticleListViewResponse articleDTO, Map<Long, List<ArticleListViewResponse>> parentToChildMap) {
         List<ArticleListViewResponse> childArticles = parentToChildMap.get(articleDTO.getId());
 
@@ -211,6 +284,14 @@ public class ArticleService {
         return articleDTO;
     }
 
+    /**
+     * 특정 게시글을 조회
+     * @param projectId 게시글이 속한 프로젝트 ID
+     * @param userId 게시글을 조회하는 사용자 ID
+     * @param userRole 게시글을 조회하는 사용자의 역할
+     * @param articleId 조회할 게시글 ID
+     * @return 조회된 게시글의 정보
+     */
     public ArticleViewResponse getArticle(Long projectId, Long userId, String userRole, Long articleId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(projectId);
@@ -222,12 +303,26 @@ public class ArticleService {
         return ArticleViewResponse.fromEntity(article);
     }
 
+    /**
+     * 사용자가 프로젝트의 일원이 맞는지 확인
+     * @param userRole 사용자의 역할
+     * @param member 사용자 정보
+     * @param project 프로젝트 정보
+     * @throws GeneralException 사용자가 해당 프로젝트의 일원이 아닌 경우 예외 발생
+     */
     private void checkMemberInProject(String userRole, Member member, Project project) {
         if (!isAdminOrMember(userRole, member, project)) {
             throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
         }
     }
 
+    /**
+     * 사용자가 관리자 또는 프로젝트의 멤버인지 확인
+     * @param userRole 사용자의 역할
+     * @param member 사용자 정보
+     * @param project 프로젝트 정보
+     * @return 관리자/멤버일 경우 true, 그렇지 않으면 false
+     */
     private boolean isAdminOrMember(String userRole, Member member, Project project) {
         if ("ADMIN".equalsIgnoreCase(userRole)) {
             return true;
@@ -235,6 +330,12 @@ public class ArticleService {
         return memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
     }
 
+    /**
+     * 단계와 프로젝트에 따른 게시글들을 조회
+     * @param stageId 단계 ID
+     * @param project 프로젝트 정보
+     * @return 해당 단계와 프로젝트에 속한 게시글 리스트
+     */
     private List<Article> getArticlesByStageAndProject(Long stageId, Project project) {
         if (stageId != null) {
             Stage stage = stageService.findById(stageId);
@@ -243,6 +344,11 @@ public class ArticleService {
         return articleRepository.findByIsDeletedFalseAndStage_Project(project);
     }
 
+    /**
+     * 게시글을 ID로 검증
+     * @param articleId 게시글 ID
+     * @return 검증된 게시글
+     */
     public Article validateArticle(Long articleId) {
         return articleRepository.findByIdAndIsDeletedFalse(articleId)
                 .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));

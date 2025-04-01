@@ -35,13 +35,13 @@ import java.util.Random;
 @Transactional(readOnly = true)
 public class AuthService {
 
-    private final MemberRepository memberRepository;
+    private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
     private final VerificationCodeRepository verificationCodeRepository;
-    private final CompanyRepository companyRepository;
+    private final CompanyService companyService;
 
     @Value("${jwt.refresh.expiration}")
     private long refreshTokenValidTime;
@@ -50,53 +50,22 @@ public class AuthService {
 
     @Transactional
     public void signup(SignupRequest requestDto) {
-        if (memberRepository.existsByAuthId(requestDto.getAuthId())) {
-            log.error("회원 가입 실패: 아이디 중복 - {}", requestDto.getAuthId());
-            throw new GeneralException(MemberErrorCode.DUPLICATE_AUTH_ID);
-        }
-
-        Company company = companyRepository.findByName(requestDto.getCompanyName())
-                .orElseThrow(() -> {
-                    log.error("회원 가입 실패: 회사를 찾을 수 없음 - {}", requestDto.getCompanyName());
-                    return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
-                });
-
-        Member member = Member.builder()
-                .authId(requestDto.getAuthId())
-                .name(requestDto.getName())
-                .password(passwordEncoder.encode(requestDto.getPassword()))
-                .role(requestDto.getRole())
-                .company(company)
-                .position(requestDto.getPosition())
-                .phoneNumber(requestDto.getPhoneNumber())
-                .build();
-
-        memberRepository.save(member);
+        memberService.validateDuplicateAuthId(requestDto.getAuthId());
+        Company company = companyService.getCompany(requestDto.getCompanId());
+        Member member = memberService.createMember(requestDto, company, passwordEncoder);
+        memberService.saveMember(member);
         log.info("회원 가입 성공: {}", member.getAuthId());
     }
 
     @Transactional
     public void login(LoginRequest requestDto, HttpServletResponse response) {
-        Member member = memberRepository.findByAuthId(requestDto.getAuthId())
-                .orElseThrow(() -> {
-                    log.error("로그인 실패: 잘못된 아이디 또는 비밀번호 - {}", requestDto.getAuthId());
-                    return new GeneralException(AuthErrorCode.INVALID_CREDENTIALS);
-                });
-
-        if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword())) {
-            log.error("로그인 실패: 잘못된 아이디 또는 비밀번호 - {}", requestDto.getAuthId());
-            throw new GeneralException(AuthErrorCode.INVALID_CREDENTIALS);
-        }
-
+        Member member = memberService.findMemberByAuthId(requestDto.getAuthId());
+        validatePassword(requestDto.getPassword(), member.getPassword(), requestDto.getAuthId());
         String accessToken = jwtTokenProvider.createAccessToken(member.getAuthId());
         String refreshToken = jwtTokenProvider.createRefreshToken(member.getAuthId());
-
-        refreshTokenRepository.deleteByAuthId(member.getAuthId());
-        refreshTokenRepository.save(member.getAuthId(), refreshToken);
-
+        storeRefreshToken(member.getAuthId(), refreshToken);
         addRefreshTokenCookie(response, refreshToken);
         response.setHeader("Authorization", "Bearer " + accessToken);
-
         log.info("로그인 성공: {}", member.getAuthId());
     }
 
@@ -160,34 +129,27 @@ public class AuthService {
 
     @Transactional
     public void changePassword(ChangePasswordRequest requestDto) {
-        Member member = memberRepository.findByEmail(requestDto.getEmail())
-                .orElseThrow(() -> {
-                    log.error("비밀번호 변경 실패: 멤버를 찾을 수 없음 - {}", requestDto.getEmail());
-                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
-                });
-
-        member.changePassword(passwordEncoder.encode(requestDto.getNewPassword()));
-        memberRepository.save(member);
-        log.info("비밀번호 변경 성공: {}", member.getAuthId());
+        Member member = memberService.findMemberByEmail(requestDto.getEmail());
+        memberService.updateMemberPassword(member, passwordEncoder.encode(requestDto.getNewPassword()));
     }
 
     @Transactional
     public void updateMember(Long memberId, MemberUpdateRequest request) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> {
-                    log.error("멤버 정보 수정 실패: 멤버를 찾을 수 없음 - {}", memberId);
-                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
-                });
+        Member member = memberService.findMemberById(memberId);
+        Company company = companyService.getCompany(request.getCompanyId());
+        memberService.updateMember(member, request, company);
+    }
 
-        Company company = companyRepository.findByName(request.getCompanyName())
-                .orElseThrow(() -> {
-                    log.error("멤버 정보 수정 실패: 회사를 찾을 수 없음 - {}", request.getCompanyName());
-                    return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
-                });
+    private void validatePassword(String inputPassword, String storedPassword, String authId) {
+        if (!passwordEncoder.matches(inputPassword, storedPassword)) {
+            log.error("로그인 실패: 잘못된 아이디 또는 비밀번호 - {}", authId);
+            throw new GeneralException(AuthErrorCode.INVALID_CREDENTIALS);
+        }
+    }
 
-        member.updateMember(request, company);
-        memberRepository.save(member);
-        log.info("멤버 정보 수정 성공: {}", memberId);
+    private void storeRefreshToken(String authId, String refreshToken) {
+        refreshTokenRepository.deleteByAuthId(authId);
+        refreshTokenRepository.save(authId, refreshToken);
     }
 
     private String generateVerificationCode() {
@@ -203,5 +165,4 @@ public class AuthService {
         refreshTokenCookie.setMaxAge((int) (refreshTokenValidTime / 1000));
         response.addCookie(refreshTokenCookie);
     }
-
 }

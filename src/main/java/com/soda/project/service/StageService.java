@@ -155,7 +155,7 @@ public class StageService {
          stageRepository.save(stage);
     }
 
-    private Stage validateStage(Long stageId, Project project) {
+    public Stage validateStage(Long stageId, Project project) {
         Stage stage = stageRepository.findById(stageId).orElseThrow(
                 ()-> new GeneralException(StageErrorCode.STAGE_NOT_FOUND)
         );

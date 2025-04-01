@@ -57,7 +57,7 @@ public class ArticleFileStrategy implements FileStrategy<Article, ArticleFile> {
     @Override
     public ArticleFile getFileOrThrow(Long fileId) {
         return articleFileRepository.findById(fileId)
-                .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
+                .orElseThrow(() -> new GeneralException(ArticleErrorCode.ARTICLE_FILE_NOT_FOUND));
     }
 
     @Override

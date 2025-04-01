@@ -8,8 +8,10 @@ public enum ArticleErrorCode implements ErrorCode {
     ARTICLE_ALREADY_DELETED("1102","This article is already deleted", HttpStatus.NOT_FOUND),
     INVALID_ARTICLE("1103", "The Article does not exist", HttpStatus.NOT_FOUND),
     PARENT_ARTICLE_NOT_FOUND("1104", "This parent article does not exist", HttpStatus.NOT_FOUND),
-    USER_NOT_UPLOAD_ARTICLE_FILE("1105", "This user does not upload article_file", HttpStatus.NOT_FOUND),
-    ;
+    ARTICLE_FILE_NOT_FOUND("1105", "This article file does not exist", HttpStatus.NOT_FOUND),
+    USER_NOT_UPLOAD_ARTICLE_FILE("1106", "This user does not upload article_file", HttpStatus.NOT_FOUND),
+    ARTICLE_LINK_NOT_FOUND("1107", "This link does not exist" , HttpStatus.NOT_FOUND ),
+    USER_NOT_UPLOAD_ARTICLE_LINK("1108", "This user does not upload article_link" , HttpStatus.NOT_FOUND ),;
 
     private final String code;
     private final String message;

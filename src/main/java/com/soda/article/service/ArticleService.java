@@ -58,7 +58,8 @@ public class ArticleService {
                     .orElseThrow(() -> new GeneralException(ArticleErrorCode.PARENT_ARTICLE_NOT_FOUND));
         }
 
-        validateFileAndLinkSize(request.getFileList(), request.getLinkList());
+        articleFileService.validateFileSize(request.getFileList());
+        articleLinkService.validateLinkSize(request.getLinkList());
 
         Article article = request.toEntity(member, stage, parentArticle);
         article = articleRepository.save(article);
@@ -88,7 +89,8 @@ public class ArticleService {
 
         Article article = validateArticle(articleId);
 
-        validateFileAndLinkSize(request.getFileList(), request.getLinkList());
+        articleFileService.validateFileSize(request.getFileList());
+        articleLinkService.validateLinkSize(request.getLinkList());
 
         article.updateArticle(request.getTitle(), request.getContent(), request.getPriority(), request.getDeadLine());
 
@@ -101,21 +103,6 @@ public class ArticleService {
         articleLinkService.processLinks(request.getLinkList(), article);
 
         return ArticleModifyResponse.fromEntity(article);
-    }
-
-    /**
-     * 게시글의 파일과 링크 크기 검증
-     * @param fileList 게시글에 첨부된 파일 리스트
-     * @param linkList 게시글에 첨부된 링크 리스트
-     */
-    private void validateFileAndLinkSize(List<ArticleFileDTO> fileList, List<ArticleLinkDTO> linkList) {
-        if (fileList != null && fileList.size() > 10) {
-            throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
-        }
-
-        if (linkList != null && linkList.size() > 10) {
-            throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
-        }
     }
 
     /**

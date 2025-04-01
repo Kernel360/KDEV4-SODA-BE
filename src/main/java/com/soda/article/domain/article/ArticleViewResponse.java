@@ -1,7 +1,6 @@
 package com.soda.article.domain.article;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.soda.article.domain.comment.CommentDTO;
 import com.soda.article.entity.Article;
 import com.soda.article.enums.PriorityType;
 import lombok.Builder;

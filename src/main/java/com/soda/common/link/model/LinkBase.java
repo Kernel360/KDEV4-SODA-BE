@@ -17,8 +17,9 @@ public abstract class LinkBase extends BaseEntity {
 
     protected String urlDescription;
 
-    public LinkBase(String urlAddress, String urlDescription) {
-        this.urlAddress = urlAddress;
-        this.urlDescription = urlDescription;
+    public void delete() {
+        markAsDeleted();
     }
+
+    public abstract Long getDomainId();
 }

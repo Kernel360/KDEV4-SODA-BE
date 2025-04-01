@@ -15,10 +15,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RequestLink extends LinkBase {
 
-    private String urlAddress;
-
-    private String urlDescription;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id", nullable = false)
     private Request request;
@@ -32,5 +28,10 @@ public class RequestLink extends LinkBase {
 
     public void updateRequest(Request request) {
         this.request = request;
+    }
+
+    @Override
+    public Long getDomainId() {
+        return request.getId();
     }
 }

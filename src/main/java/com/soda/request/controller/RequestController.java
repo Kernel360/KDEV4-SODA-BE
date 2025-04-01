@@ -1,9 +1,13 @@
 package com.soda.request.controller;
 
-import com.soda.common.file.service.FileService;
-import com.soda.global.response.ApiResponseForm;
 import com.soda.common.file.dto.FileDeleteResponse;
 import com.soda.common.file.dto.FileUploadResponse;
+import com.soda.common.file.service.FileService;
+import com.soda.common.link.dto.LinkDeleteResponse;
+import com.soda.common.link.dto.LinkUploadRequest;
+import com.soda.common.link.dto.LinkUploadResponse;
+import com.soda.common.link.service.LinkService;
+import com.soda.global.response.ApiResponseForm;
 import com.soda.request.dto.request.*;
 import com.soda.request.service.RequestService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +23,7 @@ import java.util.List;
 public class RequestController {
     private final RequestService requestService;
     private final FileService fileService;
+    private final LinkService linkService;
 
     @PostMapping("/requests")
     public ResponseEntity<ApiResponseForm<?>> createRequest(@RequestBody RequestCreateRequest requestCreateRequest,
@@ -72,5 +77,22 @@ public class RequestController {
         Long memberId = (Long) request.getAttribute("memberId");
         FileDeleteResponse fileDeleteResponse = fileService.delete("request", memberId, fileId);
         return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
+    }
+
+    @PostMapping("/requests/{requestId}/links")
+    public ResponseEntity<ApiResponseForm<?>> uploadLinks(@PathVariable Long requestId,
+                                                          @RequestBody LinkUploadRequest requestLinkUploadRequest,
+                                                          HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        LinkUploadResponse linkUploadResponse = linkService.upload("request", requestId, memberId, requestLinkUploadRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(linkUploadResponse));
+    }
+
+    @DeleteMapping("requests/{requestId}/links/{linkId}")
+    public ResponseEntity<ApiResponseForm<?>> deleteLink(@PathVariable Long linkId,
+                                                         HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        LinkDeleteResponse linkDeleteResponse = linkService.delete("request", memberId, linkId);
+        return ResponseEntity.ok(ApiResponseForm.success(linkDeleteResponse));
     }
 }

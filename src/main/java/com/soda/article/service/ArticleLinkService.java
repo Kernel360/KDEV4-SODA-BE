@@ -2,7 +2,6 @@ package com.soda.article.service;
 
 import com.soda.article.domain.article.ArticleLinkDTO;
 import com.soda.article.entity.Article;
-import com.soda.article.entity.ArticleFile;
 import com.soda.article.entity.ArticleLink;
 import com.soda.article.repository.ArticleLinkRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Transactional(readOnly = true)
 @Service

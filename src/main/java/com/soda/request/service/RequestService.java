@@ -177,13 +177,17 @@ public class RequestService {
     }
 
     private List<RequestLink> buildRequestLinks(List<LinkDTO> linkDTOs) {
-        if (linkDTOs == null) return List.of();
+        if (linkDTOs == null) {
+            return List.of();
+        }
 
         return linkDTOs.stream()
-                .map(dto -> RequestLink.builder()
-                        .urlAddress(dto.getUrlAddress())
-                        .urlDescription(dto.getUrlDescription())
-                        .build())
+                .map(dto -> {
+                    return RequestLink.builder()
+                            .urlAddress(dto.getUrlAddress())
+                            .urlDescription(dto.getUrlDescription())
+                            .build();
+                })
                 .toList();
     }
 }

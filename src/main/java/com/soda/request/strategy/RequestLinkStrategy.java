@@ -1,26 +1,27 @@
 package com.soda.request.strategy;
 
-import com.soda.common.file.strategy.FileStrategy;
+import com.soda.common.link.dto.LinkUploadRequest;
+import com.soda.common.link.strategy.LinkStrategy;
 import com.soda.global.response.GeneralException;
 import com.soda.request.entity.Request;
-import com.soda.request.entity.RequestFile;
+import com.soda.request.entity.RequestLink;
 import com.soda.request.error.RequestErrorCode;
-import com.soda.request.repository.RequestFileRepository;
+import com.soda.request.repository.RequestLinkRepository;
 import com.soda.request.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class RequestFileStrategy implements FileStrategy<Request, RequestFile> {
+public class RequestLinkStrategy implements LinkStrategy<Request, RequestLink> {
 
     private final RequestRepository requestRepository;
-    private final RequestFileRepository requestFileRepository;
+    private final RequestLinkRepository requestLinkRepository;
+
 
     @Override
     public String getSupportedDomain() {
@@ -41,29 +42,29 @@ public class RequestFileStrategy implements FileStrategy<Request, RequestFile> {
     }
 
     @Override
-    public RequestFile toEntity(MultipartFile file, String url, Request request) {
-        return RequestFile.builder()
-                .name(file.getOriginalFilename())
-                .url(url)
+    public RequestLink toEntity(LinkUploadRequest.LinkUploadDTO dto, Request request) {
+        return RequestLink.builder()
+                .urlAddress(dto.getUrlAddress())
+                .urlDescription(dto.getUrlDescription())
                 .request(request)
                 .build();
     }
 
     @Override
-    public void saveAll(List<RequestFile> entities) {
-        requestFileRepository.saveAll(entities);
+    public void saveAll(List<RequestLink> entities) {
+        requestLinkRepository.saveAll(entities);
     }
 
     @Override
-    public RequestFile getFileOrThrow(Long fileId) {
-        return requestFileRepository.findById(fileId)
-                .orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_FILE_NOT_FOUND));
+    public RequestLink getLinkOrThrow(Long linkId) {
+        return requestLinkRepository.findById(linkId)
+                .orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_LINK_NOT_FOUND));
     }
 
     @Override
-    public void validateFileUploader(Long memberId, RequestFile file) {
-        if (!file.getRequest().getMember().getId().equals(memberId)) {
-            throw new GeneralException(RequestErrorCode.USER_NOT_UPLOAD_FILE);
+    public void validateLinkUploader(Long memberId, RequestLink link) {
+        if (!link.getRequest().getMember().getId().equals(memberId)) {
+            throw new GeneralException(RequestErrorCode.USER_NOT_UPLOAD_LINK);
         }
     }
 }

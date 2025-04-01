@@ -29,4 +29,9 @@ public class ResponseLink extends LinkBase {
     public void updateResponse(Response response) {
         this.response = response;
     }
+
+    @Override
+    public Long getDomainId() {
+        return this.response.getId();
+    }
 }

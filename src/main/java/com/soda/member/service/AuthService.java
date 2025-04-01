@@ -10,10 +10,6 @@ import com.soda.member.dto.SignupRequest;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.error.AuthErrorCode;
-import com.soda.member.error.CompanyErrorCode;
-import com.soda.member.error.MemberErrorCode;
-import com.soda.member.repository.CompanyRepository;
-import com.soda.member.repository.MemberRepository;
 import com.soda.member.repository.RefreshTokenRepository;
 import com.soda.member.repository.VerificationCodeRepository;
 import jakarta.servlet.http.Cookie;
@@ -26,7 +22,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.Random;
 
 @Slf4j
@@ -72,47 +67,24 @@ public class AuthService {
     @Transactional
     public void refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = jwtTokenProvider.resolveToken(request);
-
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
-            log.error("토큰 갱신 실패: 유효하지 않은 리프레시 토큰");
-            throw new GeneralException(AuthErrorCode.INVALID_REFRESH_TOKEN);
-        }
-
+        validateRefreshToken(refreshToken);
         String authId = jwtTokenProvider.getAuthId(refreshToken);
-        String storedRefreshToken = refreshTokenRepository.findByAuthId(authId)
-                .orElseThrow(() -> {
-                    log.error("토큰 갱신 실패: 리프레시 토큰을 찾을 수 없음 - {}", authId);
-                    return new GeneralException(AuthErrorCode.INVALID_REFRESH_TOKEN);
-                });
-
-        if (!storedRefreshToken.equals(refreshToken)) {
-            log.error("토큰 갱신 실패: 리프레시 토큰 불일치 - {}", authId);
-            throw new GeneralException(AuthErrorCode.INVALID_REFRESH_TOKEN);
-        }
-
+        validateStoredRefreshToken(authId, refreshToken);
         String newAccessToken = jwtTokenProvider.createAccessToken(authId);
         String newRefreshToken = jwtTokenProvider.createRefreshToken(authId);
-
-        refreshTokenRepository.deleteByAuthId(authId);
-        refreshTokenRepository.save(authId, newRefreshToken);
-
-        addRefreshTokenCookie(response, newRefreshToken); // 수정된 부분
+        storeRefreshToken(authId, newRefreshToken);
+        addRefreshTokenCookie(response, newRefreshToken);
         response.setHeader("Authorization", "Bearer " + newAccessToken);
-
         log.info("토큰 갱신 성공: {}", authId);
     }
 
     @Transactional
-    public void sendVerificationCode(String email) throws IOException {
+    public void sendVerificationCode(String email) {
+        memberService.validateEmailExists(email);
         String code = generateVerificationCode();
-        try {
-            emailService.sendVerificationEmail(email, code);
-            verificationCodeRepository.saveVerificationCode(email, code, VERIFICATION_CODE_EXPIRATION);
-            log.info("인증 코드 전송 성공: {}", email);
-        } catch (Exception e) {
-            log.error("인증 코드 전송 실패: {}", email, e);
-            throw new GeneralException(AuthErrorCode.MAIL_SEND_FAILED);
-        }
+        sendVerificationEmail(email, code);
+        storeVerificationCode(email, code);
+        log.info("인증 코드 전송 성공: {}", email);
     }
 
     @Transactional
@@ -150,6 +122,39 @@ public class AuthService {
     private void storeRefreshToken(String authId, String refreshToken) {
         refreshTokenRepository.deleteByAuthId(authId);
         refreshTokenRepository.save(authId, refreshToken);
+    }
+
+    private void validateRefreshToken(String refreshToken) {
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            log.error("토큰 갱신 실패: 유효하지 않은 리프레시 토큰");
+            throw new GeneralException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+        }
+    }
+
+    private void validateStoredRefreshToken(String authId, String refreshToken) {
+        String storedRefreshToken = refreshTokenRepository.findByAuthId(authId)
+                .orElseThrow(() -> {
+                    log.error("토큰 갱신 실패: 리프레시 토큰을 찾을 수 없음 - {}", authId);
+                    return new GeneralException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+                });
+
+        if (!storedRefreshToken.equals(refreshToken)) {
+            log.error("토큰 갱신 실패: 리프레시 토큰 불일치 - {}", authId);
+            throw new GeneralException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+        }
+    }
+
+    private void sendVerificationEmail(String email, String code) {
+        try {
+            emailService.sendVerificationEmail(email, code);
+        } catch (Exception e) {
+            log.error("인증 코드 전송 실패: {}", email, e);
+            throw new GeneralException(AuthErrorCode.MAIL_SEND_FAILED);
+        }
+    }
+
+    private void storeVerificationCode(String email, String code) {
+        verificationCodeRepository.saveVerificationCode(email, code, VERIFICATION_CODE_EXPIRATION);
     }
 
     private String generateVerificationCode() {

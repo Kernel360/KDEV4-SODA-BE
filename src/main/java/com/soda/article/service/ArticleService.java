@@ -2,9 +2,6 @@ package com.soda.article.service;
 
 import com.soda.article.domain.article.*;
 import com.soda.article.entity.Article;
-import com.soda.article.entity.ArticleFile;
-import com.soda.article.entity.ArticleLink;
-import com.soda.article.enums.ArticleStatus;
 import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.repository.ArticleRepository;
 import com.soda.global.response.GeneralException;
@@ -46,8 +43,8 @@ public class ArticleService {
      */
     @Transactional
     public ArticleCreateResponse createArticle(ArticleCreateRequest request, Long userId, String userRole) {
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(request.getProjectId());
+        Member member = validateMember(userId);
+        Project project = validateProject(request.getProjectId());
         Stage stage = validateStage(request.getStageId(), project);
 
         checkMemberInProject(userRole, member, project);
@@ -80,8 +77,8 @@ public class ArticleService {
      */
     @Transactional
     public ArticleModifyResponse updateArticle(Long userId, String userRole, Long articleId, ArticleModifyRequest request) {
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(request.getProjectId());
+        Member member = validateMember(userId);
+        Project project = validateProject(request.getProjectId());
 
         checkMemberInProject(userRole, member, project);
 
@@ -126,8 +123,8 @@ public class ArticleService {
      */
     @Transactional
     public void deleteArticle(Long projectId, Long userId, String userRole, Long articleId) {
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(projectId);
+        Member member = validateMember(userId);
+        Project project = validateProject(projectId);
 
         checkMemberInProject(userRole, member, project);
 
@@ -187,8 +184,8 @@ public class ArticleService {
      * @return 해당 조건에 맞는 게시글 리스트
      */
     public List<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, Long stageId) {
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(projectId);
+        Member member = validateMember(userId);
+        Project project = validateProject(projectId);
 
         checkMemberInProject(userRole, member, project);
 
@@ -241,8 +238,8 @@ public class ArticleService {
      * @return 조회된 게시글의 정보
      */
     public ArticleViewResponse getArticle(Long projectId, Long userId, String userRole, Long articleId) {
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(projectId);
+        Member member = validateMember(userId);
+        Project project = validateProject(projectId);
 
         checkMemberInProject(userRole, member, project);
 
@@ -300,6 +297,26 @@ public class ArticleService {
     public Article validateArticle(Long articleId) {
         return articleRepository.findByIdAndIsDeletedFalse(articleId)
                 .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
+    }
+
+    /**
+     * 사용자 검증
+     * @param userId 사용자 ID
+     * @return 검증된 Member 객체
+     * @throws GeneralException 사용자가 존재하지 않거나 삭제된 사용자일 경우 예외 발생
+     */
+    private Member validateMember(Long userId) {
+        return memberService.findByIdAndIsDeletedFalse(userId);
+    }
+
+    /**
+     * 프로젝트 검증
+     * @param projectId 프로젝트 ID
+     * @return 검증된 Project 객체
+     * @throws GeneralException 프로젝트가 존재하지 않거나 유효하지 않은 경우 예외 발생
+     */
+    private Project validateProject(Long projectId) {
+        return projectService.getValidProject(projectId);
     }
 
 }

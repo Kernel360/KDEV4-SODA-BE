@@ -32,6 +32,8 @@ public class StageService {
     private final StageRepository stageRepository;
     private final ProjectRepository projectRepository;
 
+    private final TaskService taskService;
+
     private static final float ORDER_INCREMENT = 1.0f;
     private static final float INITIAL_ORDER = 1.0f;
     private static final List<String> INITIAL_STAGE_NAMES = Arrays.asList(
@@ -151,6 +153,18 @@ public class StageService {
 
         log.info("단계 삭제 성공 (논리적): 단계 ID {}", stageId);
          stageRepository.save(stage);
+    }
+
+    private Stage validateStage(Long stageId, Project project) {
+        Stage stage = stageRepository.findById(stageId).orElseThrow(
+                ()-> new GeneralException(StageErrorCode.STAGE_NOT_FOUND)
+        );
+
+        if (!stage.getProject().equals(project)) {
+            throw new GeneralException(ProjectErrorCode.INVALID_STAGE_FOR_PROJECT);
+        }
+
+        return stage;
     }
 
     /**

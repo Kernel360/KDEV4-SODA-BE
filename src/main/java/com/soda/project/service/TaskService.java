@@ -138,6 +138,9 @@ public class TaskService {
         log.info("태스크 삭제 성공 (논리적): {}", taskId);
     }
 
+    public Task getTaskOrThrow(Long taskId) {
+        return taskRepository.findById(taskId).orElseThrow(() -> new GeneralException(TaskErrorCode.TASK_NOT_FOUND));
+    }
 
     // --- Private Helper Methods ---
 
@@ -197,5 +200,9 @@ public class TaskService {
             log.info("스테이지 ID {} 에 첫 태스크 추가. 초기 순서 {} 적용", stageId, TASK_INITIAL_ORDER);
             return TASK_INITIAL_ORDER;
         }
+    }
+
+    private Task findById(Long taskId) {
+        return taskRepository.findById(taskId).orElseThrow(() -> new GeneralException(TaskErrorCode.TASK_NOT_FOUND));
     }
 }

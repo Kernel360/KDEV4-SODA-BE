@@ -13,7 +13,8 @@ public enum AuthErrorCode implements ErrorCode {
     NOT_FOUND_REFRESH_TOKEN("2006", "Refresh Token을 찾을 수 없습니다.", HttpStatus.UNAUTHORIZED),
     INVALID_REFRESH_TOKEN("2007", "유효하지 않은 Refresh Token입니다.", HttpStatus.UNAUTHORIZED),
     MAIL_SEND_FAILED("2009", "메일 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    AUTHENTICATION_FAILED("2010", "인증에 실패했습니다.", HttpStatus.UNAUTHORIZED);
+    AUTHENTICATION_FAILED("2010", "인증에 실패했습니다.", HttpStatus.UNAUTHORIZED),
+    NOT_FOUND_EMAIL("2011", "가입되지 않은 이메일 입니다.", HttpStatus.UNAUTHORIZED);
 
     private final String code;
     private final String message;

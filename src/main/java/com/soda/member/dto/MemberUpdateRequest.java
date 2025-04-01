@@ -11,7 +11,7 @@ public class MemberUpdateRequest {
     private String authId;
     private String email;
     private MemberRole role;
-    private String companyName;
+    private Long companyId;
     private String position;
     private String phoneNumber;
 }

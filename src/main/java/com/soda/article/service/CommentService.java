@@ -48,7 +48,7 @@ public class CommentService {
     @Transactional
     public CommentCreateResponse createComment(Long userId, String userRole, CommentCreateRequest request) {
         // 1. 유저가 해당 프로젝트에 참여하는지 / 관리자인지 체크
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Member member = validateMember(userId);
         Project project = projectService.getValidProject(request.getProjectId());
         checkMemberInProject(userRole, member, project);
 
@@ -111,7 +111,7 @@ public class CommentService {
      */
     public List<CommentDTO> getCommentList(Long userId, String userRole, Long articleId) {
         // 1. 유저의 접근 권한 확인
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Member member = validateMember(userId);
         Article article = articleService.validateArticle(articleId);
 
         Project project = article.getStage().getProject();
@@ -228,4 +228,15 @@ public class CommentService {
             throw new GeneralException(CommentErrorCode.FORBIDDEN_ACTION);
         }
     }
+
+    /**
+     * 사용자 검증
+     * @param userId 사용자 ID
+     * @return 검증된 Member 객체
+     * @throws GeneralException 사용자가 존재하지 않거나 삭제된 사용자일 경우 예외 발생
+     */
+    private Member validateMember(Long userId) {
+        return memberService.findByIdAndIsDeletedFalse(userId);
+    }
+
 }

@@ -63,13 +63,16 @@ public class Request extends BaseEntity {
         this.content = content;
     }
     public void addLinks(List<RequestLink> newLinks) {
-        if ( this.links == null ) {
+        if (this.links == null) {
             this.links = new ArrayList<>();
         }
-        for (RequestLink link : newLinks) {
-            link.updateRequest(this);
-            this.links.add(link);
+        this.links.addAll(newLinks);
+    }
+    public void addFiles(List<RequestFile> newFiles) {
+        if (this.files == null) {
+            this.files = new ArrayList<>();
         }
+        this.files.addAll(newFiles);
     }
 
     public void delete() {

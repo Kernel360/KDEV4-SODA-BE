@@ -1,6 +1,8 @@
 package com.soda.request.service;
 
-import com.soda.common.link.dto.LinkDTO;
+import com.soda.common.file.service.FileService;
+import com.soda.common.file.service.S3Service;
+import com.soda.common.link.service.LinkService;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
@@ -12,13 +14,16 @@ import com.soda.project.entity.Task;
 import com.soda.project.repository.TaskRepository;
 import com.soda.request.dto.request.*;
 import com.soda.request.entity.Request;
+import com.soda.request.entity.RequestFile;
 import com.soda.request.entity.RequestLink;
 import com.soda.request.enums.RequestStatus;
 import com.soda.request.error.RequestErrorCode;
+import com.soda.request.repository.RequestLinkRepository;
 import com.soda.request.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,9 +32,13 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class RequestService {
+    private final LinkService linkService;
+    private final FileService fileService;
+    private final S3Service s3Service;
     private final RequestRepository requestRepository;
     private final MemberRepository memberRepository;
     private final TaskRepository taskRepository;
+    private final RequestLinkRepository requestLinkRepository;
 
     /*
     Request(승인요청) 생성
@@ -37,15 +46,16 @@ public class RequestService {
     Request 데이터 생성 전에, 요청한 member가 현재 프로젝트에 속한 "개발사"의 멤버이거나 ADMIN유저인지 확인해야함.
     */
     @Transactional
-    public RequestCreateResponse createRequest(Long memberId, RequestCreateRequest requestCreateRequest) throws GeneralException {
+    public RequestCreateResponse createRequest(Long memberId, RequestCreateRequest requestCreateRequest, List<MultipartFile> files) {
         Member member = getMemberWithProjectOrThrow(memberId);
+        System.out.println(requestCreateRequest);
+        System.out.println(requestCreateRequest.getTaskId());
         Task task = getTaskOrThrow(requestCreateRequest.getTaskId());
 
         // 현재 프로젝트에 속한 "개발사"의 멤버가 아니고, 어드민도 아니면 USER_NOT_IN_PROJECT_DEV 반환
         validateProjectAuthority(member, requestCreateRequest.getProjectId());
 
-        Request request = createRequest(requestCreateRequest, member, task);
-        requestRepository.save(request);
+        Request request = createRequest(requestCreateRequest, files, member, task);
 
         return RequestCreateResponse.fromEntity(request);
     }
@@ -155,15 +165,33 @@ public class RequestService {
             request.updateContent(requestUpdateRequest.getContent());
         }
         if(requestUpdateRequest.getLinks() != null) {
-            request.addLinks(buildRequestLinks(requestUpdateRequest.getLinks()));
+            request.addLinks(linkService.buildLinks("request", request, requestUpdateRequest.getLinks()));
         }
     }
 
-    public Request createRequest(RequestCreateRequest dto, Member member, Task task) {
+    public Request createRequest(RequestCreateRequest dto, List<MultipartFile> files, Member member, Task task) {
         Request request = buildRequest(dto, member, task);
-        List<RequestLink> links = buildRequestLinks(dto.getLinks());
-        request.addLinks(links);
-        return request;
+        List<RequestLink> requestLinks = linkService.buildLinks("request", request, dto.getLinks());
+        request.addLinks(requestLinks);
+        List<RequestFile> requestFiles = buildRequestFiles(files, request);
+        request.addFiles(requestFiles);
+        return requestRepository.save(request);
+    }
+
+    private List<RequestFile> buildRequestFiles(List<MultipartFile> files, Request request) {
+        if (files == null) {
+            return List.of();
+        }
+
+        return files.stream()
+                .map(file -> {
+                    return RequestFile.builder()
+                            .url(s3Service.uploadFile(file))
+                            .name(file.getOriginalFilename())
+                            .request(request)
+                            .build();
+                })
+                .toList();
     }
 
     private Request buildRequest(RequestCreateRequest dto, Member member, Task task) {
@@ -174,20 +202,5 @@ public class RequestService {
                 .content(dto.getContent())
                 .status(RequestStatus.PENDING)
                 .build();
-    }
-
-    private List<RequestLink> buildRequestLinks(List<LinkDTO> linkDTOs) {
-        if (linkDTOs == null) {
-            return List.of();
-        }
-
-        return linkDTOs.stream()
-                .map(dto -> {
-                    return RequestLink.builder()
-                            .urlAddress(dto.getUrlAddress())
-                            .urlDescription(dto.getUrlDescription())
-                            .build();
-                })
-                .toList();
     }
 }

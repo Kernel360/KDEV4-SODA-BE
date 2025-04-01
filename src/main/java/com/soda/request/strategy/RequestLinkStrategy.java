@@ -50,6 +50,20 @@ public class RequestLinkStrategy implements LinkStrategy<Request, RequestLink> {
                 .build();
     }
 
+    public List<RequestLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Request request) {
+        if (dtos == null) {
+            return List.of();
+        }
+
+        return dtos.stream()
+                .map(dto -> RequestLink.builder()
+                        .urlAddress(dto.getUrlAddress())
+                        .urlDescription(dto.getUrlDescription())
+                        .request(request)
+                        .build())
+                .toList();
+    }
+
     @Override
     public void saveAll(List<RequestLink> entities) {
         requestLinkRepository.saveAll(entities);

@@ -14,6 +14,8 @@ public interface LinkStrategy<T, E extends LinkBase> {
 
     E toEntity(LinkUploadRequest.LinkUploadDTO dto, T domain);
 
+    List<E> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, T domain);
+
     void saveAll(List<E> entities);
 
     E getLinkOrThrow(Long linkId);

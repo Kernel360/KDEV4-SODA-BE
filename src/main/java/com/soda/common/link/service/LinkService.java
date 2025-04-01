@@ -53,6 +53,12 @@ public class LinkService {
         return LinkDeleteResponse.fromEntity(link);
     }
 
+    @Transactional
+    public <T extends LinkBase> List<T> buildLinks(String domainType, Object domain, List<? extends LinkUploadRequest.LinkUploadDTO> dtos) {
+        LinkStrategy strategy = getStrategy(domainType);
+        return (List<T>) strategy.toEntities(dtos, domain);
+    }
+
     private LinkStrategy getStrategy(String domainType) {
         LinkStrategy strategy = strategies.get(domainType.toLowerCase());
         if (strategy == null) {

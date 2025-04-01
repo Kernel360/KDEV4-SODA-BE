@@ -1,6 +1,6 @@
 package com.soda.article.entity;
 
-import com.soda.common.BaseEntity;
+import com.soda.common.link.model.LinkBase;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -13,11 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-public class ArticleLink extends BaseEntity {
-
-    private String urlAddress;
-
-    private String urlDescription;
+public class ArticleLink extends LinkBase {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "article_id", nullable = false)
@@ -32,6 +28,11 @@ public class ArticleLink extends BaseEntity {
 
     public void delete() {
         this.markAsDeleted();
+    }
+
+    @Override
+    public Long getDomainId() {
+        return article.getId();
     }
 
     public void reActive() {

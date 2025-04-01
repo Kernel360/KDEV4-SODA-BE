@@ -12,6 +12,7 @@ import com.soda.request.dto.request.*;
 import com.soda.request.service.RequestService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,11 +26,13 @@ public class RequestController {
     private final FileService fileService;
     private final LinkService linkService;
 
-    @PostMapping("/requests")
-    public ResponseEntity<ApiResponseForm<?>> createRequest(@RequestBody RequestCreateRequest requestCreateRequest,
+
+    @PostMapping(value = "/requests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponseForm<?>> createRequest(@RequestPart("data") RequestCreateRequest requestCreateRequest,
+                                                            @RequestPart(value = "file", required = false) List<MultipartFile> files,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        RequestCreateResponse requestCreateResponse = requestService.createRequest(memberId, requestCreateRequest);
+        RequestCreateResponse requestCreateResponse = requestService.createRequest(memberId, requestCreateRequest, files);
         return ResponseEntity.ok(ApiResponseForm.success(requestCreateResponse));
     }
 

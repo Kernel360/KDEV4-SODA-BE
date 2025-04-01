@@ -51,6 +51,11 @@ public class ResponseLinkStrategy implements LinkStrategy<Response, ResponseLink
     }
 
     @Override
+    public List<ResponseLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Response domain) {
+        return List.of();
+    }
+
+    @Override
     public void saveAll(List<ResponseLink> entities) {
         responseLinkRepository.saveAll(entities);
     }

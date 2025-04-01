@@ -50,6 +50,11 @@ public class ArticleLinkStrategy implements LinkStrategy<Article, ArticleLink> {
     }
 
     @Override
+    public List<ArticleLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Article domain) {
+        return List.of();
+    }
+
+    @Override
     public void saveAll(List<ArticleLink> entities) {
         articleLinkRepository.saveAll(entities);
     }
@@ -57,7 +62,7 @@ public class ArticleLinkStrategy implements LinkStrategy<Article, ArticleLink> {
     @Override
     public ArticleLink getLinkOrThrow(Long linkId) {
         return articleLinkRepository.findById(linkId)
-                .orElseThrow(() -> new GeneralException(ArticleErrorCode.ARTICLE_LINK_NOT_FOUND))
+                .orElseThrow(() -> new GeneralException(ArticleErrorCode.ARTICLE_LINK_NOT_FOUND));
     }
 
     @Override

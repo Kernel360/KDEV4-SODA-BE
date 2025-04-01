@@ -71,7 +71,7 @@ public class Member extends BaseEntity {
         if (request.getRole()!=null){
             this.role = request.getRole();
         }
-        if (request.getCompanyName()!=null){
+        if (company!=null){
             this.company = company;
         }
     }

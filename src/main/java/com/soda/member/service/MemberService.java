@@ -97,4 +97,19 @@ public class MemberService {
         memberRepository.save(member);
         log.info("멤버 정보 수정 성공: {}", member.getId());
     }
+
+
+    public Member getMemberWithProjectOrThrow(Long memberId) {
+        return memberRepository.findWithProjectsById(memberId)
+                .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
+    }
+
+    public boolean isAdmin(MemberRole memberRole) {
+        return memberRole == MemberRole.ADMIN;
+    }
+
+
+    public List<Member> findByIds(List<Long> ids) {
+        return null;
+    }
 }

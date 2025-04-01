@@ -18,6 +18,15 @@ public class ArticleFileService {
 
     private final ArticleFileRepository articleFileRepository;
 
+    public void processFiles(List<ArticleFileDTO> fileList, Article article) {
+        if (fileList != null) {
+            fileList.forEach(articleFileDTO -> {
+                ArticleFile file = processFile(articleFileDTO, article);
+                article.getArticleFileList().add(file);
+            });
+        }
+    }
+
     public ArticleFile processFile(ArticleFileDTO fileDTO, Article article) {
         ArticleFile file = articleFileRepository.findByArticleIdAndNameAndIsDeletedTrue(article.getId(), fileDTO.getName())
                 .orElse(null);

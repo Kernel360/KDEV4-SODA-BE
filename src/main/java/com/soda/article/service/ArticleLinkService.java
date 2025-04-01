@@ -19,6 +19,15 @@ public class ArticleLinkService {
 
     private final ArticleLinkRepository articleLinkRepository;
 
+    public void processLinks(List<ArticleLinkDTO> linkList, Article article) {
+        if (linkList != null) {
+            linkList.forEach(articleLinkDTO -> {
+                ArticleLink link = processLink(articleLinkDTO, article);
+                article.getArticleLinkList().add(link);
+            });
+        }
+    }
+
     public ArticleLink processLink(ArticleLinkDTO linkDTO, Article article) {
         ArticleLink link = articleLinkRepository.findByArticleIdAndUrlAddressAndIsDeletedTrue(article.getId(), linkDTO.getUrlAddress())
                 .orElse(null);

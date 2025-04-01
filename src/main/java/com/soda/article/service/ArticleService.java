@@ -64,7 +64,8 @@ public class ArticleService {
         article = articleRepository.save(article);
 
         // file & link 저장
-        processFilesAndLinks(request.getFileList(), request.getLinkList(), article);
+        articleFileService.processFiles(request.getFileList(), article);
+        articleLinkService.processLinks(request.getLinkList(), article);
 
         return ArticleCreateResponse.fromEntity(article);
     }
@@ -91,10 +92,12 @@ public class ArticleService {
         article.updateArticle(request.getTitle(), request.getContent(), request.getPriority(), request.getDeadLine());
 
         // 기존 파일 및 링크 삭제
-        processDeletionForFilesAndLinks(articleId, article);
+        articleFileService.deleteFiles(articleId, article);
+        articleLinkService.deleteLinks(articleId, article);
 
         // 새 파일 및 링크 추가 또는 복원
-        processFilesAndLinks(request.getFileList(), request.getLinkList(), article);
+        articleFileService.processFiles(request.getFileList(), article);
+        articleLinkService.processLinks(request.getLinkList(), article);
 
         return ArticleModifyResponse.fromEntity(article);
     }
@@ -111,28 +114,6 @@ public class ArticleService {
 
         if (linkList != null && linkList.size() > 10) {
             throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
-        }
-    }
-
-    /**
-     * 게시글에 첨부된 파일과 링크를 처리하여 저장
-     * @param fileList 게시글에 첨부된 파일 리스트
-     * @param linkList 게시글에 첨부된 링크 리스트
-     * @param article 해당 게시글
-     */
-    private void processFilesAndLinks(List<ArticleFileDTO> fileList, List<ArticleLinkDTO> linkList, Article article) {
-        if (fileList != null) {
-            fileList.forEach(articleFileDTO -> {
-                ArticleFile file = articleFileService.processFile(articleFileDTO, article);
-                article.getArticleFileList().add(file);
-            });
-        }
-
-        if (linkList != null) {
-            linkList.forEach(articleLinkDTO -> {
-                ArticleLink link = articleLinkService.processLink(articleLinkDTO, article);
-                article.getArticleLinkList().add(link);
-            });
         }
     }
 
@@ -157,18 +138,7 @@ public class ArticleService {
         article.delete();
 
         // 연관된 파일 및 링크 삭제
-        processDeletionForFilesAndLinks(articleId, article);
-    }
-
-    /**
-     * 게시글에 첨부된 파일 및 링킄 삭제
-     * @param articleId 삭제할 게시글 ID
-     * @param article 삭제할 게시글
-     */
-    private void processDeletionForFilesAndLinks(Long articleId, Article article) {
-        // file delete
         articleFileService.deleteFiles(articleId, article);
-        // link delete
         articleLinkService.deleteLinks(articleId, article);
     }
 

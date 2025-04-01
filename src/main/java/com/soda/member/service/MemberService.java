@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
@@ -17,5 +19,9 @@ public class MemberService {
     public Member findByIdAndIsDeletedFalse(Long memberId) {
         return memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    public List<Member> findByIds(List<Long> ids) {
+        return null;
     }
 }

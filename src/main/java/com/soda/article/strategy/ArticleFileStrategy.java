@@ -50,6 +50,11 @@ public class ArticleFileStrategy implements FileStrategy<Article, ArticleFile> {
     }
 
     @Override
+    public List<ArticleFile> toEntities(List<String> url, List<String> names, Article domain) {
+        return List.of();
+    }
+
+    @Override
     public void saveAll(List<ArticleFile> entities) {
         articleFileRepository.saveAll(entities);
     }

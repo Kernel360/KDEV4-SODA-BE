@@ -51,7 +51,7 @@ public class RequestLinkStrategy implements LinkStrategy<Request, RequestLink> {
     }
 
     public List<RequestLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Request request) {
-        if (dtos == null) {
+        if (dtos == null || dtos.isEmpty()) {
             return List.of();
         }
 

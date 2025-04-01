@@ -50,6 +50,11 @@ public class ResponseFileStrategy implements FileStrategy<Response, ResponseFile
     }
 
     @Override
+    public List<ResponseFile> toEntities(List<String> url, List<String> names, Response domain) {
+        return List.of();
+    }
+
+    @Override
     public void saveAll(List<ResponseFile> entities) {
         responseFileRepository.saveAll(entities);
     }

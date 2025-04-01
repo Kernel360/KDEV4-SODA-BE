@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Service
 @Transactional
@@ -47,6 +48,21 @@ public class RequestFileStrategy implements FileStrategy<Request, RequestFile> {
                 .url(url)
                 .request(request)
                 .build();
+    }
+
+    @Override
+    public List<RequestFile> toEntities(List<String> urls, List<String> names, Request domain) {
+        if (urls == null || urls.isEmpty()) {
+            return List.of();
+        }
+
+        return IntStream.range(0, urls.size())
+                .mapToObj(i -> RequestFile.builder()
+                        .url(urls.get(i))
+                        .name(names.get(i))
+                        .request(domain)
+                        .build())
+                .toList();
     }
 
     @Override

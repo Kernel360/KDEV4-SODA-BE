@@ -173,7 +173,7 @@ public class RequestService {
         Request request = buildRequest(dto, member, task);
         List<RequestLink> requestLinks = linkService.buildLinks("request", request, dto.getLinks());
         request.addLinks(requestLinks);
-        List<RequestFile> requestFiles = buildRequestFiles(files, request);
+        List<RequestFile> requestFiles = fileService.buildFiles("request", request, files);
         request.addFiles(requestFiles);
         return requestRepository.save(request);
     }

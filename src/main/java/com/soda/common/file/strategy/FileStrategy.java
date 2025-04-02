@@ -14,6 +14,8 @@ public interface FileStrategy<T, E extends FileBase> {
 
     E toEntity(MultipartFile file, String url, T domain);
 
+    List<E> toEntities(List<String> url, List<String> names, T domain);
+
     void saveAll(List<E> entities);
 
     E getFileOrThrow(Long fileId);

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Service
 @Transactional
@@ -50,6 +51,21 @@ public class RequestFileStrategy implements FileStrategy<Request, RequestFile> {
     }
 
     @Override
+    public List<RequestFile> toEntities(List<String> urls, List<String> names, Request domain) {
+        if (urls == null || urls.isEmpty()) {
+            return List.of();
+        }
+
+        return IntStream.range(0, urls.size())
+                .mapToObj(i -> RequestFile.builder()
+                        .url(urls.get(i))
+                        .name(names.get(i))
+                        .request(domain)
+                        .build())
+                .toList();
+    }
+
+    @Override
     public void saveAll(List<RequestFile> entities) {
         requestFileRepository.saveAll(entities);
     }
@@ -57,7 +73,7 @@ public class RequestFileStrategy implements FileStrategy<Request, RequestFile> {
     @Override
     public RequestFile getFileOrThrow(Long fileId) {
         return requestFileRepository.findById(fileId)
-                .orElseThrow(() -> new GeneralException(RequestErrorCode.REQUESTFILE_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_FILE_NOT_FOUND));
     }
 
     @Override

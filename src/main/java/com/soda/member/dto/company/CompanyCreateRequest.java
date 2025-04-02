@@ -10,5 +10,5 @@ public class CompanyCreateRequest {
     private String phoneNumber;
     private String companyNumber;
     private String address;
-    private String detailAddress;
+    private String detailaddress;
 }

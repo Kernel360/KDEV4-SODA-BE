@@ -6,6 +6,7 @@ import com.soda.common.file.error.FileErrorCode;
 import com.soda.common.file.model.FileBase;
 import com.soda.common.file.strategy.FileStrategy;
 import com.soda.global.response.GeneralException;
+import com.soda.request.entity.RequestFile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,6 +57,13 @@ public class FileService {
         file.delete();
 
         return FileDeleteResponse.fromEntity(file);
+    }
+
+    public List<RequestFile> buildFiles(String domainType, Object domain, List<MultipartFile> files) {
+        FileStrategy strategy = getStrategy(domainType);
+        List<String> urls = s3Service.uploadFiles(files);
+        List<String> names = files.stream().map(MultipartFile::getOriginalFilename).collect(Collectors.toList());
+        return strategy.toEntities(urls, names, domain);
     }
 
     private FileStrategy getStrategy(String domainType) {

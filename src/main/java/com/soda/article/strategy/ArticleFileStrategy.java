@@ -50,6 +50,11 @@ public class ArticleFileStrategy implements FileStrategy<Article, ArticleFile> {
     }
 
     @Override
+    public List<ArticleFile> toEntities(List<String> url, List<String> names, Article domain) {
+        return List.of();
+    }
+
+    @Override
     public void saveAll(List<ArticleFile> entities) {
         articleFileRepository.saveAll(entities);
     }
@@ -57,7 +62,7 @@ public class ArticleFileStrategy implements FileStrategy<Article, ArticleFile> {
     @Override
     public ArticleFile getFileOrThrow(Long fileId) {
         return articleFileRepository.findById(fileId)
-                .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
+                .orElseThrow(() -> new GeneralException(ArticleErrorCode.ARTICLE_FILE_NOT_FOUND));
     }
 
     @Override

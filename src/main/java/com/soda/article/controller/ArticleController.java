@@ -5,6 +5,8 @@ import com.soda.article.service.ArticleService;
 import com.soda.common.file.dto.FileDeleteResponse;
 import com.soda.common.file.dto.FileUploadResponse;
 import com.soda.common.file.service.FileService;
+import com.soda.common.link.dto.LinkDeleteResponse;
+import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class ArticleController {
 
     private final ArticleService articleService;
     private final FileService fileService;
+    private final LinkService linkService;
 
     @PostMapping("/articles")
     public ResponseEntity<ApiResponseForm<ArticleCreateResponse>> createArticle(@RequestBody ArticleCreateRequest request, HttpServletRequest user) {
@@ -84,4 +87,11 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
     }
 
+    @DeleteMapping("articles/{articleId}/links/{linkId}")
+    public ResponseEntity<ApiResponseForm<?>> deleteLink(@PathVariable Long linkId,
+                                                         HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        LinkDeleteResponse linkDeleteResponse = linkService.delete("article", memberId, linkId);
+        return ResponseEntity.ok(ApiResponseForm.success(linkDeleteResponse));
+    }
 }

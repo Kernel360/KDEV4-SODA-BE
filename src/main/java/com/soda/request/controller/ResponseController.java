@@ -3,6 +3,8 @@ package com.soda.request.controller;
 import com.soda.common.file.dto.FileDeleteResponse;
 import com.soda.common.file.dto.FileUploadResponse;
 import com.soda.common.file.service.FileService;
+import com.soda.common.link.dto.LinkDeleteResponse;
+import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.request.dto.response.*;
 import com.soda.request.service.ResponseService;
@@ -19,6 +21,7 @@ import java.util.List;
 public class ResponseController {
     private final ResponseService responseService;
     private final FileService fileService;
+    private final LinkService linkService;
 
     @PostMapping("/requests/{requestId}/approval")
     public ResponseEntity<ApiResponseForm<?>> approveRequest(@RequestBody RequestApproveRequest requestApproveRequest,
@@ -82,5 +85,13 @@ public class ResponseController {
         Long memberId = (Long) request.getAttribute("memberId");
         FileDeleteResponse fileDeleteResponse = fileService.delete("response", memberId, fileId);
         return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
+    }
+
+    @DeleteMapping("responses/{responseId}/links/{linkId}")
+    public ResponseEntity<ApiResponseForm<?>> deleteLink(@PathVariable Long linkId,
+                                                         HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        LinkDeleteResponse linkDeleteResponse = linkService.delete("response", memberId, linkId);
+        return ResponseEntity.ok(ApiResponseForm.success(linkDeleteResponse));
     }
 }

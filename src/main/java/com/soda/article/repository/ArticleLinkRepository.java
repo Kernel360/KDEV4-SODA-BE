@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface ArticleLinkRepository extends JpaRepository<ArticleLink, Long> {
     List<ArticleLink> findByArticleId(Long id);
 
-    Optional<ArticleLink> findByArticleIdAndUrlAddressAndIsDeletedTrue(Long articleId, String urlAddress);
+    Optional<ArticleLink> findByArticleIdAndUrlAddressAndIsDeletedTrue(Long articleId, String urladdress);
 }

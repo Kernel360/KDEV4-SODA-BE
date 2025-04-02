@@ -45,7 +45,7 @@ public class CompanyService {
                 .phoneNumber(request.getPhoneNumber())
                 .companyNumber(request.getCompanyNumber())
                 .address(request.getAddress())
-                .detailAddress(request.getDetailAddress())
+                .detailAddress(request.getDetailaddress())
                 .build();
 
         Company savedCompany = companyRepository.save(company);

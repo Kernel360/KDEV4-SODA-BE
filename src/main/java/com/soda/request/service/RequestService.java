@@ -14,7 +14,6 @@ import com.soda.project.entity.Task;
 import com.soda.project.repository.TaskRepository;
 import com.soda.request.dto.request.*;
 import com.soda.request.entity.Request;
-import com.soda.request.entity.RequestFile;
 import com.soda.request.entity.RequestLink;
 import com.soda.request.enums.RequestStatus;
 import com.soda.request.error.RequestErrorCode;
@@ -46,14 +45,14 @@ public class RequestService {
     Request 데이터 생성 전에, 요청한 member가 현재 프로젝트에 속한 "개발사"의 멤버이거나 ADMIN유저인지 확인해야함.
     */
     @Transactional
-    public RequestCreateResponse createRequest(Long memberId, RequestCreateRequest requestCreateRequest, List<MultipartFile> files) {
+    public RequestCreateResponse createRequest(Long memberId, RequestCreateRequest requestCreateRequest) {
         Member member = getMemberWithProjectOrThrow(memberId);
         Task task = getTaskOrThrow(requestCreateRequest.getTaskId());
 
         // 현재 프로젝트에 속한 "개발사"의 멤버가 아니고, 어드민도 아니면 USER_NOT_IN_PROJECT_DEV 반환
         validateProjectAuthority(member, requestCreateRequest.getProjectId());
 
-        Request request = createRequest(requestCreateRequest, files, member, task);
+        Request request = createRequest(requestCreateRequest, member, task);
 
         return RequestCreateResponse.fromEntity(request);
     }
@@ -108,8 +107,6 @@ public class RequestService {
     public void reject(Request request) {
         request.reject();
     }
-
-
 
 
     // 분리한 메서드들
@@ -170,29 +167,11 @@ public class RequestService {
         }
     }
 
-    public Request createRequest(RequestCreateRequest dto, List<MultipartFile> files, Member member, Task task) {
+    public Request createRequest(RequestCreateRequest dto, Member member, Task task) {
         Request request = buildRequest(dto, member, task);
         List<RequestLink> requestLinks = linkService.buildLinks("request", request, dto.getLinks());
         request.addLinks(requestLinks);
-        List<RequestFile> requestFiles = fileService.buildFiles("request", request, files);
-        request.addFiles(requestFiles);
         return requestRepository.save(request);
-    }
-
-    private List<RequestFile> buildRequestFiles(List<MultipartFile> files, Request request) {
-        if (files == null) {
-            return List.of();
-        }
-
-        return files.stream()
-                .map(file -> {
-                    return RequestFile.builder()
-                            .url(s3Service.uploadFile(file))
-                            .name(file.getOriginalFilename())
-                            .request(request)
-                            .build();
-                })
-                .toList();
     }
 
     private Request buildRequest(RequestCreateRequest dto, Member member, Task task) {

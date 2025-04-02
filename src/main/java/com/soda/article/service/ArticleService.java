@@ -14,7 +14,7 @@ import com.soda.project.Project;
 import com.soda.project.Stage;
 import com.soda.project.ProjectErrorCode;
 import com.soda.project.MemberProjectService;
-import com.soda.project.search.ProjectSearchService;
+import com.soda.project.ProjectSearchService;
 import com.soda.project.StageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

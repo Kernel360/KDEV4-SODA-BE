@@ -11,7 +11,7 @@ import com.soda.member.MemberService;
 import com.soda.project.Project;
 import com.soda.project.ProjectErrorCode;
 import com.soda.project.MemberProjectService;
-import com.soda.project.search.ProjectSearchService;
+import com.soda.project.ProjectSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

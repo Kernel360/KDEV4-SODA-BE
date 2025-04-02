@@ -75,6 +75,14 @@ public class CompanyService {
         return CompanyResponse.fromEntity(company);
     }
 
+    public Company getCompanyByIdByBaki(Long id) {
+        return companyRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("회사 조회 실패: ID {} 에 해당하는 회사를 찾을 수 없음", id);
+                    return new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY);
+                });
+    }
+
     /**
      * 회사 수정 메서드
      *

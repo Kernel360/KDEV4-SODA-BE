@@ -23,7 +23,7 @@ public class CompanyProjectCreateService {
                     .build();
 
             // DTO -> Entity
-            CompanyProject companyProject = companyProjectDTO.toEntity(company, project, role);
+            CompanyProject companyProject =
 
             // 데이터베이스에 회사-프로젝트 관계 저장
             companyProjectRepository.save(companyProject);

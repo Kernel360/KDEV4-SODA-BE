@@ -32,11 +32,19 @@ public class CompanyProject extends BaseEntity {
         this.companyProjectRole = companyProjectRole;
     }
 
-    public static CompanyProject create(Company company, Project project, CompanyProjectRole companyProjectRole) {
+    public static CompanyProject createDevCompany(Company company, Project project) {
         return CompanyProject.builder()
                 .company(company)
                 .project(project)
-                .companyProjectRole(companyProjectRole)
+                .companyProjectRole(CompanyProjectRole.DEV_COMPANY)
+                .build();
+    }
+
+    public static CompanyProject createClientCompany(Company company, Project project) {
+        return CompanyProject.builder()
+                .company(company)
+                .project(project)
+                .companyProjectRole(CompanyProjectRole.CLIENT_COMPANY)
                 .build();
     }
 

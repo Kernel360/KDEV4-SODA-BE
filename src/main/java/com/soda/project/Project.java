@@ -1,6 +1,8 @@
 package com.soda.project;
 
 import com.soda.common.BaseEntity;
+import com.soda.member.Company;
+import com.soda.member.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -43,13 +45,52 @@ public class Project extends BaseEntity {
         this.endDate = endDate;
     }
 
-    public static Project create(ProjectRequest request) {
-        return Project.builder()
+    public static Project create(ProjectRequest request, Company devCompany, Company clientCompany, List<Member> devManagers,
+                                 List<Member> devMembers, List<Member> clientManagers, List<Member> clientMembers) {
+        var project = Project.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .build();
+
+        project.assignCompanies(devCompany, clientCompany);
+        project.assignMembers(devManagers, devMembers, clientManagers, clientMembers);
+        project.addInitialStages(Stage.create(project));
+
+        return project;
+    }
+
+    protected void addInitialStages(List<Stage> stages) {
+        this.stage.addAll(stages);
+    }
+
+    protected void assignMembers(List<Member> devManagers, List<Member> devMembers, List<Member> clientManagers, List<Member> clientMembers) {
+        var devMemberProject = devMembers.stream()
+                .map(member -> MemberProject.createDevMember(member, this))
+                .toList();
+        var devManagerProject = devManagers.stream()
+                .map(member -> MemberProject.createDevManager(member, this))
+                .toList();
+        var clientMemberProject = clientMembers.stream()
+                .map(member -> MemberProject.createClientMember(member, this))
+                .toList();
+        var clientManagerProject = clientManagers.stream()
+                .map(member -> MemberProject.createClientManager(member, this))
+                .toList();
+
+        this.memberProjects.addAll(devMemberProject);
+        this.memberProjects.addAll(devManagerProject);
+        this.memberProjects.addAll(clientMemberProject);
+        this.memberProjects.addAll(clientManagerProject);
+    }
+
+    protected void assignCompanies(Company devCompany, Company clientCompany) {
+        var devCompanyProject = CompanyProject.createDevCompany(devCompany, this);
+        var clientCompanyProject = CompanyProject.createClientCompany(clientCompany, this);
+
+        this.companyProjects.add(devCompanyProject);
+        this.companyProjects.add(clientCompanyProject);
     }
 
     public void delete() {

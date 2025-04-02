@@ -27,13 +27,4 @@ public class CompanyProjectDTO {
                 .companyProjectRole(companyProject.getCompanyProjectRole())
                 .build();
     }
-
-    // DTO → Entity 변환
-    public CompanyProject toEntity(Company company, Project project, CompanyProjectRole companyProjectRole) {
-        return CompanyProject.builder()
-                .company(company)
-                .project(project)
-                .companyProjectRole(companyProjectRole)
-                .build();
-    }
 }

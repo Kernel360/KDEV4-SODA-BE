@@ -15,9 +15,6 @@ import java.util.stream.Collectors;
 public class ProjectCreateService {
 
     private final ProjectRepository projectRepository;
-    private final StageCreateService stageCreateService;
-    private final CompanyProjectCreateService companyProjectCreateService;
-    private final MemberProjectCreateService memberProjectCreateService;
     private final MemberProjectService memberProjectService;
     private final MemberService memberService;
     private final CompanyService companyService;
@@ -35,34 +32,18 @@ public class ProjectCreateService {
             throw new GeneralException(ProjectErrorCode.PROJECT_TITLE_DUPLICATED);
         }
 
-        // 2. 기본 정보 생성
-        Project project = Project.create(request);
+        var devCompany = companyService.getCompanyByIdByBaki(request.getDevCompanyId());
+        var clientCompany = companyService.getCompanyByIdByBaki(request.getClientCompanyId());
 
-        // 3. 개발사 및 고객사 지정
-        assignCompanyAndMembersToProject(request, project);
+        var devManagers = memberService.findByIds(request.getDevManagers());
+        var devMembers = memberService.findByIds(request.getDevMembers());
+        var clientManagers = memberService.findByIds(request.getClientManagers());
+        var clientMembers = memberService.findByIds(request.getClientMembers());
 
-        stageCreateService.createInitialStages(project.getId());
+        Project project = Project.create(request, devCompany, clientCompany, devManagers, devMembers, clientManagers, clientMembers);
 
         // 4. response DTO 생성
         return createProjectCreateResponse(project);
-    }
-
-    private void assignCompanyAndMembersToProject(ProjectRequest request, Project project) {
-        List<Member> devManagers = memberService.findByIds(request.getDevManagers());
-        List<Member> devMembers = memberService.findByIds(request.getDevMembers());
-        List<Member> clientManagers = memberService.findByIds(request.getClientManagers());
-        List<Member> clientMembers = memberService.findByIds(request.getClientMembers());
-
-        assignCompanyAndMembers(request.getDevCompanyId(), devManagers, project, CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_MANAGER);
-        assignCompanyAndMembers(request.getDevCompanyId(), devMembers, project, CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_PARTICIPANT);
-        assignCompanyAndMembers(request.getClientCompanyId(), clientManagers, project, CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_MANAGER);
-        assignCompanyAndMembers(request.getClientCompanyId(), clientMembers, project, CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_PARTICIPANT);
-    }
-
-    private void assignCompanyAndMembers(Long companyId, List<Member> members, Project project, CompanyProjectRole companyRole, MemberProjectRole memberRole) {
-        Company company = companyService.getCompany(companyId);
-        companyProjectCreateService.assignCompanyToProject(company, project, companyRole);
-        memberProjectCreateService.assignMembersToProject(company, members, project, memberRole);
     }
 
     private ProjectResponse createProjectCreateResponse(Project project) {

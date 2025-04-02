@@ -12,11 +12,5 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List<Task> findByStageIdAndIsDeletedFalseOrderByTaskOrderAsc(Long stageId);
 
-    int countByStageAndIsDeletedFalse(Stage stage);
-
     Optional<Task> findByIdAndIsDeletedFalse(Long id);
-
-    boolean existsByIdAndIsDeletedFalse(Long id);
-
-    boolean existsByStageAndIsDeletedFalse(Stage stage);
 }

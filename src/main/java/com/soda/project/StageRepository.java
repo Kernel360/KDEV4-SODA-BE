@@ -8,8 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface StageRepository extends JpaRepository<Stage, Long> {
-    List<Stage> findByProjectIdOrderByStageOrderAsc(Long projectId);
-
     List<Stage> findByProjectIdAndIsDeletedFalseOrderByStageOrderAsc(Long projectId);
 
     int countByProjectAndIsDeletedFalse(Project project);
@@ -17,6 +15,4 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
     Optional<Stage> findByIdAndIsDeletedFalse(Long stageId);
 
     boolean existsByIdAndIsDeletedFalse(Long stageId);
-
-    boolean existsByProjectAndIsDeletedFalse(Project project);
 }

@@ -89,4 +89,13 @@ public class Article extends BaseEntity {
         this.deadline = deadline;
     }
 
+    public void addLinks(List<ArticleLink> links) {
+        if ( this.articleLinkList == null ) {
+            this.articleLinkList = new ArrayList<>();
+        }
+        for (ArticleLink link : links) {
+            link.updateResponse(this);
+            this.articleLinkList.add(link);
+        }
+    }
 }

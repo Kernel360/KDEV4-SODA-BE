@@ -2,8 +2,10 @@ package com.soda.article.service;
 
 import com.soda.article.domain.article.*;
 import com.soda.article.entity.Article;
+import com.soda.article.entity.ArticleLink;
 import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.repository.ArticleRepository;
+import com.soda.common.link.service.LinkService;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
@@ -35,6 +37,7 @@ public class ArticleService {
     private final ArticleFileService articleFileService;
     private final ArticleLinkService articleLinkService;
     private final MemberService memberService;
+    private final LinkService linkService;
 
     /**
      * 게시글 생성하기
@@ -50,7 +53,7 @@ public class ArticleService {
         Stage stage = stageService.validateStage(request.getStageId(), project);
 
         checkIfMemberIsAdmin(userRole);
-        checkMemberInProject(member, project);
+//        checkMemberInProject(member, project);
 
         Article parentArticle = null;
         if (request.getParentArticleId() != null) {
@@ -58,18 +61,20 @@ public class ArticleService {
                     .orElseThrow(() -> new GeneralException(ArticleErrorCode.PARENT_ARTICLE_NOT_FOUND));
         }
 
-//        articleFileService.validateFileSize(request.getFileList());
         articleLinkService.validateLinkSize(request.getLinkList());
 
-        Article article = request.toEntity(member, stage, parentArticle);
+        Article article = createArticle(request, member, stage, parentArticle);
+
         article = articleRepository.save(article);
 
-        // file & link 저장
-//        articleFileService.processFiles(request.getFileList(), article);
-        articleLinkService.processLinks(request.getLinkList(), article);
-
-
         return ArticleCreateResponse.fromEntity(article);
+    }
+
+    private Article createArticle(ArticleCreateRequest request, Member member, Stage stage, Article parentArticle) {
+        Article article = request.toEntity(member, stage, parentArticle);
+        List<ArticleLink> links = linkService.buildLinks("article", article, request.getLinkList());
+        article.addLinks(links);
+        return article;
     }
 
     /**
@@ -86,22 +91,14 @@ public class ArticleService {
         Project project = projectService.getValidProject(request.getProjectId());
 
         checkIfMemberIsAdmin(userRole);
-        checkMemberInProject(member, project);
+        //checkMemberInProject(member, project);
 
         Article article = validateArticle(articleId);
 
-//        articleFileService.validateFileSize(request.getFileList());
         articleLinkService.validateLinkSize(request.getLinkList());
 
         article.updateArticle(request.getTitle(), request.getContent(), request.getPriority(), request.getDeadLine());
-
-        // 기존 파일 및 링크 삭제
-//        articleFileService.deleteFiles(articleId, article);
-//        articleLinkService.deleteLinks(articleId, article);
-
-        // 새 파일 및 링크 추가 또는 복원
-//        articleFileService.processFiles(request.getFileList(), article);
-        articleLinkService.processLinks(request.getLinkList(), article);
+        article.addLinks(linkService.buildLinks("article", article, request.getLinkList()));
 
         return ArticleModifyResponse.fromEntity(article);
     }

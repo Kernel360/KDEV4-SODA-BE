@@ -2,17 +2,18 @@ package com.soda.article.strategy;
 
 import com.soda.article.entity.Article;
 import com.soda.article.entity.ArticleFile;
+import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.repository.ArticleFileRepository;
 import com.soda.article.repository.ArticleRepository;
 import com.soda.common.file.strategy.FileStrategy;
 import com.soda.global.response.GeneralException;
-import com.soda.article.error.ArticleErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Service
 @Transactional
@@ -50,8 +51,18 @@ public class ArticleFileStrategy implements FileStrategy<Article, ArticleFile> {
     }
 
     @Override
-    public List<ArticleFile> toEntities(List<String> url, List<String> names, Article domain) {
-        return List.of();
+    public List<ArticleFile> toEntities(List<String> urls, List<String> names, Article domain) {
+        if (urls == null || urls.isEmpty()) {
+            return List.of();
+        }
+
+        return IntStream.range(0, urls.size())
+                .mapToObj(i -> ArticleFile.builder()
+                        .url(urls.get(i))
+                        .name(names.get(i))
+                        .article(domain)
+                        .build())
+                .toList();
     }
 
     @Override

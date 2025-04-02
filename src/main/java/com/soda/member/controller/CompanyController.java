@@ -5,7 +5,7 @@ import com.soda.member.dto.company.CompanyCreateRequest;
 import com.soda.member.dto.company.CompanyUpdateRequest;
 import com.soda.member.dto.company.CompanyResponse;
 import com.soda.member.dto.company.MemberResponse;
-import com.soda.member.service.CompanyService;
+import com.soda.member.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

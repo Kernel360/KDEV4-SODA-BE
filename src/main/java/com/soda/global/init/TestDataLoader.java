@@ -1,17 +1,17 @@
 package com.soda.global.init;
 
-import com.soda.member.entity.Member;
-import com.soda.member.enums.MemberProjectRole;
+import com.soda.member.Member;
+import com.soda.member.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.repository.MemberRepository;
-import com.soda.project.entity.MemberProject;
-import com.soda.project.entity.Project;
-import com.soda.project.entity.Stage;
-import com.soda.project.entity.Task;
-import com.soda.project.repository.MemberProjectRepository;
-import com.soda.project.repository.ProjectRepository;
-import com.soda.project.repository.StageRepository;
-import com.soda.project.repository.TaskRepository;
+import com.soda.project.MemberProject;
+import com.soda.project.Project;
+import com.soda.project.Stage;
+import com.soda.project.Task;
+import com.soda.project.MemberProjectRepository;
+import com.soda.project.ProjectRepository;
+import com.soda.project.StageRepository;
+import com.soda.project.TaskRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -1,6 +1,6 @@
 package com.soda.global.security.auth;
 
-import com.soda.member.entity.Member;
+import com.soda.member.Member;
 import com.soda.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

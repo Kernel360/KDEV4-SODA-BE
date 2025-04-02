@@ -2,8 +2,8 @@ package com.soda.request.entity;
 
 import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
-import com.soda.member.entity.Member;
-import com.soda.project.entity.Task;
+import com.soda.member.Member;
+import com.soda.project.Task;
 import com.soda.request.enums.RequestStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

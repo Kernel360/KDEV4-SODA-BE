@@ -3,21 +3,15 @@ package com.soda.article.service;
 import com.soda.article.domain.comment.*;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.Comment;
-import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.error.CommentErrorCode;
-import com.soda.article.repository.ArticleRepository;
 import com.soda.article.repository.CommentRepository;
 import com.soda.global.response.GeneralException;
-import com.soda.member.entity.Member;
-import com.soda.member.repository.MemberRepository;
-import com.soda.member.service.MemberService;
-import com.soda.project.entity.Project;
-import com.soda.project.error.ProjectErrorCode;
-import com.soda.project.repository.MemberProjectRepository;
-import com.soda.project.repository.ProjectRepository;
-import com.soda.project.service.MemberProjectService;
-import com.soda.project.service.ProjectService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.soda.member.Member;
+import com.soda.member.MemberService;
+import com.soda.project.Project;
+import com.soda.project.ProjectErrorCode;
+import com.soda.project.MemberProjectService;
+import com.soda.project.search.ProjectSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +27,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final MemberService memberService;
-    private final ProjectService projectService;
+    private final ProjectSearchService projectSearchService;
     private final MemberProjectService memberProjectService;
     private final ArticleService articleService;
 
@@ -41,7 +35,7 @@ public class CommentService {
     public CommentCreateResponse createComment(Long userId, String userRole, CommentCreateRequest request) {
         // 1. 유저가 해당 프로젝트에 참여하는지 / 관리자인지 체크
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(request.getProjectId());
+        Project project = projectSearchService.getValidProject(request.getProjectId());
         checkMemberInProject(userRole, member, project);
 
         // 2. 해당 게시글이 프로젝트에 포함되어있는지 체크

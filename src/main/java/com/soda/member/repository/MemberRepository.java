@@ -1,6 +1,6 @@
 package com.soda.member.repository;
 
-import com.soda.member.entity.Member;
+import com.soda.member.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

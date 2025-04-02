@@ -8,15 +8,14 @@ import com.soda.article.enums.ArticleStatus;
 import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.repository.ArticleRepository;
 import com.soda.global.response.GeneralException;
-import com.soda.member.entity.Member;
-import com.soda.member.service.MemberService;
-import com.soda.project.entity.Project;
-import com.soda.project.entity.Stage;
-import com.soda.project.error.ProjectErrorCode;
-import com.soda.project.error.StageErrorCode;
-import com.soda.project.service.MemberProjectService;
-import com.soda.project.service.ProjectService;
-import com.soda.project.service.StageService;
+import com.soda.member.Member;
+import com.soda.member.MemberService;
+import com.soda.project.Project;
+import com.soda.project.Stage;
+import com.soda.project.ProjectErrorCode;
+import com.soda.project.MemberProjectService;
+import com.soda.project.search.ProjectSearchService;
+import com.soda.project.StageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +32,7 @@ public class ArticleService {
     private final ArticleRepository articleRepository;
     private final MemberProjectService memberProjectService;
     private final StageService stageService;
-    private final ProjectService projectService;
+    private final ProjectSearchService projectSearchService;
     private final ArticleFileService articleFileService;
     private final ArticleLinkService articleLinkService;
     private final MemberService memberService;
@@ -41,7 +40,7 @@ public class ArticleService {
     @Transactional
     public ArticleCreateResponse createArticle(ArticleCreateRequest request, Long userId, String userRole) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(request.getProjectId());
+        Project project = projectSearchService.getValidProject(request.getProjectId());
         Stage stage = validateStage(request.getStageId(), project);
 
         checkMemberInProject(userRole, member, project);
@@ -65,7 +64,7 @@ public class ArticleService {
     @Transactional
     public ArticleModifyResponse updateArticle(Long userId, String userRole, Long articleId, ArticleModifyRequest request) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(request.getProjectId());
+        Project project = projectSearchService.getValidProject(request.getProjectId());
 
         checkMemberInProject(userRole, member, project);
 
@@ -113,7 +112,7 @@ public class ArticleService {
     @Transactional
     public void deleteArticle(Long projectId, Long userId, String userRole, Long articleId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(projectId);
+        Project project = projectSearchService.getValidProject(projectId);
 
         checkMemberInProject(userRole, member, project);
 
@@ -172,7 +171,7 @@ public class ArticleService {
 
     public List<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, Long stageId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(projectId);
+        Project project = projectSearchService.getValidProject(projectId);
 
         checkMemberInProject(userRole, member, project);
 
@@ -213,7 +212,7 @@ public class ArticleService {
 
     public ArticleViewResponse getArticle(Long projectId, Long userId, String userRole, Long articleId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(projectId);
+        Project project = projectSearchService.getValidProject(projectId);
 
         checkMemberInProject(userRole, member, project);
 

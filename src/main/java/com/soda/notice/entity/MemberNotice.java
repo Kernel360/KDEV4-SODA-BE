@@ -1,6 +1,6 @@
 package com.soda.notice.entity;
 
-import com.soda.member.entity.Member;
+import com.soda.member.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 

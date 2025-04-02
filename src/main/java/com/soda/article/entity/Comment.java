@@ -1,7 +1,7 @@
 package com.soda.article.entity;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.entity.Member;
+import com.soda.member.Member;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;

@@ -20,7 +20,6 @@ public class ArticleModifyRequest {
     private LocalDateTime deadLine;
     private Long memberId;
     private Long stageId;
-    private List<ArticleFileDTO> fileList;
     private List<ArticleLinkDTO> linkList;
 
 }

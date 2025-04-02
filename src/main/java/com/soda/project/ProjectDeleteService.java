@@ -1,7 +1,6 @@
-package com.soda.project.delete;
+package com.soda.project;
 
 import com.soda.global.response.GeneralException;
-import com.soda.project.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

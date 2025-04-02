@@ -1,7 +1,6 @@
 package com.soda.project;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.project.delete.ProjectDeleteService;
 import com.soda.project.search.ProjectSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

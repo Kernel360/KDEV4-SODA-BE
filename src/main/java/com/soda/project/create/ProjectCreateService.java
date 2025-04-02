@@ -37,6 +37,7 @@ public class ProjectCreateService {
         var clientMembers = memberService.findByIds(request.getClientMembers());
 
         Project project = Project.create(request, devCompany, clientCompany, devManagers, devMembers, clientManagers, clientMembers);
+        projectRepository.save(project);
 
         // 4. response DTO 생성
         return project.toResponse();

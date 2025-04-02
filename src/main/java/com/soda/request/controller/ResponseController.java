@@ -10,6 +10,7 @@ import com.soda.request.dto.response.*;
 import com.soda.request.service.ResponseService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -70,7 +71,7 @@ public class ResponseController {
         return ResponseEntity.ok(ApiResponseForm.success(responseDeleteResponse));
     }
 
-    @PostMapping("/responses/{responseId}/files")
+    @PostMapping(path = "/responses/{responseId}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponseForm<?>> uploadFiles(@PathVariable Long responseId,
                                                           @RequestPart("file") List<MultipartFile> files,
                                                           HttpServletRequest request) {

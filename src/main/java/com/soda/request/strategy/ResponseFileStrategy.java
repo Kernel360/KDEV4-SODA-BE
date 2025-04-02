@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Service
 @Transactional(readOnly = true)
@@ -50,8 +51,18 @@ public class ResponseFileStrategy implements FileStrategy<Response, ResponseFile
     }
 
     @Override
-    public List<ResponseFile> toEntities(List<String> url, List<String> names, Response domain) {
-        return List.of();
+    public List<ResponseFile> toEntities(List<String> urls, List<String> names, Response domain) {
+        if (urls == null || urls.isEmpty()) {
+            return List.of();
+        }
+
+        return IntStream.range(0, urls.size())
+                .mapToObj(i -> ResponseFile.builder()
+                        .url(urls.get(i))
+                        .name(names.get(i))
+                        .response(domain)
+                        .build())
+                .toList();
     }
 
     @Override

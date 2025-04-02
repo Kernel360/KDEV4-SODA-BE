@@ -17,6 +17,7 @@ public class ProjectDeleteService {
 
         project.delete();
 
+        //? 딜리트로 마크하는걸 보고 소프트 딜리트인줄 알았는데??
         projectRepository.delete(project);
     }
 }

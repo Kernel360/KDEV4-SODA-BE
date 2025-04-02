@@ -45,7 +45,7 @@ public class Project extends BaseEntity {
         this.endDate = endDate;
     }
 
-    public static Project create(ProjectRequest request, Company devCompany, Company clientCompany, List<Member> devManagers,
+    protected static Project create(ProjectRequest request, Company devCompany, Company clientCompany, List<Member> devManagers,
                                  List<Member> devMembers, List<Member> clientManagers, List<Member> clientMembers) {
         var project = Project.builder()
                 .title(request.getTitle())
@@ -93,21 +93,21 @@ public class Project extends BaseEntity {
         this.companyProjects.add(clientCompanyProject);
     }
 
-    public void delete() {
+    protected void delete() {
         this.markAsDeleted();
         memberProjects.forEach(MemberProject::delete);
         companyProjects.forEach(CompanyProject::delete);
         stage.forEach(Stage::delete);
     }
 
-    public void updateProject(String title, String description, LocalDateTime startDate, LocalDateTime endDate) {
+    protected void updateProject(String title, String description, LocalDateTime startDate, LocalDateTime endDate) {
         this.title = title;
         this.description = description;
         this.startDate = startDate;
         this.endDate = endDate;
     }
 
-    public ProjectResponse toResponse() {
+    protected ProjectResponse toResponse() {
         var companyName = companyProjects.stream().map(cp -> cp.getCompany().getName()).findAny().orElseThrow();
 
         return ProjectResponse.builder()

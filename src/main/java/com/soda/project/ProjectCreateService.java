@@ -1,8 +1,7 @@
-package com.soda.project.create;
+package com.soda.project;
 
 import com.soda.global.response.GeneralException;
 import com.soda.member.*;
-import com.soda.project.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

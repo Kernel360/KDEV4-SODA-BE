@@ -48,12 +48,11 @@ public class RequestController {
     }
 
     @PutMapping("/requests/{requestId}")
-    public ResponseEntity<ApiResponseForm<?>> updateRequest(@RequestPart("data") RequestUpdateRequest requestUpdateRequest,
-                                                            @RequestPart(value = "file", required = false) List<MultipartFile> files,
+    public ResponseEntity<ApiResponseForm<?>> updateRequest(@RequestBody RequestUpdateRequest requestUpdateRequest,
                                                             @PathVariable Long requestId,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        RequestUpdateResponse requestUpdateResponse = requestService.updateRequest(memberId, requestId, requestUpdateRequest, files);
+        RequestUpdateResponse requestUpdateResponse = requestService.updateRequest(memberId, requestId, requestUpdateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestUpdateResponse));
     }
 

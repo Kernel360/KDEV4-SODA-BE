@@ -15,6 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+// todo: 여기있는 제약조건들이 엔티티안으로 이관되어야함
 public class MemberProjectCreateService {
     private final MemberProjectRepository memberProjectRepository;
 

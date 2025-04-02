@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+// todo: 여기있는 제약조건들이 엔티티안으로 이관되어야함
 public class CompanyProjectCreateService {
     private final CompanyProjectRepository companyProjectRepository;
 

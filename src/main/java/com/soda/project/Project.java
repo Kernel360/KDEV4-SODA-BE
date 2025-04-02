@@ -106,4 +106,23 @@ public class Project extends BaseEntity {
         this.startDate = startDate;
         this.endDate = endDate;
     }
+
+    public ProjectResponse toResponse() {
+        var companyName = companyProjects.stream().map(cp -> cp.getCompany().getName()).findAny().orElseThrow();
+
+        return ProjectResponse.builder()
+                .projectId(this.getId())
+                .title(this.getTitle())
+                .description(this.getDescription())
+                .startDate(this.getStartDate())
+                .endDate(this.getEndDate())
+                .devCompanyName(companyName)
+                // todo: 이건 귀찮아서 걍 넘김 이게 중요한게 아닌걸로 생각함
+//                .devCompanyManagers(extractMemberNames(this.getMemberProjects()))
+//                .devCompanyMembers(extractMemberNames(devParticipants))
+//                .clientCompanyName(clientManagers.get(0).getCompany().getName())
+//                .clientCompanyManagers(extractMemberNames(clientManagers))
+//                .clientCompanyMembers(extractMemberNames(clientParticipants))
+                .build();
+    }
 }

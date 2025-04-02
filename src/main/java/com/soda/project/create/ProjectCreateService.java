@@ -7,15 +7,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class ProjectCreateService {
 
     private final ProjectRepository projectRepository;
-    private final MemberProjectService memberProjectService;
     private final MemberService memberService;
     private final CompanyService companyService;
 
@@ -43,34 +39,6 @@ public class ProjectCreateService {
         Project project = Project.create(request, devCompany, clientCompany, devManagers, devMembers, clientManagers, clientMembers);
 
         // 4. response DTO 생성
-        return createProjectCreateResponse(project);
-    }
-
-    private ProjectResponse createProjectCreateResponse(Project project) {
-        List<Member> devManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
-        List<Member> devParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
-        List<Member> clientManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
-        List<Member> clientParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
-
-        return ProjectResponse.builder()
-                .projectId(project.getId())
-                .title(project.getTitle())
-                .description(project.getDescription())
-                .startDate(project.getStartDate())
-                .endDate(project.getEndDate())
-                .devCompanyName(devManagers.get(0).getCompany().getName())
-                .devCompanyManagers(extractMemberNames(devManagers))
-                .devCompanyMembers(extractMemberNames(devParticipants))
-                .clientCompanyName(clientManagers.get(0).getCompany().getName())
-                .clientCompanyManagers(extractMemberNames(clientManagers))
-                .clientCompanyMembers(extractMemberNames(clientParticipants))
-                .build();
-    }
-
-
-    private List<String> extractMemberNames(List<Member> members) {
-        return members.stream()
-                .map(Member::getName)
-                .collect(Collectors.toList());
+        return project.toResponse();
     }
 }

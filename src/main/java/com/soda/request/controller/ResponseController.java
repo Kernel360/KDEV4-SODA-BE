@@ -59,7 +59,7 @@ public class ResponseController {
                                                             @PathVariable Long responseId,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        ResponseUpdateResponse responseUpdateResponse = responseService.updateRequest(memberId, responseId, responseUpdateRequest);
+        ResponseUpdateResponse responseUpdateResponse = responseService.updateResponse(memberId, responseId, responseUpdateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(responseUpdateResponse));
     }
 

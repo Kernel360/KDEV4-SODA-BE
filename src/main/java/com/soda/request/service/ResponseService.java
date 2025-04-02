@@ -1,6 +1,7 @@
 package com.soda.request.service;
 
 import com.soda.common.link.dto.LinkUploadRequest;
+import com.soda.common.link.service.LinkService;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
@@ -29,6 +30,7 @@ public class ResponseService {
 
     private final ResponseRepository responseRepository;
     private final MemberRepository memberRepository;
+    private final LinkService linkService;
 
 
     @Transactional
@@ -75,7 +77,7 @@ public class ResponseService {
     }
 
     @Transactional
-    public ResponseUpdateResponse updateRequest(Long memberId, Long responseId, ResponseUpdateRequest responseUpdateRequest) throws GeneralException {
+    public ResponseUpdateResponse updateResponse(Long memberId, Long responseId, ResponseUpdateRequest responseUpdateRequest) {
         Response response = getResponseOrThrow(responseId);
 
         // update요청을 한 member가 Response를 작성했던 member인지 확인
@@ -107,7 +109,7 @@ public class ResponseService {
     // 분리한 메서드들
     private Response createResponse(Member member, Request request, String comment, List<LinkUploadRequest.LinkUploadDTO> linkDTOs) {
         Response response = buildResponse(member, request, comment);
-        List<ResponseLink> links = buildResponseLinks(linkDTOs);
+        List<ResponseLink> links = linkService.buildLinks("response", response, linkDTOs);
         response.addLinks(links);
         return response;
     }
@@ -134,6 +136,9 @@ public class ResponseService {
     private void updateResponseFields(ResponseUpdateRequest responseUpdateRequest, Response response) {
         if(responseUpdateRequest.getComment() != null) {
             response.updateComment(responseUpdateRequest.getComment());
+        }
+        if(responseUpdateRequest.getLinks() != null) {
+            response.addLinks(linkService.buildLinks("response", response, responseUpdateRequest.getLinks()));
         }
     }
 

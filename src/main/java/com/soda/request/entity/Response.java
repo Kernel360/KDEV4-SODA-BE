@@ -41,13 +41,6 @@ public class Response extends BaseEntity {
         this.links = links;
     }
 
-    public void updateLink(List<ResponseLink> links) {
-        if (this.links == null) {
-            this.links = new ArrayList<>();
-        }
-        this.links.addAll(links);
-    }
-
     public void updateComment(String comment) {
         this.comment = comment;
     }

@@ -51,8 +51,18 @@ public class ResponseLinkStrategy implements LinkStrategy<Response, ResponseLink
     }
 
     @Override
-    public List<ResponseLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Response domain) {
-        return List.of();
+    public List<ResponseLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Response response) {
+        if (dtos == null || dtos.isEmpty()) {
+            return List.of();
+        }
+
+        return dtos.stream()
+                .map(dto -> ResponseLink.builder()
+                        .urlAddress(dto.getUrlAddress())
+                        .urlDescription(dto.getUrlDescription())
+                        .response(response)
+                        .build())
+                .toList();
     }
 
     @Override

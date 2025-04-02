@@ -53,7 +53,7 @@ public class ArticleService {
         Stage stage = stageService.validateStage(request.getStageId(), project);
 
         checkIfMemberIsAdmin(userRole);
-//        checkMemberInProject(member, project);
+        checkMemberInProject(member, project);
 
         Article parentArticle = null;
         if (request.getParentArticleId() != null) {
@@ -91,7 +91,7 @@ public class ArticleService {
         Project project = projectService.getValidProject(request.getProjectId());
 
         checkIfMemberIsAdmin(userRole);
-        //checkMemberInProject(member, project);
+        checkMemberInProject(member, project);
 
         Article article = validateArticle(articleId);
 

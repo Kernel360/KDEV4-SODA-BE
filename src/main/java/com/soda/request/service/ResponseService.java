@@ -1,6 +1,6 @@
 package com.soda.request.service;
 
-import com.soda.common.link.dto.LinkDTO;
+import com.soda.common.link.dto.LinkUploadRequest;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
@@ -105,7 +105,7 @@ public class ResponseService {
 
 
     // 분리한 메서드들
-    private Response createResponse(Member member, Request request, String comment, List<LinkDTO> linkDTOs) {
+    private Response createResponse(Member member, Request request, String comment, List<LinkUploadRequest.LinkUploadDTO> linkDTOs) {
         Response response = buildResponse(member, request, comment);
         List<ResponseLink> links = buildResponseLinks(linkDTOs);
         response.addLinks(links);
@@ -120,7 +120,7 @@ public class ResponseService {
                 .build();
     }
 
-    private List<ResponseLink> buildResponseLinks(List<LinkDTO> linkDTOs) {
+    private List<ResponseLink> buildResponseLinks(List<LinkUploadRequest.LinkUploadDTO> linkDTOs) {
         if (linkDTOs == null) return List.of();
 
         return linkDTOs.stream()

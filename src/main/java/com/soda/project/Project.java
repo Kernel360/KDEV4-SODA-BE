@@ -46,7 +46,7 @@ public class Project extends BaseEntity {
     }
 
     protected static Project create(ProjectRequest request, Company devCompany, Company clientCompany, List<Member> devManagers,
-                                 List<Member> devMembers, List<Member> clientManagers, List<Member> clientMembers) {
+                                    List<Member> devMembers, List<Member> clientManagers, List<Member> clientMembers) {
         var project = Project.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
@@ -100,11 +100,15 @@ public class Project extends BaseEntity {
         stage.forEach(Stage::delete);
     }
 
-    protected void updateProject(String title, String description, LocalDateTime startDate, LocalDateTime endDate) {
+    protected void updateProjectInfo(String title, String description, LocalDateTime startDate, LocalDateTime endDate,
+                                     Company devCompany, Company clientCompany, List<Member> devManagers, List<Member> devMembers, List<Member> clientManagers, List<Member> clientMembers) {
         this.title = title;
         this.description = description;
         this.startDate = startDate;
         this.endDate = endDate;
+
+        assignCompanies(devCompany, clientCompany);
+        assignMembers(devManagers, devMembers, clientManagers, clientMembers);
     }
 
     protected ProjectResponse toResponse() {

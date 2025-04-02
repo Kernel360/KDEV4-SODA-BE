@@ -3,7 +3,6 @@ package com.soda.project;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.project.delete.ProjectDeleteService;
 import com.soda.project.search.ProjectSearchService;
-import com.soda.project.update.ProjectUpdateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

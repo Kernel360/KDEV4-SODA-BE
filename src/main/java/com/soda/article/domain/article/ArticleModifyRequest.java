@@ -2,6 +2,7 @@ package com.soda.article.domain.article;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.article.enums.PriorityType;
+import com.soda.common.link.dto.LinkUploadRequest;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -20,6 +21,6 @@ public class ArticleModifyRequest {
     private LocalDateTime deadLine;
     private Long memberId;
     private Long stageId;
-    private List<ArticleLinkDTO> linkList;
+    private List<LinkUploadRequest.LinkUploadDTO> linkList;
 
 }

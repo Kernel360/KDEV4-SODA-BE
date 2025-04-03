@@ -15,10 +15,6 @@ import lombok.NoArgsConstructor;
 @Entity
 public class ArticleFile extends FileBase {
 
-    private String name;
-
-    private String url;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "article_id", nullable = false)
     private Article article;

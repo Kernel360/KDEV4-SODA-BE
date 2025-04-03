@@ -5,6 +5,7 @@ import com.soda.article.entity.Article;
 import com.soda.article.entity.ArticleLink;
 import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.repository.ArticleLinkRepository;
+import com.soda.common.link.dto.LinkUploadRequest;
 import com.soda.global.response.GeneralException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,7 +54,7 @@ public class ArticleLinkService {
         article.getArticleLinkList().removeIf(existingLinks::contains);
     }
 
-    public void validateLinkSize(List<ArticleLinkDTO> linkList) {
+    public void validateLinkSize(List<LinkUploadRequest.LinkUploadDTO> linkList) {
         if (linkList != null && linkList.size() > MAX_SIZE) {
             throw new GeneralException(ArticleErrorCode.INVALID_INPUT);
         }

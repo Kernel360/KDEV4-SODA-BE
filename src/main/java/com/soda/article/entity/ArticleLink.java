@@ -44,4 +44,7 @@ public class ArticleLink extends LinkBase {
         this.urlDescription = urlDescription;
     }
 
+    public void updateResponse(Article article) {
+        this.article = article;
+    }
 }

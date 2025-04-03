@@ -50,8 +50,18 @@ public class ArticleLinkStrategy implements LinkStrategy<Article, ArticleLink> {
     }
 
     @Override
-    public List<ArticleLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Article domain) {
-        return List.of();
+    public List<ArticleLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Article article) {
+        if (dtos == null || dtos.isEmpty()) {
+            return List.of();
+        }
+
+        return dtos.stream()
+                .map(dto -> ArticleLink.builder()
+                        .urlAddress(dto.getUrlAddress())
+                        .urlDescription(dto.getUrlDescription())
+                        .article(article)
+                        .build())
+                .toList();
     }
 
     @Override

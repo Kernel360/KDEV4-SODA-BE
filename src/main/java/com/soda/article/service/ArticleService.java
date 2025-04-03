@@ -9,7 +9,6 @@ import com.soda.common.link.service.LinkService;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
-import com.soda.member.error.MemberErrorCode;
 import com.soda.member.service.MemberService;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
@@ -52,8 +51,7 @@ public class ArticleService {
         Project project = projectService.getValidProject(request.getProjectId());
         Stage stage = stageService.validateStage(request.getStageId(), project);
 
-        checkIfMemberIsAdmin(userRole);
-        checkMemberInProject(member, project);
+        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
 
         Article parentArticle = null;
         if (request.getParentArticleId() != null) {
@@ -90,8 +88,7 @@ public class ArticleService {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(request.getProjectId());
 
-        checkIfMemberIsAdmin(userRole);
-        checkMemberInProject(member, project);
+        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
 
         Article article = validateArticle(articleId);
 
@@ -115,8 +112,7 @@ public class ArticleService {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(projectId);
 
-        checkIfMemberIsAdmin(userRole);
-        checkMemberInProject(member, project);
+        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
 
         Article article = validateArticle(articleId);
         validateArticleNotDeleted(article);
@@ -151,8 +147,7 @@ public class ArticleService {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(projectId);
 
-        checkIfMemberIsAdmin(userRole);
-        checkMemberInProject(member, project);
+        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
 
         List<Article> articles = getArticlesByStageAndProject(stageId, project);
 
@@ -206,8 +201,7 @@ public class ArticleService {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(projectId);
 
-        checkIfMemberIsAdmin(userRole);
-        checkMemberInProject(member, project);
+        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
 
         Article article = validateArticle(articleId);
 
@@ -215,24 +209,17 @@ public class ArticleService {
     }
 
     /**
-     * 관리자 여부 체크
+     * 관리자 여부 체크 및 프로젝트 멤버 여부 체크
      * @param userRole 사용자 역할
-     * @throws GeneralException 사용자가 관리자 역할이 아니면 예외 발생
-     */
-    private void checkIfMemberIsAdmin(String userRole) {
-        if (!memberService.isAdmin(MemberRole.valueOf(userRole))) {
-            throw new GeneralException(MemberErrorCode.MEMBER_NOT_ADMIN);
-        }
-    }
-
-    /**
-     * 프로젝트에 사용자가 포함되어 있는지 확인
-     * @param member 사용자 정보
+     * @param member 사용자의 멤버 정보
      * @param project 프로젝트 정보
-     * @throws GeneralException 사용자가 프로젝트의 멤버가 아닌 경우 예외 발생
+     * @throws GeneralException 사용자가 관리자도 아니고 프로젝트 멤버도 아닌 경우 예외 발생
      */
-    private void checkMemberInProject(Member member, Project project) {
-        if (!memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project)) {
+    private void checkIfMemberIsAdminOrProjectMember(String userRole, Member member, Project project) {
+        boolean isAdmin = memberService.isAdmin(MemberRole.valueOf(userRole));
+        boolean isProjectMember = memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
+
+        if (!isAdmin && !isProjectMember) {
             throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
         }
     }

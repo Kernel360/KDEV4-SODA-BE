@@ -58,15 +58,16 @@ public class ArticleService {
                     .orElseThrow(() -> new GeneralException(ArticleErrorCode.PARENT_ARTICLE_NOT_FOUND));
         }
 
-        articleFileService.validateFileSize(request.getFileList());
+//        articleFileService.validateFileSize(request.getFileList());
         articleLinkService.validateLinkSize(request.getLinkList());
 
         Article article = request.toEntity(member, stage, parentArticle);
         article = articleRepository.save(article);
 
         // file & link 저장
-        articleFileService.processFiles(request.getFileList(), article);
+//        articleFileService.processFiles(request.getFileList(), article);
         articleLinkService.processLinks(request.getLinkList(), article);
+
 
         return ArticleCreateResponse.fromEntity(article);
     }
@@ -89,17 +90,17 @@ public class ArticleService {
 
         Article article = validateArticle(articleId);
 
-        articleFileService.validateFileSize(request.getFileList());
+//        articleFileService.validateFileSize(request.getFileList());
         articleLinkService.validateLinkSize(request.getLinkList());
 
         article.updateArticle(request.getTitle(), request.getContent(), request.getPriority(), request.getDeadLine());
 
         // 기존 파일 및 링크 삭제
-        articleFileService.deleteFiles(articleId, article);
-        articleLinkService.deleteLinks(articleId, article);
+//        articleFileService.deleteFiles(articleId, article);
+//        articleLinkService.deleteLinks(articleId, article);
 
         // 새 파일 및 링크 추가 또는 복원
-        articleFileService.processFiles(request.getFileList(), article);
+//        articleFileService.processFiles(request.getFileList(), article);
         articleLinkService.processLinks(request.getLinkList(), article);
 
         return ArticleModifyResponse.fromEntity(article);

@@ -25,7 +25,6 @@ public class ArticleCreateRequest {
     private Long memberId;
     private Long stageId;
     private Long parentArticleId;           // 답글인 경우 필요함
-    private List<ArticleFileDTO> fileList;
     private List<ArticleLinkDTO> linkList;
 
     public Article toEntity(Member member, Stage stage, Article parentArticle) {

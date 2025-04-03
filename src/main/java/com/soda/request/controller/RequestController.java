@@ -27,12 +27,11 @@ public class RequestController {
     private final LinkService linkService;
 
 
-    @PostMapping(value = "/requests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponseForm<?>> createRequest(@RequestPart("data") RequestCreateRequest requestCreateRequest,
-                                                            @RequestPart(value = "file", required = false) List<MultipartFile> files,
+    @PostMapping("/requests")
+    public ResponseEntity<ApiResponseForm<?>> createRequest(@RequestBody RequestCreateRequest requestCreateRequest,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        RequestCreateResponse requestCreateResponse = requestService.createRequest(memberId, requestCreateRequest, files);
+        RequestCreateResponse requestCreateResponse = requestService.createRequest(memberId, requestCreateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestCreateResponse));
     }
 
@@ -49,12 +48,11 @@ public class RequestController {
     }
 
     @PutMapping("/requests/{requestId}")
-    public ResponseEntity<ApiResponseForm<?>> updateRequest(@RequestPart("data") RequestUpdateRequest requestUpdateRequest,
-                                                            @RequestPart(value = "file", required = false) List<MultipartFile> files,
+    public ResponseEntity<ApiResponseForm<?>> updateRequest(@RequestBody RequestUpdateRequest requestUpdateRequest,
                                                             @PathVariable Long requestId,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        RequestUpdateResponse requestUpdateResponse = requestService.updateRequest(memberId, requestId, requestUpdateRequest, files);
+        RequestUpdateResponse requestUpdateResponse = requestService.updateRequest(memberId, requestId, requestUpdateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestUpdateResponse));
     }
 
@@ -66,7 +64,7 @@ public class RequestController {
         return ResponseEntity.ok(ApiResponseForm.success(requestDeleteResponse));
     }
 
-    @PostMapping("/requests/{requestId}/files")
+    @PostMapping(path = "/requests/{requestId}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponseForm<?>> uploadFiles(@PathVariable Long requestId,
                                                           @RequestPart("file") List<MultipartFile> files,
                                                           HttpServletRequest request) {

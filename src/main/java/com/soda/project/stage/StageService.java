@@ -23,198 +23,44 @@ public class StageService {
     private final StageRepository stageRepository;
     private final ProjectRepository projectRepository;
 
-    private static final float INITIAL_ORDER = 1.0f;
-    private static final float ORDER_INCREMENT = 1.0f;
+    public Stage findById(Long stageId) {
+        return stageRepository.findById(stageId)
+                .orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
+    }
 
-    /**
-     * 새로운 단계를 프로젝트에 추가합니다.
-     * 단계 순서는 요청에 포함된 이전/다음 단계 ID(`prevStageId`, `nextStageId`)를 기반으로 서버에서 계산됩니다.
-     * 프로젝트의 활성 단계는 최대 10개까지 가능합니다.
-     *
-     * @param request 단계 생성 요청 정보 (projectId, name, prevStageId, nextStageId 포함)
-     * @return 생성된 단계 정보 DTO (`StageResponse`)
-     * @throws GeneralException 프로젝트(`ProjectErrorCode.PROJECT_NOT_FOUND`) 또는 참조된 이전/다음 단계(`StageErrorCode.STAGE_NOT_FOUND`)를 찾을 수 없거나,
-     *                          단계 개수 제한(`StageErrorCode.STAGE_LIMIT_EXCEEDED`)을 초과했거나,
-     *                          참조된 단계가 다른 프로젝트 소속(`StageErrorCode.STAGE_PROJECT_MISMATCH`)이거나,
-     *                          순서 설정이 유효하지 않은(`StageErrorCode.INVALID_STAGE_ORDER`) 경우 발생합니다.
-     */
     @Transactional
     public StageResponse addStage(StageCreateRequest request) {
         Project project = projectRepository.findById(request.getProjectId())
                                            .orElseThrow(() -> {
-                    log.error("단계 추가 실패: 프로젝트 ID {} 를 찾을 수 없음", request.getProjectId());
-                    return new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);
-                });
+                                               log.error("단계 추가 실패: 프로젝트 ID {} 를 찾을 수 없음", request.getProjectId());
+                                               return new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);
+                                           });
 
-        int currentActiveStageCount = stageRepository.countByProjectAndIsDeletedFalse(project);
-        if (currentActiveStageCount >= 10) {
-            log.warn("단계 추가 실패: 프로젝트 ID {} 의 활성 단계 개수 제한(10개) 초과 (현재 {}개)", project.getId(), currentActiveStageCount);
-            throw new GeneralException(StageErrorCode.STAGE_LIMIT_EXCEEDED);
-        }
-
-        float newOrder = calculateNewOrder(project, request.getPrevStageId(), request.getNextStageId());
-
-        Stage stage = Stage.builder()
-                .stageOrder(newOrder)
-                .name(request.getName())
-                .project(project)
-                .build();
-        Stage savedStage = stageRepository.save(stage);
-
-        log.info("단계 추가 성공: 프로젝트 ID {}, 새 단계 ID {}, 순서 {}",
-                project.getId(), savedStage.getId(), savedStage.getStageOrder());
-        return StageResponse.fromEntity(savedStage);
+        return project.addStage(request);
     }
 
-    /**
-     * 특정 프로젝트의 모든 활성(삭제되지 않은) 단계를 순서(`stageOrder` 오름차순)대로 조회합니다.
-     *
-     * @param projectId 단계를 조회할 프로젝트의 ID
-     * @return 해당 프로젝트의 단계 DTO 목록 (`List<StageReadResponse>`), 순서대로 정렬됨. 활성 단계가 없으면 빈 리스트 반환.
-     * @throws GeneralException 프로젝트(`ProjectErrorCode.PROJECT_NOT_FOUND`)를 찾을 수 없는 경우 발생합니다.
-     */
     public List<StageReadResponse> getStages(Long projectId) {
-        if (!projectRepository.existsById(projectId)) {
-            log.warn("단계 조회 실패: 프로젝트 ID {} 를 찾을 수 없음", projectId);
-            throw new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);
-        }
-        List<Stage> stages = stageRepository.findByProjectIdAndIsDeletedFalseOrderByStageOrderAsc(projectId);
-        log.info("프로젝트 ID {} 의 활성 단계 {}개 조회 성공", projectId, stages.size());
+        var project = projectRepository.findById(projectId).orElseThrow();
 
-        return stages.stream()
-                .map(StageReadResponse::fromEntity)
-                .collect(Collectors.toList());
+        return project.getActiveStages().stream()
+                      .map(StageReadResponse::fromEntity)
+                      .toList();
     }
 
-    /**
-     * 특정 단계의 순서(위치)를 변경합니다.
-     * 새로운 위치는 요청의 `prevStageId`와 `nextStageId`에 의해 정의되며, 실제 순서 값은 서버에서 계산됩니다.
-     *
-     * @param stageId 순서를 변경할 단계의 ID
-     * @param request 새로운 위치를 정의하는 요청 정보 (prevStageId, nextStageId 포함)
-     * @throws GeneralException 이동할 단계(`StageErrorCode.STAGE_NOT_FOUND`) 또는 참조된 이전/다음 단계(`StageErrorCode.STAGE_NOT_FOUND`)를 찾을 수 없거나,
-     *                          참조된 단계가 다른 프로젝트 소속(`StageErrorCode.STAGE_PROJECT_MISMATCH`)이거나,
-     *                          순서 설정이 유효하지 않은(`StageErrorCode.INVALID_STAGE_ORDER`) 경우 발생합니다.
-     *                          (이동할 단계에 프로젝트 정보가 없는 비정상 상태 포함)
-     */
     @Transactional
-    public void moveStage(Long stageId, StageMoveRequest request) {
-        Stage stageToMove = stageRepository.findById(stageId)
-                .orElseThrow(() -> {
-                    log.error("단계 이동 실패: 이동할 단계 ID {} 를 찾을 수 없음", stageId);
-                    return new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
-                });
+    public void moveStage(Long projectId, Long stageId, Long prevStageId, Long nextStageId) {
+        var project = projectRepository.findById(projectId).orElseThrow();
 
-        Project project = stageToMove.getProject();
-        if (project == null) {
-            log.error("단계 이동 실패: 단계 ID {} 에 연결된 프로젝트 정보가 없습니다.", stageId);
-            throw new GeneralException(CommonErrorCode.INTERNAL_SERVER_ERROR);
-        }
-
-        float newOrder = calculateNewOrder(project, request.getPrevStageId(), request.getNextStageId());
-
-        log.info("단계 이동 실행: 단계 ID {}, 이전 순서 {}, 새 순서 {}",
-                stageId, stageToMove.getStageOrder(), newOrder);
-        stageToMove.moveStageOrder(newOrder);
-
-         stageRepository.save(stageToMove);
+        project.moveStage(stageId, prevStageId, nextStageId);
     }
 
-    /**
-     * 특정 단계를 논리적으로 삭제합니다.
-     * 실제 DB 레코드를 삭제하는 대신, `isDeleted` 와 같은 플래그를 true로 설정합니다.
-     *
-     * @param stageId 논리적으로 삭제할 단계의 ID
-     * @throws GeneralException 삭제할 단계(`StageErrorCode.STAGE_NOT_FOUND`)를 찾을 수 없는 경우 발생합니다.
-     */
     @Transactional
-    public void deleteStage(Long stageId) {
-        Stage stage = stageRepository.findById(stageId)
-                .orElseThrow(() -> {
-                    log.error("단계 삭제 실패: 단계 ID {} 를 찾을 수 없음", stageId);
-                    return new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
-                });
+    public void deleteStage(Long projectId, Long stageId) {
+        var project = projectRepository.findById(projectId).orElseThrow();
 
-        stage.delete();
+        project.deleteStage(stageId);
 
         log.info("단계 삭제 성공 (논리적): 단계 ID {}", stageId);
-         stageRepository.save(stage);
-    }
-
-    private Stage validateStage(Long stageId, Project project) {
-        Stage stage = stageRepository.findById(stageId).orElseThrow(
-                ()-> new GeneralException(StageErrorCode.STAGE_NOT_FOUND)
-        );
-
-        if (!stage.getProject().equals(project)) {
-            throw new GeneralException(ProjectErrorCode.INVALID_STAGE_FOR_PROJECT);
-        }
-
-        return stage;
-    }
-
-
-    /**
-     *  이전/다음 단계 ID를 기반으로 새 단계의 순서(`stageOrder`)를 계산합니다.
-     * @param project     단계가 속할 프로젝트
-     * @param prevStageId 이전 단계 ID (없으면 null)
-     * @param nextStageId 다음 단계 ID (없으면 null)
-     * @return 계산된 새 단계의 순서값 (float)
-     * @throws GeneralException 참조된 단계 ID가 존재하지 않거나(`STAGE_NOT_FOUND`),
-     *                          해당 프로젝트 소속이 아니거나(`STAGE_PROJECT_MISMATCH`),
-     *                          순서 설정이 유효하지 않은 경우(`INVALID_STAGE_ORDER`) 발생
-     */
-    private float calculateNewOrder(Project project, Long prevStageId, Long nextStageId) {
-        Float prevOrder = null;
-        Float nextOrder = null;
-
-        if (prevStageId != null) {
-            Stage prevStage = stageRepository.findById(prevStageId)
-                    .orElseThrow(() -> {
-                        log.error("단계 순서 계산 실패: 이전 단계 ID {} 를 찾을 수 없음", prevStageId);
-                        return new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
-                    });
-            if (!prevStage.getProject().getId().equals(project.getId())) {
-                log.error("단계 순서 계산 실패: 이전 단계 ID {} 가 프로젝트 ID {} 에 속하지 않음", prevStageId, project.getId());
-                throw new GeneralException(StageErrorCode.STAGE_PROJECT_MISMATCH);
-            }
-            prevOrder = prevStage.getStageOrder();
-        }
-
-        if (nextStageId != null) {
-            Stage nextStage = stageRepository.findById(nextStageId)
-                    .orElseThrow(() -> {
-                        log.error("단계 순서 계산 실패: 다음 단계 ID {} 를 찾을 수 없음", nextStageId);
-                        return new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
-                    });
-            if (!nextStage.getProject().getId().equals(project.getId())) {
-                log.error("단계 순서 계산 실패: 다음 단계 ID {} 가 프로젝트 ID {} 에 속하지 않음", nextStageId, project.getId());
-                throw new GeneralException(StageErrorCode.STAGE_PROJECT_MISMATCH);
-            }
-            nextOrder = nextStage.getStageOrder();
-        }
-
-        if (prevOrder != null && nextOrder != null) {
-            if (prevOrder >= nextOrder) {
-                log.error("단계 순서 계산 실패: 이전 단계 순서({}) >= 다음 단계 순서({})", prevOrder, nextOrder);
-                throw new GeneralException(StageErrorCode.INVALID_STAGE_ORDER);
-            }
-            return (prevOrder + nextOrder) / 2.0f;
-        } else if (prevOrder != null) {
-            return prevOrder + ORDER_INCREMENT;
-        } else if (nextOrder != null) {
-            if (nextOrder <= 0) {
-                log.warn("다음 단계 순서({})가 0 이하입니다. 순서를 {}로 설정합니다.", nextOrder, nextOrder / 2.0f);
-            }
-            return nextOrder / 2.0f;
-        } else {
-            log.info("프로젝트 ID {} 에 첫 단계 추가 또는 이동. 초기 순서 {} 적용", project.getId(), INITIAL_ORDER);
-            return INITIAL_ORDER;
-        }
-    }
-
-    public Stage findById(Long stageId) {
-        return stageRepository.findById(stageId)
-                .orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
+        projectRepository.save(project);
     }
 }

@@ -2,6 +2,8 @@ package com.soda.project;
 
 import com.soda.article.entity.Article;
 import com.soda.common.BaseEntity;
+import com.soda.project.task.Task;
+
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

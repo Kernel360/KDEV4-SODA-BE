@@ -1,4 +1,4 @@
-package com.soda.project;
+package com.soda.project.task;
 
 import com.soda.global.response.ErrorCode;
 import org.springframework.http.HttpStatus;

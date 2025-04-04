@@ -1,6 +1,10 @@
-package com.soda.project;
+package com.soda.project.task;
 
 import com.soda.global.response.GeneralException;
+import com.soda.project.Stage;
+import com.soda.project.StageErrorCode;
+import com.soda.project.StageRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,7 +41,7 @@ public class TaskService {
     public TaskResponse addTask(TaskCreateRequest request) {
         // 1. 대상 스테이지 조회 (StageRepository 사용)
         Stage stage = stageRepository.findByIdAndIsDeletedFalse(request.getStageId())
-                .orElseThrow(() -> {
+                                     .orElseThrow(() -> {
                     log.warn("태스크 추가 실패: 스테이지 ID {} 를 찾을 수 없음", request.getStageId());
                     return new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
                 });
@@ -49,11 +53,11 @@ public class TaskService {
 
         // 4. 새 태스크 엔티티 생성 및 저장
         Task task = Task.builder()
-                .title(request.getTitle())
-                .content(request.getContent())
-                .stage(stage)
-                .taskOrder(newTaskOrder)
-                .build();
+                        .title(request.getTitle())
+                        .content(request.getContent())
+                        .stage(stage)
+                        .taskOrder(newTaskOrder)
+                        .build();
         Task savedTask = taskRepository.save(task);
 
         log.info("태스크 추가 성공: 스테이지 ID {}, 새 태스크 ID {}, 순서 {}",

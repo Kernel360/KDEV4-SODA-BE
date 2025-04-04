@@ -1,9 +1,12 @@
 package com.soda.global.security.jwt;
 
+import com.soda.global.response.GeneralException;
+import com.soda.member.error.AuthErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,8 +20,8 @@ import java.util.Date;
 public class JwtTokenProvider {
 
     private final String secretKeyString;
-    private final long accessTokenValidTime;
-    private final long refreshTokenValidTime;
+    private final long accessTokenValidTimeMillis;
+    private final long refreshTokenValidTimeMillis;
     private final String header;
     private SecretKey key;
 
@@ -28,8 +31,8 @@ public class JwtTokenProvider {
             @Value("${jwt.refresh.expiration}") long refreshTokenValidTime,
             @Value("${jwt.access.header}") String header) {
         this.secretKeyString = secretKeyString;
-        this.accessTokenValidTime = accessTokenValidTime;
-        this.refreshTokenValidTime = refreshTokenValidTime;
+        this.accessTokenValidTimeMillis = accessTokenValidTime;
+        this.refreshTokenValidTimeMillis = refreshTokenValidTime;
         this.header = header;
     }
 
@@ -66,7 +69,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setSubject(authId)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + accessTokenValidTime))
+                .setExpiration(new Date(now.getTime() + accessTokenValidTimeMillis))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -81,7 +84,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setSubject(authId)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + refreshTokenValidTime))
+                .setExpiration(new Date(now.getTime() + refreshTokenValidTimeMillis))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -116,7 +119,7 @@ public class JwtTokenProvider {
         // 토큰 문자열 존재 여부 확인
         if (!StringUtils.hasText(token)) {
             log.warn("토큰 유효성 검증 실패: 토큰 문자열이 비어있거나 null입니다.");
-            throw new IllegalArgumentException("JWT 토큰 문자열이 비어있거나 null입니다.");
+            throw new GeneralException(AuthErrorCode.NOT_FOUND_TOKEN);
         }
         try {
             Jwts.parserBuilder()
@@ -184,6 +187,11 @@ public class JwtTokenProvider {
      * @throws JwtException 토큰이 유효하지 않은 경우 (getClaims 내부에서 발생)
      */
     public String getAuthId(String token) {
-        return getClaims(token).getSubject();
+        try {
+            return getClaims(token).getSubject();
+        } catch (JwtException e) {
+            log.error("AuthId 추출 실패: 유효하지 않은 토큰으로 Claims 획득 불가 - {}", e.getMessage());
+            throw new GeneralException(AuthErrorCode.INVALID_TOKEN);
+        }
     }
 }

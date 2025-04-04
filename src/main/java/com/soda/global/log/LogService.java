@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 public class LogService {
     private final LogRepository logRepository;
 
-    public LogInfo findLogInfoByTest(String test) {
-        return logRepository.findLogInfoByTest(test);
-    }
+//    public LogInfo findLogInfoByTest(String test) {
+//        return logRepository.findLogInfoByTest(test);
+//    }
 }

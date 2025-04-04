@@ -1,4 +1,4 @@
-package com.soda.global.log;
+package com.soda.global.log.systemLog;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;

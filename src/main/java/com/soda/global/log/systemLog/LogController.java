@@ -1,4 +1,4 @@
-package com.soda.global.log;
+package com.soda.global.log.systemLog;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;

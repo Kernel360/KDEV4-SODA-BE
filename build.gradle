@@ -61,6 +61,10 @@ dependencies {
 	// MongoDB
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
+	// jackson(데이터로그 LocalDateTime 직렬화용)
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+
 }
 
 tasks.named('test') {

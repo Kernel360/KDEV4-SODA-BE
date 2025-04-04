@@ -1,4 +1,4 @@
-package com.soda.global.log;
+package com.soda.global.log.systemLog;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -27,7 +27,7 @@ public class MongoDbLogAppender extends AppenderBase<ILoggingEvent> {
         int line = callerData.length > 0 ? callerData[0].getLineNumber() : -1;
         String message = MessageFormatter.arrayFormat(eventObject.getMessage(), eventObject.getArgumentArray()).getMessage();
 
-        LogInfo log = LogInfo.builder()
+        SystemLog log = SystemLog.builder()
                 .thread(eventObject.getThreadName())
                 .level(eventObject.getLevel().toString())
                 .logger(logger)

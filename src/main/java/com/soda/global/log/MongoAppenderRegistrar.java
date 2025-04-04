@@ -17,6 +17,7 @@ public class MongoAppenderRegistrar {
     @EventListener(ApplicationReadyEvent.class)
     public void registerMongoAppender() {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+
         MongoDbLogAppender mongoAppender = new MongoDbLogAppender(logRepository);
         mongoAppender.setName("MONGODB");
         mongoAppender.setContext(context);

@@ -1,5 +1,6 @@
 package com.soda.global.log;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class MongoDbLogAppender extends AppenderBase<ILoggingEvent> {
 
     @Override
     protected void append(ILoggingEvent eventObject) {
-        if (!eventObject.getLevel().isGreaterOrEqual(ch.qos.logback.classic.Level.WARN)) {
+        if (!eventObject.getLevel().isGreaterOrEqual(Level.INFO)) {
             return;
         }
 
@@ -27,22 +28,20 @@ public class MongoDbLogAppender extends AppenderBase<ILoggingEvent> {
         String message = MessageFormatter.arrayFormat(eventObject.getMessage(), eventObject.getArgumentArray()).getMessage();
 
         LogInfo log = LogInfo.builder()
-                .log(String.format("[%s] %s %s.%s:%d - %s",
-                        eventObject.getThreadName(),
-                        eventObject.getLevel(),
-                        logger,
-                        method,
-                        line,
-                        message
-                ))
+                .thread(eventObject.getThreadName())
+                .level(eventObject.getLevel().toString())
+                .logger(logger)
+                .method(method)
+                .line(line)
+                .message(message)
                 .time(LocalDateTime.ofInstant(Instant.ofEpochMilli(eventObject.getTimeStamp()), TimeZone.getDefault().toZoneId()))
                 .build();
 
         try {
             logRepository.save(log);
         } catch (Exception e) {
-            // Mongo 연결 오류 시 무시 (애플리케이션 죽지 않게)
-            addError("Mongo 저장 실패", e);
+            // Mongo 저장 실패해도 애플리케이션은 계속 작동하게
+            addError("MongoDB 로그 저장 실패", e);
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.soda.project.task;
+package com.soda.project.stage.task;
 
 import com.soda.global.response.ApiResponseForm;
 import lombok.RequiredArgsConstructor;

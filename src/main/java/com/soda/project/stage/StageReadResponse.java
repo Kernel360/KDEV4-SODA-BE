@@ -1,4 +1,4 @@
-package com.soda.project;
+package com.soda.project.stage;
 
 import lombok.Getter;
 

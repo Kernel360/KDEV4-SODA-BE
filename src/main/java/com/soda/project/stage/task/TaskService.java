@@ -1,9 +1,9 @@
-package com.soda.project.task;
+package com.soda.project.stage.task;
 
 import com.soda.global.response.GeneralException;
-import com.soda.project.Stage;
-import com.soda.project.StageErrorCode;
-import com.soda.project.StageRepository;
+import com.soda.project.stage.Stage;
+import com.soda.project.stage.StageErrorCode;
+import com.soda.project.stage.StageRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

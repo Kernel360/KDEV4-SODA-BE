@@ -1,7 +1,10 @@
-package com.soda.project;
+package com.soda.project.company;
 
 import com.soda.global.response.GeneralException;
 import com.soda.member.CompanyProjectRole;
+import com.soda.project.Project;
+import com.soda.project.ProjectErrorCode;
+
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,9 @@
-package com.soda.project;
+package com.soda.project.member;
 
 import com.soda.member.Member;
 import com.soda.member.MemberProjectRole;
+import com.soda.project.Project;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

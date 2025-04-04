@@ -1,8 +1,10 @@
-package com.soda.project;
+package com.soda.project.member;
 
 import com.soda.common.BaseEntity;
 import com.soda.member.Member;
 import com.soda.member.MemberProjectRole;
+import com.soda.project.Project;
+
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

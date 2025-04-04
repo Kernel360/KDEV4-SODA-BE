@@ -4,6 +4,8 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.Member;
 import com.soda.member.CompanyProjectRole;
 import com.soda.member.MemberProjectRole;
+import com.soda.project.company.CompanyProjectService;
+import com.soda.project.member.MemberProjectService;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;

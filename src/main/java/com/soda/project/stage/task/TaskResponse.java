@@ -1,28 +1,30 @@
-package com.soda.project.task;
+package com.soda.project.stage.task;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class TaskReadResponse {
+public class TaskResponse {
     private Long taskId;
+    private Long stageId;
     private String title;
     private String content;
     private Float taskOrder;
-    // 필요하다면 다른 필드 추가 (e.g., Request 개수 등)
 
     @Builder
-    public TaskReadResponse(Long taskId, String title, String content, Float taskOrder) {
+    public TaskResponse(Long taskId, Long stageId, String title, String content, Float taskOrder) {
         this.taskId = taskId;
+        this.stageId = stageId;
         this.title = title;
         this.content = content;
         this.taskOrder = taskOrder;
     }
 
-    public static TaskReadResponse fromEntity(Task task) {
+    public static TaskResponse fromEntity(Task task) {
         if (task == null) return null;
-        return TaskReadResponse.builder()
+        return TaskResponse.builder()
                 .taskId(task.getId())
+                .stageId(task.getStage() != null ? task.getStage().getId() : null)
                 .title(task.getTitle())
                 .content(task.getContent())
                 .taskOrder(task.getTaskOrder())

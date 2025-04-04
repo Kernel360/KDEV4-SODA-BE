@@ -4,7 +4,7 @@ import com.soda.article.enums.ArticleStatus;
 import com.soda.article.enums.PriorityType;
 import com.soda.common.BaseEntity;
 import com.soda.member.Member;
-import com.soda.project.Stage;
+import com.soda.project.stage.Stage;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

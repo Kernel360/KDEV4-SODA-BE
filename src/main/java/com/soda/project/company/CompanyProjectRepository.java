@@ -1,6 +1,8 @@
-package com.soda.project;
+package com.soda.project.company;
 
 import com.soda.member.CompanyProjectRole;
+import com.soda.project.Project;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

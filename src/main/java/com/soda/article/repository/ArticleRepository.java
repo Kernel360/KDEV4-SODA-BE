@@ -2,7 +2,7 @@ package com.soda.article.repository;
 
 import com.soda.article.entity.Article;
 import com.soda.project.Project;
-import com.soda.project.Stage;
+import com.soda.project.stage.Stage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

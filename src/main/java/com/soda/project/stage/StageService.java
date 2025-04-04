@@ -1,14 +1,16 @@
-package com.soda.project;
+package com.soda.project.stage;
 
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
+import com.soda.project.Project;
+import com.soda.project.ProjectErrorCode;
+import com.soda.project.ProjectRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,7 +41,7 @@ public class StageService {
     @Transactional
     public StageResponse addStage(StageCreateRequest request) {
         Project project = projectRepository.findById(request.getProjectId())
-                .orElseThrow(() -> {
+                                           .orElseThrow(() -> {
                     log.error("단계 추가 실패: 프로젝트 ID {} 를 찾을 수 없음", request.getProjectId());
                     return new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);
                 });

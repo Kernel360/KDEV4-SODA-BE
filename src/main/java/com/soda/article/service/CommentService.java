@@ -10,7 +10,7 @@ import com.soda.member.Member;
 import com.soda.member.MemberService;
 import com.soda.project.Project;
 import com.soda.project.ProjectErrorCode;
-import com.soda.project.MemberProjectService;
+import com.soda.project.member.MemberProjectService;
 import com.soda.project.ProjectSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -3,6 +3,10 @@ package com.soda.project;
 import com.soda.common.BaseEntity;
 import com.soda.member.Company;
 import com.soda.member.Member;
+import com.soda.project.company.CompanyProject;
+import com.soda.project.member.MemberProject;
+import com.soda.project.stage.Stage;
+
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

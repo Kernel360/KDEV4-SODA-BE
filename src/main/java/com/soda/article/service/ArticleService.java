@@ -6,6 +6,7 @@ import com.soda.article.entity.ArticleLink;
 import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.repository.ArticleRepository;
 import com.soda.common.link.service.LinkService;
+import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
@@ -45,6 +46,7 @@ public class ArticleService {
      * @param userRole 게시글을 생성하는 사용자의 역할
      * @return 생성된 게시글의 정보
      */
+    @LoggableEntityAction(action = "CREATE", entityClass = Article.class)
     @Transactional
     public ArticleCreateResponse createArticle(ArticleCreateRequest request, Long userId, String userRole) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
@@ -83,6 +85,7 @@ public class ArticleService {
      * @param request 수정할 게시글의 새로운 정보
      * @return 수정된 게시글의 정보
      */
+    @LoggableEntityAction(action = "UPDATE", entityClass = Article.class)
     @Transactional
     public ArticleModifyResponse updateArticle(Long userId, String userRole, Long articleId, ArticleModifyRequest request) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
@@ -107,6 +110,7 @@ public class ArticleService {
      * @param userRole 삭제를 요청하는 사용자의 역할
      * @param articleId 삭제할 게시글의 ID
      */
+    @LoggableEntityAction(action = "DELETE", entityClass = Article.class)
     @Transactional
     public void deleteArticle(Long projectId, Long userId, String userRole, Long articleId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);

@@ -1,4 +1,4 @@
-package com.soda.global.log.systemLog;
+package com.soda.global.log.systemLog.domain;
 
 import lombok.Builder;
 import lombok.Getter;

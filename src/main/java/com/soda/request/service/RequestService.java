@@ -3,7 +3,7 @@ package com.soda.request.service;
 import com.soda.common.file.service.FileService;
 import com.soda.common.file.service.S3Service;
 import com.soda.common.link.service.LinkService;
-import com.soda.global.log.dataLog.LoggableEntityAction;
+import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
@@ -44,7 +44,7 @@ public class RequestService {
     어떤 member가 어떤 task에서 승인요청을 생성했는지를 request 데이터에 넣어줘야함.
     Request 데이터 생성 전에, 요청한 member가 현재 프로젝트에 속한 "개발사"의 멤버이거나 ADMIN유저인지 확인해야함.
     */
-    @LoggableEntityAction(action = "CREATE")
+    @LoggableEntityAction(action = "CREATE", entityClass = Request.class)
     @Transactional
     public RequestCreateResponse createRequest(Long memberId, RequestCreateRequest requestCreateRequest) {
         Member member = getMemberWithProjectOrThrow(memberId);
@@ -70,6 +70,7 @@ public class RequestService {
     }
 
 
+    @LoggableEntityAction(action = "UPDATE", entityClass = Request.class)
     @Transactional
     public RequestUpdateResponse updateRequest(Long memberId, Long requestId, RequestUpdateRequest requestUpdateRequest) {
         Request request = getRequestOrThrow(requestId);
@@ -86,6 +87,7 @@ public class RequestService {
         return RequestUpdateResponse.fromEntity(request);
     }
 
+    @LoggableEntityAction(action = "DELETE", entityClass = Request.class)
     @Transactional
     public RequestDeleteResponse deleteRequest(Long memberId, Long requestId) throws GeneralException {
         Request request = getRequestOrThrow(requestId);

@@ -1,6 +1,7 @@
 package com.soda.member.service;
 
 
+import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.dto.company.CompanyCreateRequest;
 import com.soda.member.dto.company.CompanyResponse;
@@ -33,6 +34,7 @@ public class CompanyService {
      * @return 생성된 회사 정보 DTO
      * @throws GeneralException 사업자 등록번호 중복 시 발생
      */
+    @LoggableEntityAction(action = "CREATE", entityClass = Company.class)
     @Transactional
     public CompanyResponse createCompany(CompanyCreateRequest request) {
         if (companyRepository.findByCompanyNumber(request.getCompanyNumber()).isPresent()) {
@@ -84,6 +86,7 @@ public class CompanyService {
      * @return 수정된 회사 정보 DTO
      * @throws GeneralException 회사를 찾을 수 없는 경우 또는 사업자 등록번호 중복 시 발생
      */
+    @LoggableEntityAction(action = "UPDATE", entityClass = Company.class)
     @Transactional
     public CompanyResponse updateCompany(Long id, CompanyUpdateRequest request) {
         Company company = getCompany(id);
@@ -106,6 +109,7 @@ public class CompanyService {
      * @param id 회사 ID
      * @throws GeneralException 회사를 찾을 수 없는 경우 발생
      */
+    @LoggableEntityAction(action = "DELETE", entityClass = Company.class)
     @Transactional
     public void deleteCompany(Long id) {
         Company company = getCompany(id);

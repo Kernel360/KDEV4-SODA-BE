@@ -1,5 +1,6 @@
 package com.soda.project.service;
 
+import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.project.domain.stage.StageCreateRequest;
@@ -20,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,6 +52,7 @@ public class StageService {
      *                          참조된 단계가 다른 프로젝트 소속(`StageErrorCode.STAGE_PROJECT_MISMATCH`)이거나,
      *                          순서 설정이 유효하지 않은(`StageErrorCode.INVALID_STAGE_ORDER`) 경우 발생합니다.
      */
+    @LoggableEntityAction(action = "CREATE", entityClass = Stage.class)
     @Transactional
     public StageResponse addStage(StageCreateRequest request) {
         Project project = projectRepository.findById(request.getProjectId())
@@ -111,6 +112,7 @@ public class StageService {
      *                          순서 설정이 유효하지 않은(`StageErrorCode.INVALID_STAGE_ORDER`) 경우 발생합니다.
      *                          (이동할 단계에 프로젝트 정보가 없는 비정상 상태 포함)
      */
+    @LoggableEntityAction(action = "UPDATE", entityClass = Stage.class)
     @Transactional
     public void moveStage(Long stageId, StageMoveRequest request) {
         Stage stageToMove = stageRepository.findById(stageId)
@@ -141,6 +143,7 @@ public class StageService {
      * @param stageId 논리적으로 삭제할 단계의 ID
      * @throws GeneralException 삭제할 단계(`StageErrorCode.STAGE_NOT_FOUND`)를 찾을 수 없는 경우 발생합니다.
      */
+    @LoggableEntityAction(action = "DELETE", entityClass = Stage.class)
     @Transactional
     public void deleteStage(Long stageId) {
         Stage stage = stageRepository.findById(stageId)
@@ -175,6 +178,7 @@ public class StageService {
      * @return 생성된 초기 단계들의 DTO 목록 (`List<StageReadResponse>`)
      * @throws GeneralException 프로젝트(`ProjectErrorCode.PROJECT_NOT_FOUND`)를 찾을 수 없는 경우 발생합니다.
      */
+    @LoggableEntityAction(action = "CREATE", entityClass = Stage.class)
     @Transactional
     public List<StageReadResponse> createInitialStages(Long projectId) {
         Project project = projectRepository.findById(projectId)

@@ -1,4 +1,4 @@
-package com.soda.global.log.dataLog;
+package com.soda.global.log.dataLog.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface LoggableEntityAction {
     String action(); // "CREATE", "UPDATE", "DELETE"
+    Class<?> entityClass();
 }
-

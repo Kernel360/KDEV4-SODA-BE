@@ -1,8 +1,10 @@
-package com.soda.global.log.systemLog;
+package com.soda.global.log.systemLog.appender;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
+import com.soda.global.log.systemLog.domain.LogRepository;
+import com.soda.global.log.systemLog.domain.SystemLog;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.helpers.MessageFormatter;
 

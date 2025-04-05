@@ -1,7 +1,8 @@
-package com.soda.global.log.systemLog;
+package com.soda.global.log.systemLog.appender;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import com.soda.global.log.systemLog.domain.LogRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

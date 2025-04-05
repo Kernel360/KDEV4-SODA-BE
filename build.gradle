@@ -64,9 +64,6 @@ dependencies {
 	// jackson(데이터로그 LocalDateTime 직렬화용)
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
-	// jackson(데이터로그 엔티티 양방향 순환참조 방지용)
-	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate6'
-
 	// Mapper(데이터로그 저장시 엔티티에서 필드값 가져오면 양방향매핑이 있는 경우 순환참조 문제가 발생하므로 DTO에서 필드 접근하기 위함)
 	implementation 'org.modelmapper:modelmapper:3.2.0'
 

@@ -19,7 +19,7 @@ public class MongoDbLogAppender extends AppenderBase<ILoggingEvent> {
 
     @Override
     protected void append(ILoggingEvent eventObject) {
-        if (!eventObject.getLevel().isGreaterOrEqual(Level.INFO)) {
+        if (!eventObject.getLevel().isGreaterOrEqual(Level.WARN)) {
             return;
         }
 

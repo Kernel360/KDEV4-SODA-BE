@@ -30,4 +30,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findByIdInAndIsDeletedFalse(List<Long> memberIds);
 
     List<Member> findByIdIn(List<Long> ids);
+
+    Optional<Member> findByNameAndEmailAndIsDeletedFalse(String name, String email);
+
+    Optional<Member> findByAuthIdAndIsDeletedFalse(String authId);
+
+    Optional<Member> findByEmailAndIsDeletedFalse(String email);
 }

@@ -3,7 +3,6 @@ package com.soda.member.service;
 import com.soda.global.response.GeneralException;
 import com.soda.member.dto.FindAuthIdRequest;
 import com.soda.member.dto.FindAuthIdResponse;
-import com.soda.member.dto.UserProfileUpdateRequest;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.error.MemberErrorCode;

@@ -3,7 +3,6 @@ package com.soda.member.controller;
 import com.soda.common.mail.dto.EmailRequest;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.member.dto.*;
-import com.soda.member.service.AdminMemberService;
 import com.soda.member.service.AuthService;
 import com.soda.member.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +22,6 @@ public class AuthController {
 
     private final AuthService authService;
     private final MemberService memberService;
-    private final AdminMemberService adminMemberService;
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponseForm<Void>> signup(@RequestBody CreateMemberRequest requestDto) {

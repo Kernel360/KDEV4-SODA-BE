@@ -14,7 +14,6 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -93,7 +92,7 @@ public class AuthService {
      * @return 로그인한 회원 정보 DTO
      * @throws GeneralException 사용자 정보를 찾을 수 없거나 비밀번호가 일치하지 않을 경우 발생
      */
-    @Transactional // Refresh Token 저장을 위해 필요
+    @Transactional
     public LoginResponse login(LoginRequest requestDto, HttpServletResponse response) {
         log.info("로그인 시도: authId={}", requestDto.getAuthId());
         Member member = memberService.findMemberByAuthId(requestDto.getAuthId());
@@ -107,18 +106,52 @@ public class AuthService {
         return LoginResponse.fromEntity(member);
     }
 
+    /**
+     * 제공된 Refresh Token을 검증하고, 유효한 경우 새로운 Access Token과 Refresh Token을 발급하여 응답에 설정합니다.
+     *
+     * @param refreshToken 클라이언트로부터 전달받은 Refresh Token 문자열
+     * @param response     HttpServletResponse (갱신된 토큰 설정을 위함)
+     * @throws GeneralException Refresh Token이 유효하지 않거나, 만료되었거나, 저장된 토큰과 일치하지 않을 경우 발생
+     */
     @Transactional
-    public void refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = jwtTokenProvider.resolveToken(request);
-        validateRefreshToken(refreshToken);
-        String authId = jwtTokenProvider.getAuthId(refreshToken);
-        validateStoredRefreshToken(authId, refreshToken);
-        String newAccessToken = jwtTokenProvider.createAccessToken(authId);
-        String newRefreshToken = jwtTokenProvider.createRefreshToken(authId);
-        storeRefreshToken(authId, newRefreshToken);
-        addRefreshTokenCookie(response, newRefreshToken);
-        response.setHeader("Authorization", "Bearer " + newAccessToken);
-        log.info("토큰 갱신 성공: {}", authId);
+    public void refreshAccessToken(String refreshToken, HttpServletResponse response) {
+        log.debug("Access Token 갱신 시도");
+
+        String authId = null;
+        try {
+            jwtTokenProvider.validateToken(refreshToken);
+
+            authId = jwtTokenProvider.getAuthId(refreshToken);
+
+            validateStoredRefreshToken(authId, refreshToken);
+
+            String newAccessToken = jwtTokenProvider.createAccessToken(authId);
+            String newRefreshToken = jwtTokenProvider.createRefreshToken(authId);
+
+            storeRefreshToken(authId, newRefreshToken);
+            addRefreshTokenCookie(response, newRefreshToken);
+            response.setHeader(jwtTokenProvider.getTokenHeader(), "Bearer " + newAccessToken);
+
+            log.info("Access Token 갱신 성공: authId={}", authId);
+
+        } catch (ExpiredJwtException e) {
+            try { authId = jwtTokenProvider.getAuthId(e.getClaims().getSubject()); } catch (Exception ignored) {}
+            log.warn("토큰 갱신 실패: Refresh Token 만료 (authId={})", authId != null ? authId : "추출 불가");
+            if (authId != null) refreshTokenRepository.deleteByAuthId(authId);
+            throw new GeneralException(AuthErrorCode.EXPIRED_REFRESH_TOKEN);
+
+        } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
+            log.error("토큰 갱신 실패: 유효하지 않은 Refresh Token - {}", e.getMessage());
+            throw new GeneralException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+
+        } catch (GeneralException e) {
+            log.error("토큰 갱신 실패: 저장된 토큰 검증 실패 - {}", e.getMessage());
+            throw e;
+
+        } catch (Exception e) {
+            log.error("토큰 갱신 중 예상치 못한 오류 발생", e);
+            throw new GeneralException(AuthErrorCode.TOKEN_REFRESH_FAILED);
+        }
     }
 
     /**
@@ -147,7 +180,7 @@ public class AuthService {
      * @return 검증 성공 시, 성공 여부와 이메일 정보가 담긴 DTO
      * @throws GeneralException 저장된 코드가 없거나 만료되었거나, 입력 코드와 일치하지 않을 경우 발생
      */
-     @Transactional
+    @Transactional
     public VerificationConfirmResponse verifyVerificationCode(String email, String code) {
         log.info("이메일 인증 코드 검증 시도: {}", email);
         String storedCode = verificationCodeRepository.findVerificationCode(email);

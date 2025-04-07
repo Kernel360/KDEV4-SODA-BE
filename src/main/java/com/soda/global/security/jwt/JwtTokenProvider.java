@@ -194,4 +194,8 @@ public class JwtTokenProvider {
             throw new GeneralException(AuthErrorCode.INVALID_TOKEN);
         }
     }
+
+    public String getTokenHeader() {
+        return header;
+    }
 }

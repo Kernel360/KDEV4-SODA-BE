@@ -5,6 +5,7 @@ import com.soda.article.entity.Article;
 import com.soda.article.entity.Comment;
 import com.soda.article.error.CommentErrorCode;
 import com.soda.article.repository.CommentRepository;
+import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
@@ -41,6 +42,7 @@ public class CommentService {
      * @return 생성된 댓글의 정보
      * @throws GeneralException 사용자가 프로젝트에 참여하지 않거나 댓글을 작성할 권한이 없는 경우 예외 발생
      */
+    @LoggableEntityAction(action = "CREATE", entityClass = Comment.class)
     @Transactional
     public CommentCreateResponse createComment(Long userId, String userRole, CommentCreateRequest request) {
         // 1. 유저가 해당 프로젝트에 참여하는지 / 관리자인지 체크
@@ -166,6 +168,7 @@ public class CommentService {
      * @param commentId 삭제할 댓글 ID
      * @throws GeneralException 댓글을 작성한 사용자가 아닌 경우 예외 발생
      */
+    @LoggableEntityAction(action = "DELETE", entityClass = Comment.class)
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
         Comment comment = getCommentAndValidateMember(userId, commentId);
@@ -184,6 +187,7 @@ public class CommentService {
      * @return 수정된 댓글의 정보
      * @throws GeneralException 댓글을 작성한 사용자가 아닌 경우 예외 발생
      */
+    @LoggableEntityAction(action = "UPDATE", entityClass = Comment.class)
     @Transactional
     public CommentUpdateResponse updateComment(Long userId, CommentUpdateRequest request, Long commentId) {
         Comment comment = getCommentAndValidateMember(userId, commentId);

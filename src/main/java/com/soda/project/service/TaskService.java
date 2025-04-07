@@ -1,5 +1,6 @@
 package com.soda.project.service;
 
+import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.project.domain.task.*;
 import com.soda.project.entity.Stage;
@@ -40,6 +41,7 @@ public class TaskService {
      *                          참조된 태스크가 다른 스테이지 소속(`TaskErrorCode.TASK_STAGE_MISMATCH`)이거나,
      *                          순서 설정이 유효하지 않은(`TaskErrorCode.INVALID_TASK_ORDER`) 경우 발생합니다.
      */
+    @LoggableEntityAction(action = "CREATE", entityClass = Task.class)
     @Transactional
     public TaskResponse addTask(TaskCreateRequest request) {
         // 1. 대상 스테이지 조회 (StageRepository 사용)
@@ -93,6 +95,7 @@ public class TaskService {
     /**
      * 특정 태스크의 정보(제목, 내용)를 수정합니다.
      */
+    @LoggableEntityAction(action = "UPDATE", entityClass = Task.class)
     @Transactional
     public TaskResponse updateTask(Long taskId, TaskUpdateRequest request) {
         Task task = findActiveTaskByIdOrThrow(taskId);
@@ -106,6 +109,7 @@ public class TaskService {
      * 특정 태스크의 순서(위치)를 변경합니다.
      * 이동할 태스크에서 스테이지 정보를 가져와 유효성을 검사합니다.
      */
+    @LoggableEntityAction(action = "UPDATE", entityClass = Task.class)
     @Transactional
     public void moveTask(Long taskId, TaskMoveRequest request) {
         Task taskToMove = findActiveTaskByIdOrThrow(taskId);
@@ -129,6 +133,7 @@ public class TaskService {
     /**
      * 특정 태스크를 논리적으로 삭제합니다.
      */
+    @LoggableEntityAction(action = "DELETE", entityClass = Task.class)
     @Transactional
     public void deleteTask(Long taskId) {
         Task task = findActiveTaskByIdOrThrow(taskId);

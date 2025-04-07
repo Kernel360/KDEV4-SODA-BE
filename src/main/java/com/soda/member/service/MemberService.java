@@ -94,6 +94,27 @@ public class MemberService {
     }
 
 
+    /**
+     * 이름과 이메일로 삭제되지 않은 사용자를 찾아 마스킹된 아이디를 반환 (아이디 찾기 기능).
+     *
+     * @param request 이름과 이메일이 담긴 요청 DTO
+     * @return 마스킹된 아이디가 담긴 응답 DTO
+     * @throws GeneralException 일치하는 삭제되지 않은 사용자를 찾지 못한 경우
+     */
+    public FindAuthIdResponse findMaskedAuthId(FindAuthIdRequest request) {
+        log.info("아이디 찾기 시도: 이름={}, 이메일={}", request.getName(), request.getEmail());
+
+        Member member = memberRepository.findByNameAndEmailAndIsDeletedFalse(request.getName(), request.getEmail())
+                .orElseThrow(() -> {
+                    log.warn("아이디 찾기 실패: 일치하는 사용자 없음 - 이름={}, 이메일={}", request.getName(), request.getEmail());
+                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+                });
+
+        String maskedId = maskAuthId(member.getAuthId());
+        log.info("아이디 찾기 성공: 이름={}, 이메일={}. 마스킹된 아이디: {}", request.getName(), request.getEmail(), maskedId);
+
+        return new FindAuthIdResponse(maskedId);
+    }
 
 
     /**
@@ -153,5 +174,39 @@ public class MemberService {
                     log.warn("회원 조회/검증 실패: 존재하지 않는 이메일 - {}", email);
                     return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
                 });
+    }
+
+    /**
+     * (내부용) 아이디를 마스킹 처리하는 헬퍼 메소드.
+     *
+     * @param authId 원본 아이디
+     * @return 마스킹된 아이디
+     */
+    private String maskAuthId(String authId) {
+        if (authId == null || authId.isEmpty()) {
+            return "***";
+        }
+        int length = authId.length();
+        if (length <= 1) {
+            return "*";
+        } else if (length <= 3) {
+            return authId.charAt(0) + "*".repeat(length - 1);
+        } else {
+            return authId.substring(0, 2) + "***" + authId.charAt(length - 1);
+        }
+    }
+
+    /**
+     * 이메일 중복 검사 (삭제되지 않은 회원 대상)
+     * 해당 이메일을 사용하는 활성 회원이 이미 존재하면 예외를 발생시킵니다.
+     *
+     * @param email 검사할 이메일
+     * @throws GeneralException 해당 이메일이 이미 사용 중일 경우 (DUPLICATE_EMAIL)
+     */
+    public void validateDuplicateEmail(String email) {
+        if (memberRepository.existsByEmailAndIsDeletedFalse(email)) {
+            log.warn("회원 가입/수정 실패: 이메일 중복 - {}", email);
+            throw new GeneralException(MemberErrorCode.DUPLICATE_EMAIL);
+        }
     }
 }

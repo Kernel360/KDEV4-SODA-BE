@@ -1,5 +1,6 @@
 package com.soda.project.service;
 
+import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
@@ -11,9 +12,9 @@ import com.soda.project.domain.*;
 import com.soda.project.entity.Project;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.ProjectRepository;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ public class  ProjectService {
         - 개발사 지정, 관리자/직원 지정
         - 고객사 지정, 관리자/직원 지정
      */
+    @LoggableEntityAction(action = "CREATE", entityClass = Project.class)
     @Transactional
     public ProjectCreateResponse createProject(ProjectCreateRequest request) {
         // 1. 프로젝트 제목 중복 체크
@@ -166,6 +168,7 @@ public class  ProjectService {
     }
 
     // project 삭제 (연관된 company_project, member_project 같이 삭제)
+    @LoggableEntityAction(action = "DELETE", entityClass = Project.class)
     @Transactional
     public void deleteProject(Long projectId) {
         // 1. 프로젝트 존재 여부 체크
@@ -185,6 +188,7 @@ public class  ProjectService {
         - 개발사 수정, 관리자/직원 수정
         - 고객사 수정, 관리자/직원 수정
      */
+    @LoggableEntityAction(action = "UPDATE", entityClass = Project.class)
     @Transactional
     public ProjectCreateResponse updateProject(Long projectId, ProjectCreateRequest request) {
         // 1. 프로젝트 존재 여부 체크

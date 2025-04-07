@@ -2,6 +2,7 @@ package com.soda.request.service;
 
 import com.soda.common.link.dto.LinkUploadRequest;
 import com.soda.common.link.service.LinkService;
+import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
@@ -33,6 +34,7 @@ public class ResponseService {
     private final LinkService linkService;
 
 
+    @LoggableEntityAction(action = "CREATE", entityClass = Response.class)
     @Transactional
     public RequestApproveResponse approveRequest(Long memberId, Long requestId, RequestApproveRequest requestApproveRequest) {
         Member member = getMemberWithProjectOrThrow(memberId);
@@ -51,6 +53,7 @@ public class ResponseService {
         return RequestApproveResponse.fromEntity(approval);
     }
 
+    @LoggableEntityAction(action = "CREATE", entityClass = Response.class)
     @Transactional
     public RequestRejectResponse rejectRequest(Long memberId, Long requestId, RequestRejectRequest requestRejectRequest) {
         Member member = getMemberWithProjectOrThrow(memberId);
@@ -76,6 +79,7 @@ public class ResponseService {
         return ResponseDTO.fromEntity(getResponseOrThrow(responseId));
     }
 
+    @LoggableEntityAction(action = "UPDATE", entityClass = Response.class)
     @Transactional
     public ResponseUpdateResponse updateResponse(Long memberId, Long responseId, ResponseUpdateRequest responseUpdateRequest) {
         Response response = getResponseOrThrow(responseId);
@@ -92,6 +96,7 @@ public class ResponseService {
         return ResponseUpdateResponse.fromEntity(response);
     }
 
+    @LoggableEntityAction(action = "DELETE", entityClass = Response.class)
     @Transactional
     public ResponseDeleteResponse deleteResponse(Long memberId, Long responseId) throws GeneralException {
         Response response = getResponseOrThrow(responseId);

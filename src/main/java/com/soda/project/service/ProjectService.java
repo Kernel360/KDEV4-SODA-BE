@@ -129,6 +129,7 @@ public class  ProjectService {
         String clientCompanyName = companyProjectService.getCompanyNameByRole(project, CompanyProjectRole.CLIENT_COMPANY);
 
         return ProjectListResponse.builder()
+                .id(project.getId())
                 .title(project.getTitle())
                 .description(project.getDescription())
                 .startDate(project.getStartDate())
@@ -154,6 +155,7 @@ public class  ProjectService {
         List<Member> clientParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
 
         return ProjectResponse.builder()
+                .id(project.getId())
                 .title(project.getTitle())
                 .description(project.getDescription())
                 .startDate(project.getStartDate())

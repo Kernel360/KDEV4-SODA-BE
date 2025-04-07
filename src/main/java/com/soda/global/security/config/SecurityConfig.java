@@ -5,6 +5,8 @@ import com.soda.global.security.jwt.JwtExceptionFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -13,7 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class SecurityConfig {
                 // 이유: REST API는 일반적으로 상태가 없고(stateless) 세션을 사용하지 않으므로,
                 //      CSRF 공격에 비교적 안전하며, JWT 토큰 자체로 요청을 인증하므로 비활성화합니다.
                 .csrf(AbstractHttpConfigurer::disable)
-
+                .cors(Customizer.withDefaults())
                 // 세션 관리 정책 설정: STATELESS (상태 없음)
                 // 이유: JWT 기반 인증은 서버에 세션을 유지하지 않으므로, 상태 없는 정책을 사용합니다.
                 .sessionManagement(sessionManagement ->
@@ -75,17 +76,16 @@ public class SecurityConfig {
                 // 이유: 기본 AuthenticationEntryPoint 동작 대신 JwtExceptionFilter에서 인증 예외를 처리합니다.
                 .exceptionHandling(AbstractHttpConfigurer::disable)
 
-                // HTTP 요청에 대한 인가(Authorization) 규칙 설정
+                // HTTP 요청 인가 규칙 설정
                 .authorizeHttpRequests(authorize -> {
-                    // SecurityProperties에서 정의된 '제외 경로(excludedPaths)' 목록 가져오기
                     List<String> excludedPaths = securityProperties.getExcludedPaths();
                     if (excludedPaths != null && !excludedPaths.isEmpty()) {
                         // 제외 경로들에 대해 인증 없이 접근 허용 (permitAll)
-                        for (String path : excludedPaths) {
-                            authorize.requestMatchers(new AntPathRequestMatcher(path)).permitAll();
-                        }
+                        authorize.requestMatchers(excludedPaths.toArray(new String[0])).permitAll();
                     }
-                    // 위에서 명시적으로 허용된 경로 외의 모든 요청은 인증(Authentication)이 필요함
+                    // OPTIONS 메소드는 CORS Preflight 요청이므로 모두 허용
+                    authorize.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+                    // 나머지 모든 요청은 인증 필요
                     authorize.anyRequest().authenticated();
                 })
 

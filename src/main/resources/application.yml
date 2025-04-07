@@ -17,6 +17,9 @@ spring:
       - /error
       - /verification
       - /verification/confirm
+      - /members/find-id
+      - /password/change
+      - /refresh
 
   mail:
     host: smtp.gmail.com

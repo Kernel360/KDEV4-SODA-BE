@@ -13,7 +13,8 @@ public class VerificationCodeRepository {
     private final RedisTemplate<String, String> redisTemplate;
 
     public void saveVerificationCode(String key, String code, long expirationTime) {
-        redisTemplate.opsForValue().set(key, code, expirationTime, TimeUnit.MILLISECONDS);
+        deleteVerificationCode(key);
+        redisTemplate.opsForValue().set(key, code, expirationTime, TimeUnit.SECONDS);
     }
 
     public String findVerificationCode(String key) {

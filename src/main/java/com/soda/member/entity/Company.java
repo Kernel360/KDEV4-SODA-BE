@@ -28,6 +28,9 @@ public class Company extends BaseEntity {
     private String phoneNumber;
 
     @Column(nullable = false)
+    private String ownerName;
+
+    @Column(nullable = false)
     private String companyNumber;
 
     @Column(nullable = false)
@@ -42,6 +45,9 @@ public class Company extends BaseEntity {
     public void updateCompany(CompanyUpdateRequest request) {
         if (request.getName() != null) {
             this.name = request.getName();
+        }
+        if (request.getOwnerName() != null) {
+            this.ownerName = request.getOwnerName();
         }
         if (request.getPhoneNumber() != null) {
             this.phoneNumber = request.getPhoneNumber();

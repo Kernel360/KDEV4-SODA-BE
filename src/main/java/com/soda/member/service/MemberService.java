@@ -1,14 +1,12 @@
 package com.soda.member.service;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.dto.MemberUpdateRequest;
-import com.soda.member.dto.SignupRequest;
-import com.soda.member.entity.Company;
+import com.soda.member.dto.FindAuthIdRequest;
+import com.soda.member.dto.FindAuthIdResponse;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
-import com.soda.project.error.ProjectErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,92 +22,190 @@ import java.util.List;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
+    /**
+     * 회원 ID로 삭제되지 않은 회원 단 건 조회 (내부 또는 외부용 기본 ID 조회)
+     *
+     * @param memberId 회원 ID
+     * @return 조회된 회원 엔티티
+     * @throws GeneralException 회원을 찾을 수 없을 경우 발생
+     */
     public Member findByIdAndIsDeletedFalse(Long memberId) {
         return memberRepository.findByIdAndIsDeletedFalse(memberId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
     }
 
-    @Transactional
-    public void saveMember(Member member) {
-        memberRepository.save(member);
-    }
-
-    public Member findMemberByAuthId(String authId) {
-        return memberRepository.findByAuthId(authId)
+    /**
+     * 회원 ID로 삭제되지 않은 회원 조회 (updateMyProfile 등에서 사용)
+     *
+     * @param memberId 회원 ID
+     * @return 조회된 회원 엔티티
+     * @throws GeneralException 회원을 찾을 수 없을 경우 발생
+     */
+    public Member findMemberById(Long memberId) {
+        return memberRepository.findByIdAndIsDeletedFalse(memberId)
                 .orElseThrow(() -> {
-                    log.error("멤버 조회 실패: 잘못된 아이디 - {}", authId);
+                    log.warn("회원 조회 실패: ID로 회원을 찾을 수 없음 - {}", memberId);
+                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+                });
+    }
+
+    /**
+     * 인증 아이디(authId)로 삭제되지 않은 회원 조회
+     *
+     * @param authId 인증 아이디
+     * @return 조회된 회원 엔티티
+     * @throws GeneralException 회원을 찾을 수 없을 경우 발생
+     */
+    public Member findMemberByAuthId(String authId) {
+        return memberRepository.findByAuthIdAndIsDeletedFalse(authId)
+                .orElseThrow(() -> {
+                    log.warn("회원 조회 실패: 유효하지 않은 authId - {}", authId);
                     return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
                 });
     }
 
     public Member findMemberByEmail(String email) {
-        return memberRepository.findByEmail(email)
-                .orElseThrow(() -> {
-                    log.error("멤버 조회 실패: 이메일 없음 - {}", email);
-                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
-                });
+        return findMemberByEmailOrThrow(email);
     }
 
-    public Member findMemberById(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(() -> {
-                    log.error("멤버 조회 실패: 멤버를 찾을 수 없음 - {}", memberId);
-                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
-                });
+    /**
+     * 여러 ID에 해당하는 활성 회원 목록 조회
+     *
+     * @param ids 회원 ID 목록
+     * @return 조회된 회원 엔티티 목록
+     */
+    public List<Member> findByIds(List<Long> ids) {
+        return memberRepository.findByIdInAndIsDeletedFalse(ids);
     }
 
-    @Transactional
-    public void updateMemberPassword(Member member, String encodedPassword) {
-        member.changePassword(encodedPassword);
-        memberRepository.save(member);
-        log.info("멤버 비밀번호 변경 성공: {}", member.getAuthId());
-    }
-
-    public void validateDuplicateAuthId(String authId) {
-        if (memberRepository.existsByAuthId(authId)) {
-            log.error("회원 가입 실패: 아이디 중복 - {}", authId);
-            throw new GeneralException(MemberErrorCode.DUPLICATE_AUTH_ID);
-        }
-    }
-
-    public Member createMember(SignupRequest requestDto, Company company, PasswordEncoder passwordEncoder) {
-        return Member.builder()
-                .authId(requestDto.getAuthId())
-                .name(requestDto.getName())
-                .password(passwordEncoder.encode(requestDto.getPassword()))
-                .role(requestDto.getRole())
-                .company(company)
-                .position(requestDto.getPosition())
-                .phoneNumber(requestDto.getPhoneNumber())
-                .build();
-    }
-
-    public void validateEmailExists(String email) {
-        if (!memberRepository.existsByEmailAndIsDeletedFalse(email)) {
-            throw new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
-        }
-    }
-
-    @Transactional
-    public void updateMember(Member member, MemberUpdateRequest request, Company company) {
-        member.updateMember(request, company);
-        memberRepository.save(member);
-        log.info("멤버 정보 수정 성공: {}", member.getId());
-    }
-
-
+    /**
+     * 프로젝트 정보와 함께 회원 조회
+     *
+     * @param memberId 회원 ID
+     * @return 프로젝트 정보를 포함한 회원 엔티티
+     * @throws GeneralException 회원을 찾을 수 없을 경우 발생
+     */
     public Member getMemberWithProjectOrThrow(Long memberId) {
         return memberRepository.findWithProjectsById(memberId)
                 .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
     }
 
+
+    /**
+     * 이름과 이메일로 삭제되지 않은 사용자를 찾아 마스킹된 아이디를 반환 (아이디 찾기 기능).
+     *
+     * @param request 이름과 이메일이 담긴 요청 DTO
+     * @return 마스킹된 아이디가 담긴 응답 DTO
+     * @throws GeneralException 일치하는 삭제되지 않은 사용자를 찾지 못한 경우
+     */
+    public FindAuthIdResponse findMaskedAuthId(FindAuthIdRequest request) {
+        log.info("아이디 찾기 시도: 이름={}, 이메일={}", request.getName(), request.getEmail());
+
+        Member member = memberRepository.findByNameAndEmailAndIsDeletedFalse(request.getName(), request.getEmail())
+                .orElseThrow(() -> {
+                    log.warn("아이디 찾기 실패: 일치하는 사용자 없음 - 이름={}, 이메일={}", request.getName(), request.getEmail());
+                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+                });
+
+        String maskedId = maskAuthId(member.getAuthId());
+        log.info("아이디 찾기 성공: 이름={}, 이메일={}. 마스킹된 아이디: {}", request.getName(), request.getEmail(), maskedId);
+
+        return new FindAuthIdResponse(maskedId);
+    }
+
+
+    /**
+     * 인증 아이디(authId) 중복 검사 (삭제되지 않은 회원 대상)
+     *
+     * @param authId 검사할 인증 아이디
+     * @throws GeneralException 아이디가 이미 존재할 경우 발생
+     */
+    public void validateDuplicateAuthId(String authId) {
+        if (memberRepository.existsByAuthId(authId)) {
+            log.warn("회원 가입/수정 실패: 아이디 중복 - {}", authId);
+            throw new GeneralException(MemberErrorCode.DUPLICATE_AUTH_ID);
+        }
+    }
+
+    /**
+     * 이메일 존재 여부 검증 (삭제되지 않은 회원 대상)
+     *
+     * @param email 검증할 이메일
+     * @throws GeneralException 해당 이메일의 회원이 존재하지 않을 경우 발생
+     */
+    public void validateEmailExists(String email) {
+        findMemberByEmailOrThrow(email);
+    }
+
+    /**
+     * 회원 정보 저장 (생성 또는 수정)
+     *
+     * @param member 저장할 회원 엔티티
+     */
+    @Transactional
+    public Member saveMember(Member member) {
+        log.info("회원 정보 저장 완료: memberId={}", member.getId());
+        return memberRepository.save(member);
+    }
+
+    /**
+     * 해당 역할이 ADMIN인지 확인
+     *
+     * @param memberRole 검사할 회원 역할
+     * @return ADMIN이면 true, 아니면 false
+     */
     public boolean isAdmin(MemberRole memberRole) {
         return memberRole == MemberRole.ADMIN;
     }
 
+    /**
+     * (내부용) 이메일로 삭제되지 않은 회원을 찾거나 예외 발생
+     *
+     * @param email 찾을 이메일
+     * @return 회원 엔티티
+     * @throws GeneralException 회원을 찾을 수 없을 경우
+     */
+    private Member findMemberByEmailOrThrow(String email) {
+        return memberRepository.findByEmailAndIsDeletedFalse(email)
+                .orElseThrow(() -> {
+                    log.warn("회원 조회/검증 실패: 존재하지 않는 이메일 - {}", email);
+                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+                });
+    }
 
-    public List<Member> findByIds(List<Long> ids) {
-        return memberRepository.findByIdIn(ids);
+    /**
+     * (내부용) 아이디를 마스킹 처리하는 헬퍼 메소드.
+     *
+     * @param authId 원본 아이디
+     * @return 마스킹된 아이디
+     */
+    private String maskAuthId(String authId) {
+        if (authId == null || authId.isEmpty()) {
+            return "***";
+        }
+        int length = authId.length();
+        if (length <= 1) {
+            return "*";
+        } else if (length <= 3) {
+            return authId.charAt(0) + "*".repeat(length - 1);
+        } else {
+            return authId.substring(0, 2) + "***" + authId.charAt(length - 1);
+        }
+    }
+
+    /**
+     * 이메일 중복 검사 (삭제되지 않은 회원 대상)
+     * 해당 이메일을 사용하는 활성 회원이 이미 존재하면 예외를 발생시킵니다.
+     *
+     * @param email 검사할 이메일
+     * @throws GeneralException 해당 이메일이 이미 사용 중일 경우 (DUPLICATE_EMAIL)
+     */
+    public void validateDuplicateEmail(String email) {
+        if (memberRepository.existsByEmailAndIsDeletedFalse(email)) {
+            log.warn("회원 가입/수정 실패: 이메일 중복 - {}", email);
+            throw new GeneralException(MemberErrorCode.DUPLICATE_EMAIL);
+        }
     }
 }

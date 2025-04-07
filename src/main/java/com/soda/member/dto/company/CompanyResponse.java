@@ -15,6 +15,7 @@ public class CompanyResponse {
     private String detailAddress;
 
     public static CompanyResponse fromEntity(Company company) {
+        if (company == null){return null;}
         return CompanyResponse.builder()
                 .id(company.getId())
                 .name(company.getName())

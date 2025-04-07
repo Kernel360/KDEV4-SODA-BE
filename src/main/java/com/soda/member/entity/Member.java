@@ -1,7 +1,6 @@
 package com.soda.member.entity;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.dto.MemberUpdateRequest;
 import com.soda.member.enums.MemberRole;
 import com.soda.notice.entity.MemberNotice;
 import com.soda.project.entity.MemberProject;
@@ -30,7 +29,6 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private String email;
 
     private String position;
@@ -50,30 +48,36 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<MemberNotice> noticeList = new ArrayList<>();
 
-    public void changePassword(String newPassword) {
+    public void updatePassword(String newPassword) {
         this.password = newPassword;
     }
 
-    // 멤버 수정 메서드
-    public void updateMember(MemberUpdateRequest request, Company company) {
-        if (request.getName() != null) {
-            this.name = request.getName();
-        }
-        if (request.getPosition() != null) {
-            this.position = request.getPosition();
-        }
-        if (request.getPhoneNumber() != null) {
-            this.phoneNumber = request.getPhoneNumber();
-        }
-        if (request.getEmail() != null) {
-            this.email = request.getEmail();
-        }
-        if (request.getRole()!=null){
-            this.role = request.getRole();
-        }
-        if (company!=null){
-            this.company = company;
-        }
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updateAuthId(String authId) {
+        this.authId = authId;
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+
+    public void updatePosition(String position) {
+        this.position = position;
+    }
+
+    public void updatePhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void updateRole(MemberRole role) {
+        this.role = role;
+    }
+
+    public void updateCompany(Company company) {
+        this.company = company;
     }
 
     // 승인요청 테스트를 위해 임시로 만든 메서드입니다.

@@ -105,7 +105,7 @@ public class CommentService {
         checkIfMemberIsAdminOrProjectMember(userRole, member, project);
 
         // 2. 댓글 조회
-        List<Comment> comments = commentRepository.findByArticleAndIsDeletedFalse(article);
+        List<Comment> comments = commentRepository.findAllByArticle(article);
 
         List<CommentDTO> commentDTOList = comments.stream()
                 .map(CommentDTO::fromEntity) // Comment 엔티티를 DTO로 변환
@@ -126,7 +126,6 @@ public class CommentService {
                 .filter(commentDTO -> commentDTO.getParentCommentId() == null) // 부모 댓글만 반환
                 .collect(Collectors.toList());
     }
-
 
     /**
      * 자식 댓글을 부모 댓글에 추가하는 재귀 메소드

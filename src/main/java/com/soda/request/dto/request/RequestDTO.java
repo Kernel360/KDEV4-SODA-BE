@@ -37,11 +37,13 @@ public class RequestDTO {
                 .content(request.getContent())
                 .links(
                         request.getLinks().stream()
+                                .filter(link -> !link.getIsDeleted())
                                 .map(LinkDTO::fromEntity)
                                 .collect(Collectors.toList())
                 )
                 .files(
                         request.getFiles().stream()
+                                .filter(file -> !file.getIsDeleted())
                                 .map(FileDTO::fromEntity)
                                 .collect(Collectors.toList())
                 )

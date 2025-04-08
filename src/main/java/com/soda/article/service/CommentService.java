@@ -48,8 +48,7 @@ public class CommentService {
         // 1. 유저가 해당 프로젝트에 참여하는지 / 관리자인지 체크
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(request.getProjectId());
-        checkIfMemberIsAdmin(userRole);
-        checkMemberInProject(member, project);
+        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
 
         // 2. 해당 게시글이 프로젝트에 포함되어있는지 체크
         Article article = articleService.validateArticle(request.getArticleId());
@@ -74,24 +73,17 @@ public class CommentService {
     }
 
     /**
-     * 관리자 여부 체크
+     * 관리자 여부 체크 및 프로젝트 멤버 여부 체크
      * @param userRole 사용자 역할
-     * @throws GeneralException 사용자가 관리자 역할이 아니면 예외 발생
-     */
-    private void checkIfMemberIsAdmin(String userRole) {
-        if (!memberService.isAdmin(MemberRole.valueOf(userRole))) {
-            throw new GeneralException(MemberErrorCode.MEMBER_NOT_ADMIN);
-        }
-    }
-
-    /**
-     * 프로젝트에 사용자가 포함되어 있는지 확인
-     * @param member 사용자 정보
+     * @param member 사용자의 멤버 정보
      * @param project 프로젝트 정보
-     * @throws GeneralException 사용자가 프로젝트의 멤버가 아닌 경우 예외 발생
+     * @throws GeneralException 사용자가 관리자도 아니고 프로젝트 멤버도 아닌 경우 예외 발생
      */
-    private void checkMemberInProject(Member member, Project project) {
-        if (!memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project)) {
+    private void checkIfMemberIsAdminOrProjectMember(String userRole, Member member, Project project) {
+        boolean isAdmin = memberService.isAdmin(MemberRole.valueOf(userRole));
+        boolean isProjectMember = memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
+
+        if (!isAdmin && !isProjectMember) {
             throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
         }
     }
@@ -110,8 +102,7 @@ public class CommentService {
         Article article = articleService.validateArticle(articleId);
 
         Project project = article.getStage().getProject();
-        checkIfMemberIsAdmin(userRole);
-        checkMemberInProject(member, project);
+        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
 
         // 2. 댓글 조회
         List<Comment> comments = commentRepository.findByArticleAndIsDeletedFalse(article);

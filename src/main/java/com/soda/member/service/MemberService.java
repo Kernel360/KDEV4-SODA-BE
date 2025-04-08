@@ -37,14 +37,14 @@ public class MemberService {
     }
 
     /**
-     * 회원 ID로 삭제되지 않은 회원 조회 (updateMyProfile 등에서 사용)
+     * 회원 ID로 삭제되지 않은 회원 조회
      *
      * @param memberId 회원 ID
      * @return 조회된 회원 엔티티
      * @throws GeneralException 회원을 찾을 수 없을 경우 발생
      */
     public Member findMemberById(Long memberId) {
-        return memberRepository.findByIdAndIsDeletedFalse(memberId)
+        return memberRepository.findById(memberId)
                 .orElseThrow(() -> {
                     log.warn("회원 조회 실패: ID로 회원을 찾을 수 없음 - {}", memberId);
                     return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);

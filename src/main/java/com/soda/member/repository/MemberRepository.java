@@ -1,6 +1,8 @@
 package com.soda.member.repository;
 
 import com.soda.member.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,4 +38,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByAuthIdAndIsDeletedFalse(String authId);
 
     Optional<Member> findByEmailAndIsDeletedFalse(String email);
+
+    @Query("SELECT m FROM Member m LEFT JOIN m.company c WHERE m.isDeleted = false " +
+            "AND (LOWER(m.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " + // 이름 검색
+            "OR LOWER(m.email) LIKE LOWER(CONCAT('%', :keyword, '%')) " + // 이메일 검색
+            "OR LOWER(m.authId) LIKE LOWER(CONCAT('%', :keyword, '%')) " + // 아이디 검색
+            "OR (:keyword IS NULL OR c.name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))))") // 회사명 검색
+    Page<Member> findByKeywordAndIsDeletedFalse(@Param("keyword") String keyword, Pageable pageable);
+
+    Page<Member> findAllByIsDeletedFalse(Pageable pageable);
 }

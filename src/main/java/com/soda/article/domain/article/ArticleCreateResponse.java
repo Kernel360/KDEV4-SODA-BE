@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ArticleCreateResponse {
 
+    private Long id;
     private String title;
     private String content;
     private PriorityType priority;
@@ -27,6 +28,7 @@ public class ArticleCreateResponse {
 
     public static ArticleCreateResponse fromEntity(Article article) {
         return ArticleCreateResponse.builder()
+                .id(article.getId())
                 .title(article.getTitle())
                 .content(article.getContent())
                 .priority(article.getPriority())

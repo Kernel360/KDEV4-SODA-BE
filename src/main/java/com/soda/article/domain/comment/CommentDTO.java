@@ -5,6 +5,7 @@ import com.soda.article.entity.Comment;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,8 @@ public class CommentDTO {
     private Long articleId; // 게시글 ID
     private Long parentCommentId; // 부모 댓글 ID (대댓글의 경우)
     private List<CommentDTO> childComments; // 자식 댓글 리스트
+    private LocalDateTime createdAt;
+    private boolean deleted;
 
     // 엔티티를 DTO로 변환하는 메소드
     public static CommentDTO fromEntity(Comment comment) {
@@ -38,6 +41,8 @@ public class CommentDTO {
                 .articleId(comment.getArticle().getId())
                 .parentCommentId(comment.getParentComment() != null ? comment.getParentComment().getId() : null)
                 .childComments(childCommentDTOs) // 자식 댓글을 포함
+                .createdAt(comment.getCreatedAt())
+                .deleted(comment.getIsDeleted())
                 .build();
     }
 
@@ -50,6 +55,8 @@ public class CommentDTO {
                 .articleId(this.articleId)
                 .parentCommentId(this.parentCommentId)
                 .childComments(childComments)
+                .createdAt(this.createdAt)
+                .deleted(this.isDeleted())
                 .build();
     }
 

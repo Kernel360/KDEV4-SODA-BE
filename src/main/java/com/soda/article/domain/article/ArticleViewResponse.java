@@ -22,6 +22,7 @@ public class ArticleViewResponse {
     private String stageName;
     private List<ArticleFileDTO> fileList;
     private List<ArticleLinkDTO> linkList;
+    private LocalDateTime createdAt;
 
     public static ArticleViewResponse fromEntity(Article article) {
         return ArticleViewResponse.builder()
@@ -31,6 +32,7 @@ public class ArticleViewResponse {
                 .deadLine(article.getDeadline())
                 .memberName(article.getMember().getName())
                 .stageName(article.getStage().getName())
+                .createdAt(article.getCreatedAt())
                 .fileList(article.getArticleFileList().stream()
                         .map(file -> ArticleFileDTO.builder()
                                 .name(file.getName())

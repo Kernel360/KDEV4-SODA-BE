@@ -2,8 +2,9 @@ package com.soda.member.controller;
 
 import com.soda.global.response.ApiResponseForm;
 import com.soda.global.response.PagedData;
-import com.soda.member.dto.UpdateUserStatusRequestDto;
-import com.soda.member.dto.MemberListDto;
+import com.soda.member.dto.member.admin.MemberDetailDto;
+import com.soda.member.dto.member.admin.UpdateUserStatusRequestDto;
+import com.soda.member.dto.member.admin.MemberListDto;
 import com.soda.member.service.AdminMemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -47,4 +48,18 @@ public class AdminMemberController {
         PagedData<MemberListDto> responseData = new PagedData<>(userPage);
         return ResponseEntity.ok(ApiResponseForm.success(responseData, "사용자 목록 조회가 완료되었습니다."));
     }
+
+    /**
+     * 특정 사용자 상세 정보 조회 API
+     * @param userId 조회할 사용자의 ID
+     * @return 사용자 상세 정보 응답
+     */
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponseForm<MemberDetailDto>> getUserDetail(@PathVariable Long userId) {
+        MemberDetailDto memberDetail = adminService.getMemberDetail(userId);
+        return ResponseEntity.ok(ApiResponseForm.success(memberDetail, "사용자 상세 정보 조회가 완료되었습니다."));
+    }
+
+
+
 }

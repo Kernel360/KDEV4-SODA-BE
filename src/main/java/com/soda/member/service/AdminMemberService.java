@@ -1,8 +1,9 @@
 package com.soda.member.service;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.dto.UpdateUserStatusRequestDto;
-import com.soda.member.dto.MemberListDto;
+import com.soda.member.dto.member.admin.MemberDetailDto;
+import com.soda.member.dto.member.admin.UpdateUserStatusRequestDto;
+import com.soda.member.dto.member.admin.MemberListDto;
 import com.soda.member.entity.Member;
 import com.soda.member.error.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -59,14 +60,29 @@ public class AdminMemberService {
         Page<Member> memberPage;
 
         if (StringUtils.hasText(searchKeyword)) {
-            memberPage = memberService.findByKeywordAndIsDeletedFalse(searchKeyword, pageable);
+            memberPage = memberService.findByKeywordIncludingDeleted(searchKeyword, pageable);
             log.info("관리자 사용자 목록 검색 조회: keyword={}, page={}, size={}", searchKeyword, pageable.getPageNumber(), pageable.getPageSize());
         } else {
-            memberPage = memberService.findAllByIsDeletedFalse(pageable);
+            memberPage = memberService.findAll(pageable);
             log.info("관리자 전체 사용자 목록 조회: page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
         }
 
         return memberPage.map(MemberListDto::fromEntity);
     }
+
+    /**
+     * 특정 사용자의 상세 정보를 조회합니다.
+     * (삭제된 사용자 포함하여 조회 가능)
+     *
+     * @param userId 조회할 사용자의 ID
+     * @return 사용자 상세 정보 DTO
+     * @throws GeneralException 사용자를 찾을 수 없을 경우
+     */
+    public MemberDetailDto getMemberDetail(Long userId) {
+        Member member = memberService.findMemberById(userId);
+        log.info("관리자 사용자 상세 조회: userId={}", userId);
+        return MemberDetailDto.fromEntity(member);
+    }
+
 
 }

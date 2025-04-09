@@ -1,4 +1,4 @@
-package com.soda.member.dto;
+package com.soda.member.dto.member.admin;
 
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;

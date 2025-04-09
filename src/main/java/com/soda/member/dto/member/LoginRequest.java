@@ -1,4 +1,4 @@
-package com.soda.member.dto;
+package com.soda.member.dto.member;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

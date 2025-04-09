@@ -1,4 +1,4 @@
-package com.soda.member.dto;
+package com.soda.member.dto.member.admin;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

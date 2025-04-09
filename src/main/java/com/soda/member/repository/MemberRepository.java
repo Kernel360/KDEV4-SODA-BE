@@ -39,12 +39,11 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByEmailAndIsDeletedFalse(String email);
 
-    @Query("SELECT m FROM Member m LEFT JOIN m.company c WHERE m.isDeleted = false " +
-            "AND (LOWER(m.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " + // 이름 검색
-            "OR LOWER(m.email) LIKE LOWER(CONCAT('%', :keyword, '%')) " + // 이메일 검색
-            "OR LOWER(m.authId) LIKE LOWER(CONCAT('%', :keyword, '%')) " + // 아이디 검색
-            "OR (:keyword IS NULL OR c.name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%'))))") // 회사명 검색
-    Page<Member> findByKeywordAndIsDeletedFalse(@Param("keyword") String keyword, Pageable pageable);
+    @Query("SELECT m FROM Member m LEFT JOIN m.company c WHERE " +
+            "LOWER(m.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +           // 이름 검색
+            "OR LOWER(m.email) LIKE LOWER(CONCAT('%', :keyword, '%')) " +         // 이메일 검색
+            "OR LOWER(m.authId) LIKE LOWER(CONCAT('%', :keyword, '%')) " +        // 아이디 검색
+            "OR (c.name IS NOT NULL AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Member> findByKeywordIncludingDeleted(@Param("keyword") String keyword, Pageable pageable);
 
-    Page<Member> findAllByIsDeletedFalse(Pageable pageable);
 }

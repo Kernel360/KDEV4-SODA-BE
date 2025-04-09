@@ -40,7 +40,7 @@ public class MemberService {
 
 
     /**
-     * 회원 ID로 삭제되지 않은 회원 조회
+     * 회원 ID로 회원 조회
      *
      * @param memberId 회원 ID
      * @return 조회된 회원 엔티티
@@ -219,8 +219,8 @@ public class MemberService {
      * @param pageable 페이징 및 정렬 정보를 담은 객체
      * @return 페이징된 회원 목록 (`Page` 객체)
      */
-    public Page<Member> findAllByIsDeletedFalse(Pageable pageable) {
-        return memberRepository.findAllByIsDeletedFalse(pageable);
+    public Page<Member> findAll(Pageable pageable) {
+        return memberRepository.findAll(pageable);
     }
 
     /**
@@ -231,7 +231,7 @@ public class MemberService {
      * @param pageable 페이징 및 정렬 정보를 담은 객체
      * @return 검색 조건에 맞고 페이징된 회원 목록 (`Page` 객체)
      */
-    public Page<Member> findByKeywordAndIsDeletedFalse(String keyword, Pageable pageable) {
-        return memberRepository.findByKeywordAndIsDeletedFalse(keyword, pageable);
+    public Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable) {
+        return memberRepository.findByKeywordIncludingDeleted(keyword, pageable);
     }
 }

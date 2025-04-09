@@ -83,7 +83,7 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<?>> deleteFile(@PathVariable Long fileId,
                                                          HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        FileDeleteResponse fileDeleteResponse = fileService.delete("article", memberId, fileId);
+        FileDeleteResponse fileDeleteResponse = fileService.delete("article", fileId, memberId);
         return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
     }
 
@@ -91,7 +91,7 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<?>> deleteLink(@PathVariable Long linkId,
                                                          HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        LinkDeleteResponse linkDeleteResponse = linkService.delete("article", memberId, linkId);
+        LinkDeleteResponse linkDeleteResponse = linkService.delete("article", linkId, memberId);
         return ResponseEntity.ok(ApiResponseForm.success(linkDeleteResponse));
     }
 }

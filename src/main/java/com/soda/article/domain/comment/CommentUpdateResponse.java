@@ -8,12 +8,12 @@ import lombok.Getter;
 @Builder
 public class CommentUpdateResponse {
 
-    private Long commentId;
+    private Long id;
     private String content;
 
     public static CommentUpdateResponse fromEntity(Comment comment) {
         return CommentUpdateResponse.builder()
-                .commentId(comment.getId())
+                .id(comment.getId())
                 .content(comment.getContent())
                 .build();
     }

@@ -9,7 +9,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // CORS를 적용할 경로 패턴
-                .allowedOrigins("http://localhost:5173", "https://your-frontend-domain.com") // 허용할 출처
+                .allowedOrigins("http://localhost:5173", "https://soda-sooty.vercel.app/") // 허용할 출처
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS") // 허용할 메소드
                 .allowedHeaders("*") // 허용할 헤더
                 .allowCredentials(true) // 쿠키/인증 정보 허용 여부

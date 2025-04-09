@@ -40,6 +40,10 @@ spring:
         format_sql: true
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
+  redis:
+    host: ${REDIS_HOST}
+    port: 6379
+
   data:
     mongodb:
       uri: mongodb+srv://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_HOST}/${MONGODB_DB}?retryWrites=true&w=majority&appName=${MONGODB_APP_NAME}&ssl=true

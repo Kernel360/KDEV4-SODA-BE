@@ -6,6 +6,7 @@ import com.soda.project.domain.ProjectCreateResponse;
 import com.soda.project.domain.ProjectListResponse;
 import com.soda.project.domain.ProjectResponse;
 import com.soda.project.service.ProjectService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,14 @@ public class ProjectController {
     public ResponseEntity<ApiResponseForm<List<ProjectListResponse>>> getAllProjects() {
         List<ProjectListResponse> projectList = projectService.getAllProjects();
         return ResponseEntity.ok(ApiResponseForm.success(projectList));
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponseForm<List<ProjectListResponse>>> getMyProjects(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("memberId");
+        String userRole = (String) request.getAttribute("userRole").toString();
+        List<ProjectListResponse> response = projectService.getMyProjects(userId, userRole);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
     @GetMapping("/{projectId}")

@@ -24,6 +24,7 @@ public class ArticleListViewResponse {
     private LocalDateTime createdAt;
     private Long parentArticleId;
     private List<ArticleListViewResponse> children;     // 자식 게시글 리스트
+    private boolean isDeleted;
 
     public static ArticleListViewResponse fromEntity(Article article) {
         List<ArticleListViewResponse> childArticleDTOs = article.getChildArticles() != null ?
@@ -42,6 +43,7 @@ public class ArticleListViewResponse {
                 .createdAt(article.getCreatedAt())
                 .parentArticleId(article.getParentArticle() != null ? article.getParentArticle().getId() : null)
                 .children(childArticleDTOs)
+                .isDeleted(article.getIsDeleted())
                 .build();
     }
 
@@ -56,6 +58,7 @@ public class ArticleListViewResponse {
                 .deadLine(this.getDeadLine())
                 .createdAt(this.getCreatedAt())
                 .children(childArticles)
+                .isDeleted(this.isDeleted())
                 .build();
     }
 }

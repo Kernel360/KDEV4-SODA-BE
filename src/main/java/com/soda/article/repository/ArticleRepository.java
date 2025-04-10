@@ -18,4 +18,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     List<Article> findByIsDeletedFalseAndStageAndStage_Project(Stage stage, Project project);
 
+    List<Article> findByStage_Project(Project project);
+
+    List<Article> findByStageAndStage_Project(Stage stage, Project project);
 }

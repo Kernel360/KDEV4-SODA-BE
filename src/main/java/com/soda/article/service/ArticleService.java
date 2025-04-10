@@ -237,9 +237,9 @@ public class ArticleService {
     private List<Article> getArticlesByStageAndProject(Long stageId, Project project) {
         if (stageId != null) {
             Stage stage = stageService.findById(stageId);
-            return articleRepository.findByIsDeletedFalseAndStageAndStage_Project(stage, project);
+            return articleRepository.findByStageAndStage_Project(stage, project);
         }
-        return articleRepository.findByIsDeletedFalseAndStage_Project(project);
+        return articleRepository.findByStage_Project(project);
     }
 
     /**

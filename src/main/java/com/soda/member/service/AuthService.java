@@ -66,10 +66,10 @@ public class AuthService {
     public void signup(CreateMemberRequest requestDto) {
         log.info("회원 가입 시도: authId={}", requestDto.getAuthId());
         memberService.validateDuplicateAuthId(requestDto.getAuthId());
-        if(requestDto.getCompanyId()!=null){
-
+        Company company = null;
+        if(!requestDto.getRole().equals("ADMIN")){
+            company = companyService.getCompany(requestDto.getCompanyId());
         }
-        Company company = companyService.getCompany(requestDto.getCompanyId());
 
         // 회원 엔티티 생성 및 비밀번호 암호화
         Member member = Member.builder()

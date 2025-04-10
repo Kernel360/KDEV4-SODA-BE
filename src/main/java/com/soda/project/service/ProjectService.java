@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -122,6 +123,18 @@ public class  ProjectService {
         return projectRepository.findByIsDeletedFalse().stream()
                 .map(this::mapToProjectListResponse)
                 .collect(Collectors.toList());
+    }
+
+    public List<ProjectListResponse> getMyProjects(Long userId, String userRole) {
+        if ("USER".equals(userRole)) {
+            List<Long> projectIds = memberProjectService.getProjectIdsByUserId(userId);
+            List<Project> userProjects = projectRepository.findByIdIn(projectIds);
+
+            return userProjects.stream()
+                    .map(this::mapToProjectListResponse)
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 
     private ProjectListResponse mapToProjectListResponse(Project project) {

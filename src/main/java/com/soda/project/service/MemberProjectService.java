@@ -83,4 +83,12 @@ public class MemberProjectService {
             }
         }
     }
+
+    // 사용자가 참여한 프로젝트 리스트 조회
+    public List<Long> getProjectIdsByUserId(Long userId) {
+        List<MemberProject> memberProjects = memberProjectRepository.findByMemberId(userId);
+        return memberProjects.stream()
+                .map(memberProject -> memberProject.getProject().getId())
+                .collect(Collectors.toList());
+    }
 }

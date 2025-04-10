@@ -21,4 +21,6 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
     boolean existsByIdAndIsDeletedFalse(Long stageId);
 
     boolean existsByProjectAndIsDeletedFalse(Project project);
+
+    boolean existsByProjectAndNameAndIsDeletedFalseAndIdNot(Project project, String name, Long stageId);
 }

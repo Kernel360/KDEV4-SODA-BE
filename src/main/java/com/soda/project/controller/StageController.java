@@ -1,11 +1,9 @@
 package com.soda.project.controller;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.project.domain.stage.StageCreateRequest;
-import com.soda.project.domain.stage.StageMoveRequest;
-import com.soda.project.domain.stage.StageReadResponse;
-import com.soda.project.domain.stage.StageResponse;
+import com.soda.project.domain.stage.*;
 import com.soda.project.service.StageService;
+import com.soda.request.entity.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,5 +39,11 @@ public class StageController {
     public ResponseEntity<ApiResponseForm<Void>> deleteStage(@PathVariable Long stageId) {
         stageService.deleteStage(stageId);
         return ResponseEntity.ok(ApiResponseForm.success(null, "단계 삭제 성공"));
+    }
+
+    @PutMapping("/stages/{stageId}")
+    public ResponseEntity<ApiResponseForm<Void>> updateStage(@PathVariable Long stageId, @RequestBody StageUpdateRequest request) {
+        stageService.updateStage(stageId, request);
+        return ResponseEntity.ok(ApiResponseForm.success(null, "단계 수정 성공"));
     }
 }

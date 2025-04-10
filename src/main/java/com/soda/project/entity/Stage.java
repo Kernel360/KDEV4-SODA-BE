@@ -38,6 +38,10 @@ public class Stage extends BaseEntity {
         this.project = project;
     }
 
+    public void updateName(String newName) {
+        this.name = newName;
+    }
+
     public void delete() {
         this.markAsDeleted();
     }

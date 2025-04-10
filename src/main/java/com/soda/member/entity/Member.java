@@ -52,12 +52,13 @@ public class Member extends BaseEntity {
         this.password = newPassword;
     }
 
-    protected void updateAdminInfo(String name, String email, MemberRole role, Company company, String position) {
+    public void updateAdminInfo(String name, String email, MemberRole role, Company company, String position, String phoneNumber) {
         this.name = name;
         this.email = email;
         this.role = role;
         this.company = company;
         this.position = position;
+        this.phoneNumber = phoneNumber;
     }
 
     public void Deleted() {

@@ -2,6 +2,7 @@ package com.soda.member.controller;
 
 import com.soda.global.response.ApiResponseForm;
 import com.soda.global.response.PagedData;
+import com.soda.member.dto.AdminUpdateUserRequestDto;
 import com.soda.member.dto.member.admin.MemberDetailDto;
 import com.soda.member.dto.member.admin.UpdateUserStatusRequestDto;
 import com.soda.member.dto.member.admin.MemberListDto;
@@ -60,6 +61,18 @@ public class AdminMemberController {
         return ResponseEntity.ok(ApiResponseForm.success(memberDetail, "사용자 상세 정보 조회가 완료되었습니다."));
     }
 
-
+    /**
+     * 관리자에 의한 사용자 정보 수정 API
+     * @param userId 수정할 사용자의 ID
+     * @param requestDto 수정할 사용자 정보
+     * @return 수정된 사용자 상세 정보 응답
+     */
+    @PutMapping("/{userId}")
+    public ResponseEntity<ApiResponseForm<MemberDetailDto>> updateUser(
+            @PathVariable Long userId,
+            @Valid @RequestBody AdminUpdateUserRequestDto requestDto) {
+        MemberDetailDto updatedMember = adminService.updateMemberInfo(userId, requestDto);
+        return ResponseEntity.ok(ApiResponseForm.success(updatedMember, "사용자 정보가 성공적으로 수정되었습니다."));
+    }
 
 }

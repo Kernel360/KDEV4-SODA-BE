@@ -43,7 +43,7 @@ public class TaskController {
     /**
      * 태스크 정보 수정 API (제목, 내용)
      * @param taskId 수정할 태스크 ID (경로 변수)
-     * @param request 수정할 내용 DTOsadklfj
+     * @param request 수정할 내용 DTO
      * @return 수정된 태스크 정보
      */
     @PatchMapping("/tasks/{taskId}")
@@ -60,7 +60,7 @@ public class TaskController {
      * @param request 새로운 위치 정보 DTO
      * @return 성공 응답 (내용 없음)
      */
-    @PostMapping("/tasks/{taskId}/move")
+    @PatchMapping("/tasks/{taskId}/move")
     public ResponseEntity<ApiResponseForm<Void>> moveTask(
             @PathVariable Long taskId,
             @RequestBody TaskMoveRequest request) {

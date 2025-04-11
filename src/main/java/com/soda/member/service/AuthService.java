@@ -67,7 +67,7 @@ public class AuthService {
         log.info("회원 가입 시도: authId={}", requestDto.getAuthId());
         memberService.validateDuplicateAuthId(requestDto.getAuthId());
         Company company = null;
-        if(!requestDto.getRole().equals("ADMIN")){
+        if(requestDto.getCompanyId()!=null){
             company = companyService.getCompany(requestDto.getCompanyId());
         }
 

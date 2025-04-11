@@ -46,6 +46,7 @@ public class CompanyService {
                 .name(request.getName())
                 .phoneNumber(request.getPhoneNumber())
                 .companyNumber(request.getCompanyNumber())
+                .ownerName(request.getOwnerName())
                 .address(request.getAddress())
                 .detailAddress(request.getDetailaddress())
                 .build();

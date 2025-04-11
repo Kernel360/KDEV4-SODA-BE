@@ -6,12 +6,16 @@ import com.soda.common.BaseEntity;
 import com.soda.member.entity.Member;
 import com.soda.project.entity.Stage;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 public class Article extends BaseEntity {
@@ -59,4 +63,39 @@ public class Article extends BaseEntity {
         return parentArticle != null;
     }
 
+    @Builder
+    public Article(String title, String content, PriorityType priority, LocalDateTime deadline, Member member, Stage stage, ArticleStatus status,
+                   List<ArticleFile> articleFileList, List<ArticleLink> articleLinkList, Article parentArticle) {
+        this.title = title;
+        this.content = content;
+        this.priority = priority;
+        this.deadline = deadline;
+        this.member = member;
+        this.stage = stage;
+        this.status = status;
+        this.articleFileList = articleFileList != null ? articleFileList : new ArrayList<>();
+        this.articleLinkList = articleLinkList != null ? articleLinkList : new ArrayList<>();
+        this.parentArticle = parentArticle;
+    }
+
+    public void delete() {
+        this.markAsDeleted();
+    }
+
+    public void updateArticle(String title, String content, PriorityType priority, LocalDateTime deadline) {
+        this.title = title;
+        this.content = content;
+        this.priority = priority;
+        this.deadline = deadline;
+    }
+
+    public void addLinks(List<ArticleLink> links) {
+        if ( this.articleLinkList == null ) {
+            this.articleLinkList = new ArrayList<>();
+        }
+        for (ArticleLink link : links) {
+            link.updateResponse(this);
+            this.articleLinkList.add(link);
+        }
+    }
 }

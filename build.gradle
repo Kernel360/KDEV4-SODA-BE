@@ -41,13 +41,31 @@ dependencies {
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
 	// spring security
-//	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 
 	// jwt
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 	implementation 'com.auth0:java-jwt:4.4.0'
+
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// smtp
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	// AWS S3
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+	// MongoDB
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+	// jackson(데이터로그 LocalDateTime 직렬화용)
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+	// Mapper(데이터로그 저장시 엔티티에서 필드값 가져오면 양방향매핑이 있는 경우 순환참조 문제가 발생하므로 DTO에서 필드 접근하기 위함)
+	implementation 'org.modelmapper:modelmapper:3.2.0'
 
 
 }

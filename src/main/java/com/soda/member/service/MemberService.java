@@ -9,6 +9,8 @@ import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,15 +38,16 @@ public class MemberService {
                 .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
     }
 
+
     /**
-     * 회원 ID로 삭제되지 않은 회원 조회 (updateMyProfile 등에서 사용)
+     * 회원 ID로 회원 조회
      *
      * @param memberId 회원 ID
      * @return 조회된 회원 엔티티
      * @throws GeneralException 회원을 찾을 수 없을 경우 발생
      */
     public Member findMemberById(Long memberId) {
-        return memberRepository.findByIdAndIsDeletedFalse(memberId)
+        return memberRepository.findById(memberId)
                 .orElseThrow(() -> {
                     log.warn("회원 조회 실패: ID로 회원을 찾을 수 없음 - {}", memberId);
                     return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
@@ -207,5 +210,28 @@ public class MemberService {
             log.warn("회원 가입/수정 실패: 이메일 중복 - {}", email);
             throw new GeneralException(MemberErrorCode.DUPLICATE_EMAIL);
         }
+    }
+
+    /**
+     * 삭제되지 않은 모든 회원 목록을 페이징 처리하여 조회합니다.
+     * (주로 관리자 기능 등에서 전체 사용자 목록을 볼 때 사용됩니다.)
+     *
+     * @param pageable 페이징 및 정렬 정보를 담은 객체
+     * @return 페이징된 회원 목록 (`Page` 객체)
+     */
+    public Page<Member> findAll(Pageable pageable) {
+        return memberRepository.findAll(pageable);
+    }
+
+    /**
+     * 삭제되지 않은 회원 중 특정 키워드와 일치하는 목록을 페이징 처리하여 조회합니다.
+     * 검색 대상 필드는 Repository의 @Query 정의에 따릅니다.
+     *
+     * @param keyword 검색할 키워드
+     * @param pageable 페이징 및 정렬 정보를 담은 객체
+     * @return 검색 조건에 맞고 페이징된 회원 목록 (`Page` 객체)
+     */
+    public Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable) {
+        return memberRepository.findByKeywordIncludingDeleted(keyword, pageable);
     }
 }

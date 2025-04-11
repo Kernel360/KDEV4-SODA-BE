@@ -1,4 +1,4 @@
-package com.soda.member.dto;
+package com.soda.member.dto.member;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.member.dto.company.CompanyResponse;

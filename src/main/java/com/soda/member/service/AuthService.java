@@ -4,6 +4,9 @@ import com.soda.common.mail.service.EmailService;
 import com.soda.global.response.GeneralException;
 import com.soda.global.security.jwt.JwtTokenProvider;
 import com.soda.member.dto.*;
+import com.soda.member.dto.member.LoginRequest;
+import com.soda.member.dto.member.LoginResponse;
+import com.soda.member.dto.member.admin.CreateMemberRequest;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.error.AuthErrorCode;
@@ -59,13 +62,14 @@ public class AuthService {
      * @param requestDto 회원 가입에 필요한 정보 (아이디, 비밀번호, 이름, 이메일, 회사 ID 등)
      * @throws GeneralException 아이디 또는 이메일 중복 시, 회사 정보를 찾을 수 없을 시 발생
      */
-    @Transactional // 데이터 생성 작업
+    @Transactional
     public void signup(CreateMemberRequest requestDto) {
         log.info("회원 가입 시도: authId={}", requestDto.getAuthId());
         memberService.validateDuplicateAuthId(requestDto.getAuthId());
-        memberService.validateDuplicateEmail(requestDto.getEmail());
-
-        Company company = companyService.getCompany(requestDto.getCompanyId());
+        Company company = null;
+        if(!requestDto.getRole().equals("ADMIN")){
+            company = companyService.getCompany(requestDto.getCompanyId());
+        }
 
         // 회원 엔티티 생성 및 비밀번호 암호화
         Member member = Member.builder()
@@ -74,9 +78,6 @@ public class AuthService {
                 .password(passwordEncoder.encode(requestDto.getPassword()))
                 .role(requestDto.getRole())
                 .company(company)
-                .position(requestDto.getPosition())
-                .phoneNumber(requestDto.getPhoneNumber())
-                .email(requestDto.getEmail())
                 .build();
 
         Member savedMember = memberService.saveMember(member);

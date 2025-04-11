@@ -7,6 +7,7 @@ import com.soda.project.domain.stage.StageCreateRequest;
 import com.soda.project.domain.stage.StageMoveRequest;
 import com.soda.project.domain.stage.StageReadResponse;
 import com.soda.project.domain.stage.StageResponse;
+import com.soda.project.domain.stage.StageUpdateRequest;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
 import com.soda.project.error.ProjectErrorCode;
@@ -276,6 +277,51 @@ public class StageService {
         }
     }
 
+    /**
+     * 특정 단계의 정보를 수정합니다. (현재는 이름만 수정 가능)
+     *
+     * @param stageId 수정할 단계의 ID
+     * @param request 수정할 정보 DTO (새로운 이름 포함)
+     * @return 수정된 단계 정보 DTO (`StageResponse`)
+     * @throws GeneralException 수정할 단계(`StageErrorCode.STAGE_NOT_FOUND`)를 찾을 수 없거나,
+     *                          같은 프로젝트 내에 동일한 이름의 다른 활성 단계가 이미 존재(`StageErrorCode.DUPLICATE_STAGE_NAME`)하는 경우 발생합니다.
+     *                          (단계에 프로젝트 정보가 없는 비정상 상태 포함)
+     */
+    @LoggableEntityAction(action = "UPDATE", entityClass = Stage.class)
+    @Transactional
+    public StageResponse updateStage(Long stageId, StageUpdateRequest request) {
+        Stage stageToUpdate = stageRepository.findById(stageId)
+                .orElseThrow(() -> {
+                    log.error("단계 수정 실패: 단계 ID {} 를 찾을 수 없음", stageId);
+                    return new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
+                });
+
+        Project project = stageToUpdate.getProject();
+        if (project == null) {
+            log.error("단계 수정 실패: 단계 ID {} 에 연결된 프로젝트 정보가 없습니다.", stageId);
+            throw new GeneralException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+        String newName = request.getName();
+        String currentName = stageToUpdate.getName();
+
+        if (!newName.equals(currentName)) {
+            log.info("단계 이름 변경 감지: stageId={}, oldName='{}', newName='{}'", stageId, currentName, newName);
+            boolean isDuplicate = stageRepository.existsByProjectAndNameAndIsDeletedFalseAndIdNot(project, newName, stageId);
+            if (isDuplicate) {
+                log.warn("단계 수정 실패: 프로젝트 ID {} 내에 이미 '{}' 이름의 단계가 존재함 (stageId {} 제외)", project.getId(), newName, stageId);
+                throw new GeneralException(StageErrorCode.DUPLICATE_STAGE_NAME);
+            }
+            stageToUpdate.updateName(newName);
+            log.info("단계 이름 업데이트 실행: stageId={}", stageId);
+        } else {
+            log.info("단계 이름 변경 없음 (동일한 이름 요청): stageId={}, name='{}'", stageId, newName);
+        }
+
+         Stage updatedStage = stageRepository.save(stageToUpdate);
+
+        return StageResponse.fromEntity(stageToUpdate);
+    }
 
     public Stage findById(Long stageId) {
         return stageRepository.findById(stageId)

@@ -52,32 +52,21 @@ public class Member extends BaseEntity {
         this.password = newPassword;
     }
 
-    public void updateName(String name) {
+    public void updateAdminInfo(String name, String email, MemberRole role, Company company, String position, String phoneNumber) {
         this.name = name;
-    }
-
-    public void updateAuthId(String authId) {
-        this.authId = authId;
-    }
-
-    public void updateEmail(String email) {
         this.email = email;
-    }
-
-    public void updatePosition(String position) {
+        this.role = role;
+        this.company = company;
         this.position = position;
-    }
-
-    public void updatePhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
-    public void updateRole(MemberRole role) {
-        this.role = role;
+    public void Deleted() {
+        this.markAsDeleted();
     }
 
-    public void updateCompany(Company company) {
-        this.company = company;
+    public void Active() {
+        this.markAsActive();
     }
 
     // 승인요청 테스트를 위해 임시로 만든 메서드입니다.

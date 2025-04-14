@@ -17,4 +17,6 @@ public interface CompanyProjectRepository extends JpaRepository<CompanyProject, 
     Optional<CompanyProject> findByProjectAndCompanyProjectRole(Project project, CompanyProjectRole companyProjectRole);
 
     List<CompanyProject> findByProject(Project project);
+
+    Optional<CompanyProject> findByCompanyAndProjectAndIsDeletedFalse(Company company, Project project);
 }

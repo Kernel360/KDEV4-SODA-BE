@@ -170,11 +170,11 @@ public class ProjectService {
         String devCompanyName = companyProjectService.getCompanyNameByRole(project, CompanyProjectRole.DEV_COMPANY);
         String clientCompanyName = companyProjectService.getCompanyNameByRole(project, CompanyProjectRole.CLIENT_COMPANY);
 
-        MemberProjectRole currentMemberProjectRole = null;
-        CompanyProjectRole currentcompanyProjectRole = null;
+        String currentMemberProjectRole = "ADMIN";
+        String currentcompanyProjectRole = "ADMIN";
         if (userRole.equals("USER")) {
-            currentMemberProjectRole = memberProjectService.getMemberRoleInProject(member, project);
-            currentcompanyProjectRole = companyProjectService.getCompanyRoleInProject(member.getCompany(), project);
+            currentMemberProjectRole = memberProjectService.getMemberRoleInProject(member, project).getDescription();
+            currentcompanyProjectRole = companyProjectService.getCompanyRoleInProject(member.getCompany(), project).getDescription();
         }
 
 

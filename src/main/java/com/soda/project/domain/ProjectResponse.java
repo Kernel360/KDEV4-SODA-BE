@@ -24,8 +24,8 @@ public class ProjectResponse {
     private LocalDateTime endDate;
     private ProjectStatus status;
 
-    private MemberProjectRole currentUserProjectRole;
-    private CompanyProjectRole currentUserCompanyRole;
+    private String currentUserProjectRole;
+    private String currentUserCompanyRole;
 
     // 고객사 정보
     private String clientCompanyName;      // 고객사 이름

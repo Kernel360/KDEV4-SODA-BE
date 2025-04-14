@@ -12,7 +12,7 @@ public enum ProjectErrorCode implements ErrorCode {
     PROJECT_ALREADY_DELETED("1006", "This Project is already deleted", HttpStatus.NOT_FOUND),
     INVALID_STAGE_FOR_PROJECT("1007", "Invalid stage for project", HttpStatus.NOT_FOUND),
     MEMBER_NOT_IN_PROJECT("1008", "This member does not exist in this project", HttpStatus.NOT_FOUND),
-    ;
+    INVALID_DATE_RANGE("1009","Invalid date range: The end date cannot be before the start date" ,HttpStatus.NOT_FOUND );
 
     private final String code;
     private final String message;

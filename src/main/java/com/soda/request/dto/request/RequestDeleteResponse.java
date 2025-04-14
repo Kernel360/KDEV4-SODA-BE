@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 public class RequestDeleteResponse {
     private Long requestId;
-    private Long taskId;
+    private Long stageId;
     private Long memberId;
     private String memberName;
     private String title;
@@ -23,7 +23,7 @@ public class RequestDeleteResponse {
     public static RequestDeleteResponse fromEntity(Request request) {
         return RequestDeleteResponse.builder()
                 .requestId(request.getId())
-                .taskId(request.getTask().getId())
+                .stageId(request.getStage().getId())
                 .memberId(request.getMember().getId())
                 .memberName(request.getMember().getName())
                 .title(request.getTitle())

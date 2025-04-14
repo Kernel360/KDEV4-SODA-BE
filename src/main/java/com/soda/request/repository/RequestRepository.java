@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
-    List<Request> findAllByTask_IdAndIsDeletedFalse(Long taskId);
+    List<Request> findAllByStage_IdAndIsDeletedFalse(Long stageId);
 }

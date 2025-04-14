@@ -3,7 +3,7 @@ package com.soda.request.entity;
 import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
 import com.soda.member.entity.Member;
-import com.soda.project.entity.Task;
+import com.soda.project.entity.Stage;
 import com.soda.request.enums.RequestStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -30,8 +30,8 @@ public class Request extends BaseEntity {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "task_id")
-    private Task task;
+    @JoinColumn(name = "stage_id")
+    private Stage stage;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -46,9 +46,9 @@ public class Request extends BaseEntity {
     private List<RequestLink> links;
 
     @Builder
-    public Request(Member member, Task task, String title, String content, RequestStatus status, List<RequestFile> files, List<RequestLink> links) {
+    public Request(Member member, Stage stage, String title, String content, RequestStatus status, List<RequestFile> files, List<RequestLink> links) {
         this.member = member;
-        this.task = task;
+        this.stage = stage;
         this.title = title;
         this.status = status;
         this.content = content;

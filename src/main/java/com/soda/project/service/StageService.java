@@ -33,8 +33,6 @@ public class StageService {
     private final StageRepository stageRepository;
     private final ProjectRepository projectRepository;
 
-    private final TaskService taskService;
-
     private static final float ORDER_INCREMENT = 1.0f;
     private static final float INITIAL_ORDER = 1.0f;
     private static final List<String> INITIAL_STAGE_NAMES = Arrays.asList(
@@ -320,7 +318,7 @@ public class StageService {
 
          Stage updatedStage = stageRepository.save(stageToUpdate);
 
-        return StageResponse.fromEntity(stageToUpdate);
+        return StageResponse.fromEntity(updatedStage);
     }
 
     public Stage findById(Long stageId) {

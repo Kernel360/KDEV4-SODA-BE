@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Getter
 public class RequestUpdateResponse {
     private Long requestId;
-    private Long taskId;
+    private Long stageId;
     private Long memberId;
     private String memberName;
     private String title;
@@ -27,7 +27,7 @@ public class RequestUpdateResponse {
     public static RequestUpdateResponse fromEntity(Request request) {
         return RequestUpdateResponse.builder()
                 .requestId(request.getId())
-                .taskId(request.getTask().getId())
+                .stageId(request.getStage().getId())
                 .memberId(request.getMember().getId())
                 .memberName(request.getMember().getName())
                 .title(request.getTitle())

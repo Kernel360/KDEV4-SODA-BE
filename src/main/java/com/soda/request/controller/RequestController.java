@@ -35,9 +35,9 @@ public class RequestController {
         return ResponseEntity.ok(ApiResponseForm.success(requestCreateResponse));
     }
 
-    @GetMapping("/tasks/{taskId}/requests")
-    public ResponseEntity<ApiResponseForm<?>> getAllRequests(@PathVariable Long taskId) {
-        List<RequestDTO> requestDTOList = requestService.findAllByTaskId(taskId);
+    @GetMapping("/stages/{stageId}/requests")
+    public ResponseEntity<ApiResponseForm<?>> getAllRequests(@PathVariable Long stageId) {
+        List<RequestDTO> requestDTOList = requestService.findAllByStageId(stageId);
         return ResponseEntity.ok(ApiResponseForm.success(requestDTOList));
     }
 

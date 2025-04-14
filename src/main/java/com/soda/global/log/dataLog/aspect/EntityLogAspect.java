@@ -15,10 +15,8 @@ import com.soda.member.dto.company.CompanyResponse;
 import com.soda.member.entity.Company;
 import com.soda.project.domain.ProjectDTO;
 import com.soda.project.domain.stage.StageResponse;
-import com.soda.project.domain.task.TaskResponse;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
-import com.soda.project.entity.Task;
 import com.soda.request.dto.request.RequestDTO;
 import com.soda.request.dto.response.ResponseDTO;
 import com.soda.request.entity.Request;
@@ -65,7 +63,6 @@ public class EntityLogAspect {
 
         dtoConverters.put(Project.class, e -> ProjectDTO.fromEntity((Project) e));
         dtoConverters.put(Stage.class, e -> StageResponse.fromEntity((Stage) e));
-        dtoConverters.put(Task.class, e -> TaskResponse.fromEntity((Task) e));
 
         dtoConverters.put(Request.class, e -> RequestDTO.fromEntity((Request) e));
         dtoConverters.put(Response.class, e -> ResponseDTO.fromEntity((Response) e));

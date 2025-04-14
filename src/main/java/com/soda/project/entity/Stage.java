@@ -2,6 +2,7 @@ package com.soda.project.entity;
 
 import com.soda.article.entity.Article;
 import com.soda.common.BaseEntity;
+import com.soda.request.entity.Request;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -29,7 +30,7 @@ public class Stage extends BaseEntity {
     private List<Article> articleList = new ArrayList<>();
 
     @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
-    private List<Task> taskList = new ArrayList<>();
+    private List<Request> requestList = new ArrayList<>();
 
     @Builder
     public Stage(String name, Float stageOrder, Project project) {

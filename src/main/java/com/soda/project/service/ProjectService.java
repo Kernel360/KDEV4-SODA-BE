@@ -159,14 +159,24 @@ public class ProjectService {
     }
 
     // 개별 프로젝트 조회
-    public ProjectResponse getProject(Long projectId) {
+    public ProjectResponse getProject(Long projectId, Long userId, String userRole) {
         Project project = getValidProject(projectId);
-        return mapToProjectResponse(project);
+        Member member = memberService.findMemberById(userId);
+
+        return mapToProjectResponse(project, member, userRole);
     }
 
-    private ProjectResponse mapToProjectResponse(Project project) {
+    private ProjectResponse mapToProjectResponse(Project project, Member member, String userRole) {
         String devCompanyName = companyProjectService.getCompanyNameByRole(project, CompanyProjectRole.DEV_COMPANY);
         String clientCompanyName = companyProjectService.getCompanyNameByRole(project, CompanyProjectRole.CLIENT_COMPANY);
+
+        MemberProjectRole currentMemberProjectRole = null;
+        CompanyProjectRole currentcompanyProjectRole = null;
+        if (userRole.equals("USER")) {
+            currentMemberProjectRole = memberProjectService.getMemberRoleInProject(member, project);
+            currentcompanyProjectRole = companyProjectService.getCompanyRoleInProject(member.getCompany(), project);
+        }
+
 
         List<Member> devManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
         List<Member> devParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
@@ -180,6 +190,8 @@ public class ProjectService {
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
                 .status(project.getStatus())
+                .currentUserProjectRole(currentMemberProjectRole)
+                .currentUserCompanyRole(currentcompanyProjectRole)
                 .devCompanyName(devCompanyName)
                 .devCompanyManagers(extractMemberNames(devManagers))
                 .devCompanyMembers(extractMemberNames(devParticipants))

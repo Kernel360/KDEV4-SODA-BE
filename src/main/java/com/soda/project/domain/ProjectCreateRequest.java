@@ -1,5 +1,10 @@
 package com.soda.project.domain;
 
+import com.soda.project.enums.ProjectStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,6 +21,7 @@ public class ProjectCreateRequest {
 
     private String title;
     private String description;
+    private ProjectStatus status;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Long clientCompanyId;           // 고객사 ID

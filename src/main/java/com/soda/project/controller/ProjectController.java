@@ -55,4 +55,15 @@ public class ProjectController {
         ProjectCreateResponse response = projectService.updateProject(projectId, request);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 수정 성공"));
     }
+
+
+
+    @PatchMapping("/{projectId}/status")
+    public ResponseEntity<ApiResponseForm<ProjectCreateResponse>> updateProjectStatus(
+            @PathVariable Long projectId,
+            @Valid @RequestBody ProjectStatusUpdateRequest request) {
+
+        ProjectCreateResponse response = projectService.updateProjectStatus(projectId, request);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 상태 변경 성공"));
+    }
 }

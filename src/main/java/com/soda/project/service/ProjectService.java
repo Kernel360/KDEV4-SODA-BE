@@ -275,4 +275,16 @@ public class ProjectService {
         }
     }
 
+    @LoggableEntityAction(action = "UPDATE_STATUS", entityClass = Project.class)
+    @Transactional
+    public ProjectCreateResponse updateProjectStatus(Long projectId, ProjectStatusUpdateRequest request) {
+        Project project = getValidProject(projectId);
+
+        project.changeStatus(request.getStatus());
+
+        projectRepository.save(project);
+
+        return createProjectCreateResponse(project);
+
+    }
 }

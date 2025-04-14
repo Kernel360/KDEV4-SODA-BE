@@ -1,12 +1,10 @@
 package com.soda.project.controller;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.project.domain.ProjectCreateRequest;
-import com.soda.project.domain.ProjectCreateResponse;
-import com.soda.project.domain.ProjectListResponse;
-import com.soda.project.domain.ProjectResponse;
+import com.soda.project.domain.*;
 import com.soda.project.service.ProjectService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +19,7 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @PostMapping("")
-    public ResponseEntity<ApiResponseForm<ProjectCreateResponse>> createProject(@RequestBody ProjectCreateRequest request) {
+    public ResponseEntity<ApiResponseForm<ProjectCreateResponse>> createProject(@Valid @RequestBody ProjectCreateRequest request) {
         ProjectCreateResponse response = projectService.createProject(request);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 생성 성공"));
     }
@@ -53,7 +51,7 @@ public class ProjectController {
     }
 
     @PutMapping("/{projectId}")
-    public ResponseEntity<ApiResponseForm<ProjectCreateResponse>> updateProject(@PathVariable Long projectId, @RequestBody ProjectCreateRequest request) {
+    public ResponseEntity<ApiResponseForm<ProjectCreateResponse>> updateProject(@PathVariable Long projectId, @Valid @RequestBody ProjectCreateRequest request) {
         ProjectCreateResponse response = projectService.updateProject(projectId, request);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 수정 성공"));
     }

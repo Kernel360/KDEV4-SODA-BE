@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface RequestRepository extends JpaRepository<Request, Long> {
+public interface RequestRepository extends JpaRepository<Request, Long>, RequestRepositoryCustom {
     List<Request> findAllByStage_IdAndIsDeletedFalse(Long stageId);
 }

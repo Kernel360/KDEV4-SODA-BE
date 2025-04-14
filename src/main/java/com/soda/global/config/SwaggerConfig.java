@@ -5,8 +5,11 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 //@OpenAPIDefinition(
@@ -17,7 +20,11 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI() {
+        Server productionServer = new Server();
+        productionServer.setUrl("https://api.s0da.co.kr");
+        productionServer.setDescription("Production Server");
         return new OpenAPI()
+                .servers(List.of(productionServer))
                 .components(new Components()
                         .addSecuritySchemes("accessToken", new SecurityScheme()
                                 .name("Authorization") // 헤더 이름

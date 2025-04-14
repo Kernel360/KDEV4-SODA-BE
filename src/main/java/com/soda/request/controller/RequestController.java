@@ -8,10 +8,13 @@ import com.soda.common.link.dto.LinkUploadRequest;
 import com.soda.common.link.dto.LinkUploadResponse;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
+import com.soda.request.dto.GetRequestCondition;
 import com.soda.request.dto.request.*;
 import com.soda.request.service.RequestService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +36,15 @@ public class RequestController {
         Long memberId = (Long) request.getAttribute("memberId");
         RequestCreateResponse requestCreateResponse = requestService.createRequest(memberId, requestCreateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestCreateResponse));
+    }
+
+    @GetMapping("/projects/{projectId}/requests")
+    public ResponseEntity<ApiResponseForm<?>> getRequests(@PathVariable Long projectId,
+                                                                 @ModelAttribute GetRequestCondition condition,
+                                                                 Pageable pageable,
+                                                                 HttpServletRequest request) {
+        Page<RequestDTO> requests = requestService.findRequests(condition, pageable);
+        return ResponseEntity.ok(ApiResponseForm.success(requests));
     }
 
     @GetMapping("/stages/{stageId}/requests")

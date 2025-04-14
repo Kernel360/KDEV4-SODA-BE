@@ -14,6 +14,7 @@ import com.soda.member.repository.MemberRepository;
 import com.soda.project.entity.Stage;
 import com.soda.project.error.StageErrorCode;
 import com.soda.project.repository.StageRepository;
+import com.soda.request.dto.GetRequestCondition;
 import com.soda.request.dto.request.*;
 import com.soda.request.entity.Request;
 import com.soda.request.entity.RequestLink;
@@ -22,6 +23,8 @@ import com.soda.request.error.RequestErrorCode;
 import com.soda.request.repository.RequestLinkRepository;
 import com.soda.request.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +60,11 @@ public class RequestService {
         Request request = createRequest(requestCreateRequest, member, stage);
 
         return RequestCreateResponse.fromEntity(request);
+    }
+
+    public Page<RequestDTO> findRequests(GetRequestCondition condition, Pageable pageable) {
+        return requestRepository.searchByCondition(condition, pageable)
+                .map(RequestDTO::fromEntity);
     }
 
 

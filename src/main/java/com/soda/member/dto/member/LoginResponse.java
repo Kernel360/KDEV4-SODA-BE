@@ -11,6 +11,7 @@ import lombok.Getter;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoginResponse {
+    private Long memberId;
     private String name;
     private String authId;
     private String email;
@@ -24,6 +25,7 @@ public class LoginResponse {
         boolean firstLogin = (member.getEmail() == null);
         MemberRole memberRole = member.getRole();
         return LoginResponse.builder()
+                .memberId(member.getId())
                 .name(member.getName())
                 .authId(member.getAuthId())
                 .email(member.getEmail())

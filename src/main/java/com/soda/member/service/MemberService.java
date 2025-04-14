@@ -240,7 +240,7 @@ public class MemberService {
 
         Member member = findByIdAndIsDeletedFalse(memberId);
 
-        member.updateInfo(requestDto.getName(),
+        member.initialProfile(requestDto.getName(),
                 requestDto.getEmail(),
                 requestDto.getPhoneNumber(),
                 requestDto.getAuthId(),

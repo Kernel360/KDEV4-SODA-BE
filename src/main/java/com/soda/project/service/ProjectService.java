@@ -10,12 +10,14 @@ import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.domain.*;
 import com.soda.project.entity.Project;
+import com.soda.project.enums.ProjectStatus;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +25,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
-public class  ProjectService {
+public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final CompanyProjectService companyProjectService;
@@ -41,6 +43,8 @@ public class  ProjectService {
     @LoggableEntityAction(action = "CREATE", entityClass = Project.class)
     @Transactional
     public ProjectCreateResponse createProject(ProjectCreateRequest request) {
+        // 추가 유효성 검사 (날짜 순서)
+        validateProjectDates(request.getStartDate(), request.getEndDate());
         // 1. 프로젝트 제목 중복 체크
         if (projectRepository.existsByTitle(request.getTitle())) {
             throw new GeneralException(ProjectErrorCode.PROJECT_TITLE_DUPLICATED);
@@ -65,12 +69,12 @@ public class  ProjectService {
                 .description(request.getDescription())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
+                .status(request.getStatus() != null ? request.getStatus() : ProjectStatus.CONTRACT)
                 .build();
 
         // DTO -> Entity
         Project project = projectDTO.toEntity();
-        projectRepository.save(project);
-        return project;
+        return projectRepository.save(project);
     }
 
     private void assignCompanyAndMembersToProject(ProjectCreateRequest request, Project project) {
@@ -103,6 +107,7 @@ public class  ProjectService {
                 .description(project.getDescription())
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
+                .status(project.getStatus())
                 .devCompanyName(devManagers.get(0).getCompany().getName())
                 .devCompanyManagers(extractMemberNames(devManagers))
                 .devCompanyMembers(extractMemberNames(devParticipants))
@@ -147,6 +152,7 @@ public class  ProjectService {
                 .description(project.getDescription())
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
+                .status(project.getStatus())
                 .devCompanyName(devCompanyName)
                 .clientCompanyName(clientCompanyName)
                 .build();
@@ -173,6 +179,7 @@ public class  ProjectService {
                 .description(project.getDescription())
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
+                .status(project.getStatus())
                 .devCompanyName(devCompanyName)
                 .devCompanyManagers(extractMemberNames(devManagers))
                 .devCompanyMembers(extractMemberNames(devParticipants))
@@ -206,8 +213,14 @@ public class  ProjectService {
     @LoggableEntityAction(action = "UPDATE", entityClass = Project.class)
     @Transactional
     public ProjectCreateResponse updateProject(Long projectId, ProjectCreateRequest request) {
+        validateProjectDates(request.getStartDate(), request.getEndDate());
         // 1. 프로젝트 존재 여부 체크
         Project project = getValidProject(projectId);
+
+        // 프로젝트 제목 중복 체크
+        projectRepository.findByTitleAndIdNot(request.getTitle(), projectId).ifPresent(p -> {
+            throw new GeneralException(ProjectErrorCode.PROJECT_TITLE_DUPLICATED);
+        });
 
         // 2. 프로젝트 기본 정보 수정
         updateProjectInfo(project, request);
@@ -242,7 +255,12 @@ public class  ProjectService {
     }
 
     private void updateProjectInfo(Project project, ProjectCreateRequest request) {
-        project.updateProject(request.getTitle(), request.getDescription(), request.getStartDate(), request.getEndDate());
+        project.updateProject(
+                request.getTitle(),
+                request.getDescription(),
+                request.getStartDate(),
+                request.getEndDate(),
+                request.getStatus());
         projectRepository.save(project);  // 프로젝트 수정 사항 저장
     }
 
@@ -251,4 +269,22 @@ public class  ProjectService {
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
     }
 
+    private void validateProjectDates(LocalDateTime startDate, LocalDateTime endDate) {
+        if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+            throw new GeneralException(ProjectErrorCode.INVALID_DATE_RANGE);
+        }
+    }
+
+    @LoggableEntityAction(action = "UPDATE_STATUS", entityClass = Project.class)
+    @Transactional
+    public ProjectCreateResponse updateProjectStatus(Long projectId, ProjectStatusUpdateRequest request) {
+        Project project = getValidProject(projectId);
+
+        project.changeStatus(request.getStatus());
+
+        projectRepository.save(project);
+
+        return createProjectCreateResponse(project);
+
+    }
 }

@@ -1,6 +1,7 @@
 package com.soda.project.domain;
 
 import com.soda.project.entity.Project;
+import com.soda.project.enums.ProjectStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,13 +15,15 @@ public class ProjectDTO {
     private String description;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+    private ProjectStatus status;
 
     @Builder
-    public ProjectDTO(String title,String description, LocalDateTime startDate, LocalDateTime endDate) {
+    public ProjectDTO(String title,String description, LocalDateTime startDate, LocalDateTime endDate, ProjectStatus status) {
         this.title = title;
         this.description = description;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.status = status;
     }
 
     // Entity → DTO 변환
@@ -30,6 +33,7 @@ public class ProjectDTO {
                 .description(project.getDescription())
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
+                .status(project.getStatus())
                 .build();
     }
 
@@ -40,6 +44,7 @@ public class ProjectDTO {
                 .description(this.description)
                 .startDate(this.startDate)
                 .endDate(this.endDate)
+                .status(this.status)
                 .build();
     }
 }

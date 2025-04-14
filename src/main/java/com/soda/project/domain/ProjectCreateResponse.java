@@ -1,6 +1,6 @@
 package com.soda.project.domain;
 
-import com.soda.member.enums.MemberProjectRole;
+import com.soda.project.enums.ProjectStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +20,7 @@ public class ProjectCreateResponse {
     private String description;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+    private ProjectStatus status;
 
     // 고객사 정보
     private String clientCompanyName;      // 고객사 이름

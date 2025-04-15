@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -90,5 +91,18 @@ public class MemberProjectService {
         return memberProjects.stream()
                 .map(memberProject -> memberProject.getProject().getId())
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 특정 프로젝트에서 특정 멤버의 역할을 조회합니다.
+     * 멤버가 해당 프로젝트에 참여하지 않거나, 참여 정보가 삭제된 경우 null을 반환합니다.
+     *
+     * @param project 조회할 프로젝트 엔티티
+     * @param member  역할을 조회할 멤버 엔티티
+     * @return 해당 프로젝트에서의 MemberProjectRole, 참여하지 않거나 삭제된 경우 null
+     */
+    public MemberProjectRole getMemberRoleInProject(Member member, Project project) {
+        Optional<MemberProject> memberProjectOpt = memberProjectRepository.findByMemberAndProjectAndIsDeletedFalse(member, project);
+        return memberProjectOpt.map(MemberProject::getRole).orElse(null);
     }
 }

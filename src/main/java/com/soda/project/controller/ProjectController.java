@@ -39,8 +39,10 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}")
-    public ResponseEntity<ApiResponseForm<ProjectResponse>> getProject(@PathVariable Long projectId) {
-        ProjectResponse response = projectService.getProject(projectId);
+    public ResponseEntity<ApiResponseForm<ProjectResponse>> getProject(HttpServletRequest request, @PathVariable Long projectId) {
+        Long userId = (Long) request.getAttribute("memberId");
+        String userRole = (String) request.getAttribute("userRole").toString();
+        ProjectResponse response = projectService.getProject(projectId, userId, userRole);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -55,7 +57,6 @@ public class ProjectController {
         ProjectCreateResponse response = projectService.updateProject(projectId, request);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 수정 성공"));
     }
-
 
 
     @PatchMapping("/{projectId}/status")

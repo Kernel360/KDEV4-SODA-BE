@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Transactional(readOnly = true)
 @Service
@@ -64,5 +65,16 @@ public class CompanyProjectService {
     private CompanyProject findByProjectAndCompanyProjectRole(Project project, CompanyProjectRole role) {
         return companyProjectRepository.findByProjectAndCompanyProjectRole(project, role)
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_NOT_FOUND));
+    }
+
+    /**
+     * 특정 회사와 프로젝트의 관계에 대한 CompanyProjectRole을 반환합니다.
+     * @param company 회사 엔티티
+     * @param project 프로젝트 엔티티
+     * @return CompanyProjectRole (CLIENT 또는 DEVELOPER). 관계가 없으면 null을 반환합니다.
+     */
+    public CompanyProjectRole getCompanyRoleInProject(Company company, Project project) {
+        Optional<CompanyProject> companyProjectOpt = companyProjectRepository.findByCompanyAndProjectAndIsDeletedFalse(company, project);
+        return companyProjectOpt.map(CompanyProject::getCompanyProjectRole).orElse(null);
     }
 }

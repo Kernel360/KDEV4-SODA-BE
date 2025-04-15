@@ -7,8 +7,18 @@ import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.repository.CompanyRepository;
 import com.soda.member.repository.MemberRepository;
-import com.soda.project.entity.*;
-import com.soda.project.repository.*;
+import com.soda.project.entity.CompanyProject;
+import com.soda.project.entity.MemberProject;
+import com.soda.project.entity.Project;
+import com.soda.project.entity.Stage;
+import com.soda.project.enums.ProjectStatus;
+import com.soda.project.repository.CompanyProjectRepository;
+import com.soda.project.repository.MemberProjectRepository;
+import com.soda.project.repository.ProjectRepository;
+import com.soda.project.repository.StageRepository;
+import com.soda.request.entity.Request;
+import com.soda.request.enums.RequestStatus;
+import com.soda.request.repository.RequestRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +37,7 @@ public class TestDataLoader {
     private final PasswordEncoder passwordEncoder;
     private final CompanyRepository companyRepository;
     private final CompanyProjectRepository companyProjectRepository;
+    private final RequestRepository requestRepository;
 
     @PostConstruct
     public void init() {
@@ -79,7 +90,7 @@ public class TestDataLoader {
 
 
         // 프로젝트 생성
-        Project soda = projectRepository.save(new Project("SODA", "소다", LocalDateTime.now(), LocalDateTime.now()));
+        Project soda = projectRepository.save(new Project("SODA", "소다", LocalDateTime.now(), LocalDateTime.now(), ProjectStatus.IN_PROGRESS));
 
         // 멤버-프로젝트 매핑
         MemberProject memberProject1 = memberProjectRepository.save(new MemberProject(dabin, soda, MemberProjectRole.DEV_MANAGER));
@@ -102,5 +113,19 @@ public class TestDataLoader {
         Stage development = stageRepository.save(new Stage("개발", 2.0F, soda));
         Stage deployment = stageRepository.save(new Stage("배포", 3.0F, soda));
 
+        Request projectCrud = requestRepository.save(Request.builder()
+                .member(dabin)
+                .stage(development)
+                .title("프로젝트 CRUD API 개발")
+                .status(RequestStatus.PENDING)
+                .content("프로젝트 skrr하게 개발 완료 ^_^")
+                .build());
+        Request rfpAnalyze = requestRepository.save(Request.builder()
+                        .member(junbeom)
+                        .stage(planning)
+                        .title("RFP분석")
+                        .status(RequestStatus.APPROVED)
+                        .content("RFP 1차로 분석 완료하였습니다.")
+                .build());
     }
 }

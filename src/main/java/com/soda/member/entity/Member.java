@@ -61,6 +61,15 @@ public class Member extends BaseEntity {
         this.phoneNumber = phoneNumber;
     }
 
+    public void initialProfile(String name, String email, String phoneNumber, String authId, String newPassword, String position) {
+        this.name = name;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.authId = authId;
+        this.password = newPassword;
+        this.position = position;
+    }
+
     public void Deleted() {
         this.markAsDeleted();
     }

@@ -3,6 +3,7 @@ package com.soda.member.service;
 import com.soda.global.response.GeneralException;
 import com.soda.member.dto.FindAuthIdRequest;
 import com.soda.member.dto.FindAuthIdResponse;
+import com.soda.member.dto.InitialUserInfoRequestDto;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.error.MemberErrorCode;
@@ -233,5 +234,20 @@ public class MemberService {
      */
     public Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable) {
         return memberRepository.findByKeywordIncludingDeleted(keyword, pageable);
+    }
+
+    public void setupInitialProfile(Long memberId, InitialUserInfoRequestDto requestDto) {
+
+        Member member = findByIdAndIsDeletedFalse(memberId);
+
+        member.initialProfile(requestDto.getName(),
+                requestDto.getEmail(),
+                requestDto.getPhoneNumber(),
+                requestDto.getAuthId(),
+                passwordEncoder.encode(requestDto.getPassword()),
+                requestDto.getPosition()
+                );
+
+        memberRepository.save(member);
     }
 }

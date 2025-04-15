@@ -9,6 +9,7 @@ import com.soda.member.dto.member.LoginResponse;
 import com.soda.member.dto.member.admin.CreateMemberRequest;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
+import com.soda.member.enums.MemberRole;
 import com.soda.member.error.AuthErrorCode;
 import com.soda.member.repository.RefreshTokenRepository;
 import com.soda.member.repository.VerificationCodeRepository;
@@ -67,7 +68,7 @@ public class AuthService {
         log.info("회원 가입 시도: authId={}", requestDto.getAuthId());
         memberService.validateDuplicateAuthId(requestDto.getAuthId());
         Company company = null;
-        if(requestDto.getCompanyId()!=null){
+        if(requestDto.getRole().equals(MemberRole.USER)){
             company = companyService.getCompany(requestDto.getCompanyId());
         }
 

@@ -34,6 +34,8 @@ public class ProjectService {
     private final CompanyService companyService;
     private final StageService stageService;
 
+    private static final String ADMIN_ROLE = "ADMIN";
+
     /*
         프로젝트 생성하기
         - 기본 정보 생성
@@ -170,11 +172,15 @@ public class ProjectService {
         String devCompanyName = companyProjectService.getCompanyNameByRole(project, CompanyProjectRole.DEV_COMPANY);
         String clientCompanyName = companyProjectService.getCompanyNameByRole(project, CompanyProjectRole.CLIENT_COMPANY);
 
-        String currentMemberProjectRole = "ADMIN";
-        String currentcompanyProjectRole = "ADMIN";
+        String currentMemberProjectRole = null;
+        String currentcompanyProjectRole = null;
         if (userRole.equals("USER")) {
             currentMemberProjectRole = memberProjectService.getMemberRoleInProject(member, project).getDescription();
             currentcompanyProjectRole = companyProjectService.getCompanyRoleInProject(member.getCompany(), project).getDescription();
+        }
+        if (userRole.equals(ADMIN_ROLE)) {
+            currentMemberProjectRole = ADMIN_ROLE;
+            currentcompanyProjectRole = ADMIN_ROLE;
         }
 
 

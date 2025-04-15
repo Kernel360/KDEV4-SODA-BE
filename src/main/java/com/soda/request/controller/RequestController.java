@@ -41,8 +41,7 @@ public class RequestController {
     @GetMapping("/projects/{projectId}/requests")
     public ResponseEntity<ApiResponseForm<?>> getRequests(@PathVariable Long projectId,
                                                                  @ModelAttribute GetRequestCondition condition,
-                                                                 Pageable pageable,
-                                                                 HttpServletRequest request) {
+                                                                 Pageable pageable) {
         Page<RequestDTO> requests = requestService.findRequests(condition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(requests));
     }

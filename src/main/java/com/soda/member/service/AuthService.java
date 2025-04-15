@@ -239,8 +239,7 @@ public class AuthService {
      * @param refreshToken 저장할 Refresh Token 문자열
      */
     private void storeRefreshToken(String authId, String refreshToken) {
-        refreshTokenRepository.deleteByAuthId(authId); // 이전 토큰 삭제
-        refreshTokenRepository.save(authId, refreshToken); // 새 토큰 저장
+        refreshTokenRepository.save(authId, refreshToken);
         log.debug("새로운 Refresh Token 저장 완료: authId={}", authId);
     }
 

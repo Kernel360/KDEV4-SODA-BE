@@ -63,8 +63,8 @@ public class MemberProjectService {
         // 각 멤버에 대해 처리
         for (Member member : members) {
             // 멤버가 해당 프로젝트에 이미 있는지 확인
-            MemberProject existingMemberProject = memberProjectRepository.findByMemberAndProject(member, project)
-                    .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT));
+            MemberProject existingMemberProject = memberProjectRepository.findByMemberAndProject(member, project).orElse(null);
+//                    .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT));
 
             if (existingMemberProject != null) {
                 // 멤버가 이미 존재하면, 삭제되지 않은 상태에서만 역할을 업데이트

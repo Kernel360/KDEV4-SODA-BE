@@ -1,30 +1,26 @@
 package com.soda.global.config;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
-
 @Configuration
-//@OpenAPIDefinition(
-//        servers = {
-//                @Server(url = "ec2-54-180-108-126.ap-northeast-2.compute.amazonaws.com", description = "Production Server")
-//        }
-//)
+@OpenAPIDefinition(
+        servers = {
+                @Server(url = "https://api.s0da.co.kr", description = "Production Server"),
+                @Server(url = "http://localhost:8080", description = "Local Development Server")
+        }
+)
 public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI() {
-        Server productionServer = new Server();
-        productionServer.setUrl("https://api.s0da.co.kr");
-        productionServer.setDescription("Production Server");
         return new OpenAPI()
-                .servers(List.of(productionServer))
                 .components(new Components()
                         .addSecuritySchemes("accessToken", new SecurityScheme()
                                 .name("Authorization") // 헤더 이름

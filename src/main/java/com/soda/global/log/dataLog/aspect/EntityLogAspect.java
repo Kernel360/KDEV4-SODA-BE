@@ -142,8 +142,8 @@ public class EntityLogAspect {
     private Map<String, Object> computeDiff(Map<String, Object> before, Map<String, Object> after) {
         Map<String, Object> diff = new HashMap<>();
         for (String key : after.keySet()) {
-            Object beforeVal = before.get(key);
-            Object afterVal = after.get(key);
+            Object beforeVal = before.getOrDefault(key, "N/A"); // 디폴트 값 설정
+            Object afterVal = after.getOrDefault(key, "N/A");
             if (!Objects.equals(beforeVal, afterVal)) {
                 diff.put(key, Map.of("before", beforeVal, "after", afterVal));
             }

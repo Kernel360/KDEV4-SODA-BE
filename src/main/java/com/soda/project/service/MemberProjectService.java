@@ -3,18 +3,20 @@ package com.soda.project.service;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
-import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.entity.MemberProject;
 import com.soda.project.entity.Project;
+import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.MemberProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class MemberProjectService {

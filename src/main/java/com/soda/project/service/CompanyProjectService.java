@@ -2,29 +2,25 @@ package com.soda.project.service;
 
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
-import com.soda.member.enums.CompanyProjectRole;
-import com.soda.member.service.CompanyService;
 import com.soda.project.domain.CompanyProjectDTO;
 import com.soda.project.entity.CompanyProject;
 import com.soda.project.entity.Project;
+import com.soda.member.enums.CompanyProjectRole;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.CompanyProjectRepository;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class CompanyProjectService {
     private final CompanyProjectRepository companyProjectRepository;
-
-    public void save(CompanyProject companyProject) {
-        companyProjectRepository.save(companyProject);
-    }
 
     public void assignCompanyToProject(Company company, Project project, CompanyProjectRole role) {
         if (!company.getIsDeleted() && !companyProjectRepository.existsByCompanyAndProject(company, project)) {
@@ -42,16 +38,15 @@ public class CompanyProjectService {
         }
     }
 
-    public List<CompanyProject> findByProject(Project project) {
-        return companyProjectRepository.findByProject(project);
-    }
-
-    public boolean existsByCompanyAndProject(Company company, Project project) {
-        return companyProjectRepository.existsByCompanyAndProject(company, project);
+    public List<Company> getClientCompaniesByRole(Project project, CompanyProjectRole role) {
+        return companyProjectRepository.findByProjectAndRoleAndIsDeletedFalse(project, role)
+                .stream()
+                .map(CompanyProject::getCompany)
+                .collect(Collectors.toList());
     }
 
     public void deleteCompanyProjects(Project project) {
-        List<CompanyProject> companyProjects = findByProject(project);
+        List<CompanyProject> companyProjects = companyProjectRepository.findByProject(project);
         companyProjects.forEach(CompanyProject::delete);
         companyProjectRepository.saveAll(companyProjects);
     }

@@ -175,8 +175,11 @@ public class ProjectService {
         String currentMemberProjectRole = null;
         String currentcompanyProjectRole = null;
         if (userRole.equals("USER")) {
-            currentMemberProjectRole = memberProjectService.getMemberRoleInProject(member, project).getDescription();
-            currentcompanyProjectRole = companyProjectService.getCompanyRoleInProject(member.getCompany(), project).getDescription();
+            var memberRoleInProject = memberProjectService.getMemberRoleInProject(member, project);
+            currentMemberProjectRole = (memberRoleInProject == null) ? null : memberRoleInProject.getDescription();
+
+            var companyRoleInProject = companyProjectService.getCompanyRoleInProject(member.getCompany(), project);
+            currentcompanyProjectRole = (companyRoleInProject == null) ? null : companyRoleInProject.getDescription();
         }
         if (userRole.equals(ADMIN_ROLE)) {
             currentMemberProjectRole = ADMIN_ROLE;

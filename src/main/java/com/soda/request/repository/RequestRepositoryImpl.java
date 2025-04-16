@@ -45,7 +45,7 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
 
         JPQLQuery<Request> query = queryFactory
                 .selectFrom(request)
-                .where(builder)
+                .where(builder.and(request.isDeleted.eq(false)))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 

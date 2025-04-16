@@ -22,8 +22,6 @@ public class ArticleModifyResponse {
     private LocalDateTime deadLine;
     private String memberName;
     private String stageName;
-    private List<ArticleFileDTO> fileList;
-    private List<ArticleLinkDTO> linkList;
 
     public static ArticleModifyResponse fromEntity(Article article) {
         return ArticleModifyResponse.builder()
@@ -34,18 +32,6 @@ public class ArticleModifyResponse {
                 .deadLine(article.getDeadline())
                 .memberName(article.getMember().getName())
                 .stageName(article.getStage().getName())
-                .fileList(article.getArticleFileList().stream()
-                        .map(file -> ArticleFileDTO.builder()
-                                .name(file.getName())
-                                .url(file.getUrl())
-                                .build())
-                        .collect(Collectors.toList()))
-                .linkList(article.getArticleLinkList().stream()
-                        .map(link -> ArticleLinkDTO.builder()
-                                .urlAddress(link.getUrlAddress())
-                                .urlDescription(link.getUrlDescription())
-                                .build())
-                        .collect(Collectors.toList()))
                 .build();
     }
 }

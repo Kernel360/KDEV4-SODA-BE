@@ -38,7 +38,7 @@ public class ArticleViewResponse {
                                 .id(file.getId())
                                 .name(file.getName())
                                 .url(file.getUrl())
-                                .deleted(file.getIsDeleted())
+                                .isDeleted(file.getIsDeleted())
                                 .build())
                         .collect(Collectors.toList()))
                 .linkList(article.getArticleLinkList().stream()
@@ -46,7 +46,7 @@ public class ArticleViewResponse {
                                 .id(link.getId())
                                 .urlAddress(link.getUrlAddress())
                                 .urlDescription(link.getUrlDescription())
-                                .deleted(link.getIsDeleted())
+                                .isDeleted(link.getIsDeleted())
                                 .build())
                         .collect(Collectors.toList()))
                 .build();

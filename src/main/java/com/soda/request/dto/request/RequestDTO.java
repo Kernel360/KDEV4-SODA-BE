@@ -22,6 +22,7 @@ public class RequestDTO {
     private String content;
     private List<LinkDTO> links;
     private List<FileDTO> files;
+    private List<ApproverDTO> approvers;
     private RequestStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -45,6 +46,11 @@ public class RequestDTO {
                         request.getFiles().stream()
                                 .filter(file -> !file.getIsDeleted())
                                 .map(FileDTO::fromEntity)
+                                .collect(Collectors.toList())
+                )
+                .approvers(
+                        request.getApprovers().stream()
+                                .map(ApproverDTO::fromEntity)
                                 .collect(Collectors.toList())
                 )
                 .status(request.getStatus())

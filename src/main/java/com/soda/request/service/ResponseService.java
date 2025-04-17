@@ -11,9 +11,11 @@ import com.soda.member.enums.MemberRole;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.request.dto.response.*;
+import com.soda.request.entity.ApproverDesignation;
 import com.soda.request.entity.Request;
 import com.soda.request.entity.Response;
 import com.soda.request.entity.ResponseLink;
+import com.soda.request.error.RequestErrorCode;
 import com.soda.request.error.ResponseErrorCode;
 import com.soda.request.repository.ResponseRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,14 +42,12 @@ public class ResponseService {
         Member member = getMemberWithProjectOrThrow(memberId);
         Request request = requestService.getRequestOrThrow(requestId);
 
-        // 본 메서드 호출의 주체인 멤버가 승인할 권한이 있는지 확인
         validateProjectAuthority(member, requestApproveRequest.getProjectId());
+        validateApprover(member, request.getApprovers());
 
-        // Request(승인요청)에 대한 Response(응답-승인) 데이터를 생성 및 저장
         Response approval = createResponse(member, request, requestApproveRequest.getComment(), requestApproveRequest.getLinks());
         responseRepository.save(approval);
 
-        // Request(승인요청)의 상태를 'APPROVED' 변경
         requestService.approve(request);
 
         return RequestApproveResponse.fromEntity(approval);
@@ -60,6 +60,7 @@ public class ResponseService {
         Request request = requestService.getRequestOrThrow(requestId);
 
         validateProjectAuthority(member, requestRejectRequest.getProjectId());
+        validateApprover(member, request.getApprovers());
 
         Response rejection = createResponse(member, request, requestRejectRequest.getComment(), requestRejectRequest.getLinks());
         responseRepository.save(rejection);
@@ -67,6 +68,15 @@ public class ResponseService {
         requestService.reject(request);
 
         return RequestRejectResponse.fromEntity(rejection);
+    }
+
+    private void validateApprover(Member member, List<ApproverDesignation> approvers) {
+        List<Member> members = approvers.stream()
+                .map(ApproverDesignation::getMember)
+                .collect(Collectors.toList());
+        if (!members.contains(member)) {
+            throw new GeneralException(RequestErrorCode.USER_IS_NOT_APPROVER);
+        }
     }
 
     public List<ResponseDTO> findAllByRequestId(Long requestId) {

@@ -22,14 +22,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
-    public static final String ADMIN_ROLE = "ADMIN";
+    private static final String ADMIN_ROLE = "ADMIN";
+    private static final String USER_ROLE = "USER";
 
     private final ProjectRepository projectRepository;
     private final MemberService memberService;
@@ -217,7 +217,7 @@ public class ProjectService {
      * @param status 필터링할 프로젝트 상태 (만약 null일 경우 전체 프로젝트 반환)
      * @return ProjectListResponse 형식으로 프로젝트 목록 반환
      */
-    public List<ProjectListResponse> getAllProjects(ProjectStatus status, Pageable pageable) {
+    public Page<ProjectListResponse> getAllProjects(ProjectStatus status, Pageable pageable) {
         log.info("전체 프로젝트 조회 시작: 상태 = {}, 페이지 번호 = {}, 페이지 크기 = {}",
                 status != null ? status : "전체",
                 pageable.getPageNumber(),
@@ -235,12 +235,39 @@ public class ProjectService {
                 projectList.getSize(),
                 projectList.getTotalElements());
 
-        return projectList.stream()
-                .map(this::mapToProjectListResponse)
-                .collect(Collectors.toList());
+        return projectList.map(this::mapToProjectListResponse);
+    }
+
+    /**
+     * 특정 사용자가 참여한 프로젝트 목록 조회 메서드
+     *
+     * @param userId 조회하려는 사용자 ID
+     * @param userRole 조회하려는 사용자의 역할
+     * @param pageable 페이지네이션
+     * @return ProjectListResponse 형식으로 참여 중 프로젝트 목록 반환
+     */
+    public Page<ProjectListResponse> getMyProjects(Long userId, String userRole, Pageable pageable) {
+        log.info("사용자 프로젝트 조회 시작: 사용자 ID = {}, 사용자 역할 = {}", userId, userRole);
+
+        // 사용자 확인
+        if (USER_ROLE.equals(userRole)) {
+            log.info("사용자 프로젝트 조회: 사용자 ID = {}에 대한 프로젝트 목록 조회 시작", userId);
+
+            Page<Long> projectIds = memberProjectService.getProjectIdsByUserId(userId, pageable);
+            log.info("사용자 ID = {}가 참여한 프로젝트 ID 목록 조회 완료: 조회된 프로젝트 수 = {}", userId, projectIds.getSize());
+
+            Page<Project> userProjectPage = projectRepository.findByIdIn(projectIds.getContent(), pageable);
+            log.info("사용자 ID = {}에 대한 프로젝트 목록 조회 완료: 조회된 프로젝트 수 = {}", userId, userProjectPage.getSize());
+
+            // 프로젝트 목록을 ProjectListResponse 형태로 변환 후 반환
+            return userProjectPage.map(this::mapToProjectListResponse);
+        }
+        log.warn("사용자 ID = {}가 USER_ROLE이 아님. 프로젝트 목록 조회 불가", userId);
+        return Page.empty();
     }
 
     private ProjectListResponse mapToProjectListResponse(Project project) {
         return ProjectListResponse.from(project);
     }
+
 }

@@ -7,11 +7,10 @@ import com.soda.project.service.ProjectService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/projects")
@@ -38,9 +37,17 @@ public class ProjectController {
     }
 
     @GetMapping("")
-    public ResponseEntity<ApiResponseForm<List<ProjectListResponse>>> getAllProjects(@RequestParam(required = false) ProjectStatus status,
+    public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getAllProjects(@RequestParam(required = false) ProjectStatus status,
                                                                                      Pageable pageable) {
-        List<ProjectListResponse> projectList = projectService.getAllProjects(status, pageable);
+        Page<ProjectListResponse> projectList = projectService.getAllProjects(status, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(projectList));
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getMyProjects(HttpServletRequest request, Pageable pageable) {
+        Long userId = (Long) request.getAttribute("memberId");
+        String userRole = (String) request.getAttribute("userRole").toString();
+        Page<ProjectListResponse> response = projectService.getMyProjects(userId, userRole, pageable);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 }

@@ -21,7 +21,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     boolean existsByIdAndIsDeletedFalse(Long projectId);
 
-    List<Project> findByIdIn(List<Long> projectIds);
+    Page<Project> findByIdIn(List<Long> projectIds, Pageable pageable);
 
     Optional<Project> findByTitleAndIdNot(String title, Long projectId);
 

@@ -1,6 +1,7 @@
 package com.soda.project.repository;
 
 import com.soda.project.entity.Project;
+import com.soda.project.enums.ProjectStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +21,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByIdIn(List<Long> projectIds);
 
     Optional<Project> findByTitleAndIdNot(String title, Long projectId);
+
+    // project status 별로 조회
+    List<Project> findByStatusAndIsDeletedFalse(ProjectStatus status);
 }

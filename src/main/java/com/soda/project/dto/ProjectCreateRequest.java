@@ -35,6 +35,6 @@ public class ProjectCreateRequest {
     @NotNull(message = "고객사 담당자 선택은 필수입니다.")
     private List<Long> clientMangerIds;
 
-    private List<Long> clientMembersIds;
+    private List<Long> clientMemberIds;
 
 }

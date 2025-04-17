@@ -14,11 +14,6 @@ public class RequestCreateRequest {
     private Long projectId;
     private Long stageId;
     private List<LinkUploadRequest.LinkUploadDTO> links;
-    private List<MemberDTO> members;
+    private List<MemberAssignDTO> members;
 
-    @Getter
-    @Setter
-    public static class MemberDTO {
-        private Long id;
-    }
 }

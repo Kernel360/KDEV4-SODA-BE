@@ -177,18 +177,21 @@ public class RequestService {
         if(requestUpdateRequest.getLinks() != null) {
             request.addLinks(linkService.buildLinks("request", request, requestUpdateRequest.getLinks()));
         }
+        if(requestUpdateRequest.getMembers() != null) {
+            designateApprover(requestUpdateRequest.getMembers(), request);
+        }
     }
 
     public Request createRequest(RequestCreateRequest dto, Member member, Stage stage) {
         Request request = buildRequest(dto, member, stage);
         List<RequestLink> requestLinks = linkService.buildLinks("request", request, dto.getLinks());
         request.addLinks(requestLinks);
-        designateApprover(dto, request);
+        designateApprover(dto.getMembers(), request);
         return requestRepository.save(request);
     }
 
-    private void designateApprover(RequestCreateRequest dto, Request request) {
-        List<Member> approvers = dto.getMembers().stream()
+    private void designateApprover(List<MemberAssignDTO> dtos, Request request) {
+        List<Member> approvers = dtos.stream()
                 .map(memberDTO -> {
                     return memberRepository.findById(memberDTO.getId())
                             .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));

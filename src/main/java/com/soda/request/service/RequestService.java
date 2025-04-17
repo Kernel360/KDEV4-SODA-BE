@@ -192,4 +192,8 @@ public class RequestService {
                 .status(RequestStatus.PENDING)
                 .build();
     }
+
+    public void changeStatusToPending(Request request) {
+        request.changeStatusToPending();
+    }
 }

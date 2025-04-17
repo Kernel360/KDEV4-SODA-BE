@@ -41,4 +41,8 @@ public class ApproverDesignation extends BaseEntity {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    public void delete() {
+        markAsDeleted();
+    }
 }

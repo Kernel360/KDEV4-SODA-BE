@@ -4,18 +4,17 @@ import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
+import com.soda.member.enums.CompanyProjectRole;
+import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.dto.*;
 import com.soda.project.entity.Project;
-import com.soda.member.enums.CompanyProjectRole;
-import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.enums.ProjectStatus;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,11 +60,15 @@ public class ProjectService {
 
         // TODO stage 수정 로직 추가 예정
 
+        log.info("프로젝트 생성 완료: 프로젝트 ID = {}", project.getId());
+
         // response 생성
         return createProjectCreateResponse(project);
     }
 
     private ProjectCreateResponse createProjectCreateResponse(Project project) {
+        log.info("프로젝트 응답 생성 시작: 프로젝트 ID = {}", project.getId());
+
         // 고객사 관련 정보를 추출하는 메서드
         List<Company> clientCompanies = companyProjectService.getClientCompaniesByRole(project, CompanyProjectRole.CLIENT_COMPANY);
         List<Member> clientManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
@@ -76,6 +79,8 @@ public class ProjectService {
     }
 
     private Project createProjectEntity(ProjectCreateRequest request) {
+        log.info("프로젝트 엔티티 생성 시작: 제목 = {}", request.getTitle());
+
         // DTO 생성
         ProjectDTO projectDTO = ProjectDTO.builder()
                 .title(request.getTitle())
@@ -92,6 +97,7 @@ public class ProjectService {
 
     private void validateProjectDates(LocalDateTime startDate, LocalDateTime endDate) {
         if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+            log.error("잘못된 날짜 범위: 시작 날짜 = {}, 종료 날짜 = {}", startDate, endDate);
             throw new GeneralException(ProjectErrorCode.INVALID_DATE_RANGE);
         }
     }
@@ -108,6 +114,8 @@ public class ProjectService {
     // TODO 우선 log 안달고 진행
     @Transactional
     public DevCompanyAssignmentResponse assignDevCompany(Long projectId, String userRole, DevCompanyAssignmentRequest request) {
+        log.info("개발사 지정 시작: 프로젝트 ID = {}", projectId);
+
         // project 유효성 검사
         Project project = getValidProject(projectId);
 
@@ -117,11 +125,15 @@ public class ProjectService {
         // 고객사 지정
         assignDevCompanies(request, project);
 
+        log.info("개발사 지정 완료: 프로젝트 ID = {}", projectId);
+
         // response 생성
         return createDevCompanyAssignmentResponse(project);
     }
 
     private DevCompanyAssignmentResponse createDevCompanyAssignmentResponse(Project project) {
+        log.info("개발사 지정 응답 생성 시작: 프로젝트 ID = {}", project.getId());
+
         List<Company> devCompanies = companyProjectService.getClientCompaniesByRole(project, CompanyProjectRole.DEV_COMPANY);
         List<Member> devManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
         List<Member> devMembers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
@@ -131,6 +143,8 @@ public class ProjectService {
 
 
     private void assignClientCompanies(ProjectCreateRequest request, Project project) {
+        log.info("고객사 지정 시작: 프로젝트 ID = {}", project.getId());
+
         assignCompaniesAndMembers(
                 request.getClientCompanyIds(),
                 request.getClientMangerIds(),
@@ -143,6 +157,8 @@ public class ProjectService {
     }
 
     void assignDevCompanies(DevCompanyAssignmentRequest request, Project project) {
+        log.info("개발사 및 구성원 지정 시작: 프로젝트 ID = {}", project.getId());
+
         assignCompaniesAndMembers(
                 request.getDevCompanyIds(),
                 request.getDevMangerIds(),
@@ -161,6 +177,8 @@ public class ProjectService {
                                             CompanyProjectRole companyRole,
                                             MemberProjectRole managerRole,
                                             MemberProjectRole memberRole) {
+        log.info("회사 및 구성원 지정 시작: 프로젝트 ID = {}", project.getId());
+
         List<Member> managers = memberService.findByIds(managerIds);
         List<Member> members = memberService.findByIds(memberIds);
 
@@ -170,17 +188,25 @@ public class ProjectService {
             memberProjectService.assignMembersToProject(company, managers, project, managerRole);
             memberProjectService.assignMembersToProject(company, members, project, memberRole);
         }
+
+        log.info("회사 및 구성원 지정 완료: 프로젝트 ID = {}", project.getId());
     }
 
     private void validateAdminRole(String userRole) {
         if (!ADMIN_ROLE.equals(userRole)) {
+            log.error("권한 없음: 요청한 사용자 역할 = {}", userRole);
             throw new GeneralException(ProjectErrorCode.UNAUTHORIZED_USER);
         }
     }
 
     public Project getValidProject(Long projectId) {
+        log.info("프로젝트 조회 시작: 프로젝트 ID = {}", projectId);
+
         return projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
+                .orElseThrow(() -> {
+                    log.error("프로젝트를 찾을 수 없음: 프로젝트 ID = {}", projectId);
+                    return new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);
+                });
     }
 
     /**
@@ -190,6 +216,8 @@ public class ProjectService {
      * @return ProjectListResponse 형식으로 프로젝트 목록 반환
      */
     public List<ProjectListResponse> getAllProjects(ProjectStatus status) {
+        log.info("전체 프로젝트 조회 시작: 상태 = {}", status);
+
         List<Project> projectList;
 
         if (status != null) {
@@ -197,6 +225,8 @@ public class ProjectService {
         } else {
             projectList = projectRepository.findByIsDeletedFalse();
         }
+
+        log.info("프로젝트 조회 완료: 조회된 프로젝트 수 = {}", projectList.size());
 
         return projectList.stream()
                 .map(this::mapToProjectListResponse)

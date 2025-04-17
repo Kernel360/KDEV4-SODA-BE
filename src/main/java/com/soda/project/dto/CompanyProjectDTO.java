@@ -1,4 +1,4 @@
-package com.soda.project.domain;
+package com.soda.project.dto;
 
 import com.soda.member.entity.Company;
 import com.soda.member.enums.CompanyProjectRole;
@@ -10,12 +10,12 @@ import lombok.Getter;
 @Getter
 public class CompanyProjectDTO {
 
-    private Long companyId;
-    private Long projectId;
-    private CompanyProjectRole companyProjectRole;
+    private final Long companyId;
+    private final Long projectId;
+    private final CompanyProjectRole companyProjectRole;
 
     @Builder
-    public CompanyProjectDTO (Long companyId, Long projectId, CompanyProjectRole companyProjectRole) {
+    public CompanyProjectDTO(Long companyId, Long projectId, CompanyProjectRole companyProjectRole) {
         this.companyId = companyId;
         this.projectId = projectId;
         this.companyProjectRole = companyProjectRole;

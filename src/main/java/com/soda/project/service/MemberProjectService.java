@@ -3,18 +3,24 @@ package com.soda.project.service;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
-import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.entity.MemberProject;
 import com.soda.project.entity.Project;
+import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.MemberProjectRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
+@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class MemberProjectService {
@@ -86,11 +92,13 @@ public class MemberProjectService {
     }
 
     // 사용자가 참여한 프로젝트 리스트 조회
-    public List<Long> getProjectIdsByUserId(Long userId) {
-        List<MemberProject> memberProjects = memberProjectRepository.findByMemberId(userId);
-        return memberProjects.stream()
-                .map(memberProject -> memberProject.getProject().getId())
-                .collect(Collectors.toList());
+    public Page<Long> getProjectIdsByUserId(Long userId, Pageable pageable) {
+        log.info("사용자가 참여한 프로젝트 ID 목록 조회 시작: 사용자 ID = {}", userId);
+
+        Page<MemberProject> memberProjects = memberProjectRepository.findByMemberId(userId, pageable);
+        log.info("사용자 ID = {}가 참여한 프로젝트 ID 목록 조회 완료: 조회된 프로젝트 수 = {}", userId, memberProjects.getSize());
+
+        return memberProjects.map(memberProject -> memberProject.getProject().getId());
     }
 
     /**

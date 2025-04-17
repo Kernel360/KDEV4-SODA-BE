@@ -8,301 +8,266 @@ import com.soda.member.enums.CompanyProjectRole;
 import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
-import com.soda.project.domain.*;
+import com.soda.project.dto.*;
 import com.soda.project.entity.Project;
 import com.soda.project.enums.ProjectStatus;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
+    private static final String ADMIN_ROLE = "ADMIN";
+    private static final String USER_ROLE = "USER";
 
     private final ProjectRepository projectRepository;
-    private final CompanyProjectService companyProjectService;
-    private final MemberProjectService memberProjectService;
     private final MemberService memberService;
     private final CompanyService companyService;
-    private final StageService stageService;
+    private final CompanyProjectService companyProjectService;
+    private final MemberProjectService memberProjectService;
 
-    private static final String ADMIN_ROLE = "ADMIN";
-
-    /*
-        프로젝트 생성하기
-        - 기본 정보 생성
-        - 개발사 지정, 관리자/직원 지정
-        - 고객사 지정, 관리자/직원 지정
+    /**
+     * 프로젝트를 생성하는 메서드입니다.
+     *
+     * @param userRole  현재 요청한 사용자의 역할 (ADMIN만 허용)
+     * @param request   프로젝트 생성 요청 정보를 담은 DTO
+     * @return          생성된 프로젝트에 대한 응답 DTO
+     * @throws GeneralException 사용자가 관리자 권한이 아닌 경우 또는 유효하지 않은 데이터가 입력된 경우 발생
      */
     @LoggableEntityAction(action = "CREATE", entityClass = Project.class)
     @Transactional
-    public ProjectCreateResponse createProject(ProjectCreateRequest request) {
-        // 추가 유효성 검사 (날짜 순서)
-        validateProjectDates(request.getStartDate(), request.getEndDate());
-        // 1. 프로젝트 제목 중복 체크
-        if (projectRepository.existsByTitle(request.getTitle())) {
-            throw new GeneralException(ProjectErrorCode.PROJECT_TITLE_DUPLICATED);
-        }
+    public ProjectCreateResponse createProject(String userRole, ProjectCreateRequest request) {
+        // 사용자 유효성 검사 관리자만 프로젝트 생성 가능
+        validateAdminRole(userRole);
 
-        // 2. 기본 정보 생성
+        // 날짜 순서 유효성 검사
+        validateProjectDates(request.getStartDate(), request.getEndDate());
+
+        // 프로젝트 기본 정보 생성
         Project project = createProjectEntity(request);
 
-        // 3. 개발사 및 고객사 지정
-        assignCompanyAndMembersToProject(request, project);
+        // 고객사 지정
+        assignClientCompanies(request, project);
 
-        stageService.createInitialStages(project.getId());
+        // TODO stage 수정 로직 추가 예정
 
-        // 4. response DTO 생성
+        log.info("프로젝트 생성 완료: 프로젝트 ID = {}", project.getId());
+
+        // response 생성
         return createProjectCreateResponse(project);
     }
 
+    private ProjectCreateResponse createProjectCreateResponse(Project project) {
+        log.info("프로젝트 응답 생성 시작: 프로젝트 ID = {}", project.getId());
+
+        // 고객사 관련 정보를 추출하는 메서드
+        List<Company> clientCompanies = companyProjectService.getClientCompaniesByRole(project, CompanyProjectRole.CLIENT_COMPANY);
+        List<Member> clientManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
+        List<Member> clientMembers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
+
+        // 응답 DTO 생성
+        return ProjectCreateResponse.from(project, clientCompanies, clientManagers, clientMembers);
+    }
+
     private Project createProjectEntity(ProjectCreateRequest request) {
+        log.info("프로젝트 엔티티 생성 시작: 제목 = {}", request.getTitle());
+
         // DTO 생성
         ProjectDTO projectDTO = ProjectDTO.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
-                .status(request.getStatus() != null ? request.getStatus() : ProjectStatus.CONTRACT)
+                .status(ProjectStatus.CONTRACT) // 고정값으로 지정
                 .build();
 
-        // DTO -> Entity
+        // DTO → Entity 변환 후 저장
         Project project = projectDTO.toEntity();
         return projectRepository.save(project);
     }
 
-    private void assignCompanyAndMembersToProject(ProjectCreateRequest request, Project project) {
-        List<Member> devManagers = memberService.findByIds(request.getDevManagers());
-        List<Member> devMembers = memberService.findByIds(request.getDevMembers());
-        List<Member> clientManagers = memberService.findByIds(request.getClientManagers());
-        List<Member> clientMembers = memberService.findByIds(request.getClientMembers());
-
-        assignCompanyAndMembers(request.getDevCompanyId(), devManagers, project, CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_MANAGER);
-        assignCompanyAndMembers(request.getDevCompanyId(), devMembers, project, CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_PARTICIPANT);
-        assignCompanyAndMembers(request.getClientCompanyId(), clientManagers, project, CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_MANAGER);
-        assignCompanyAndMembers(request.getClientCompanyId(), clientMembers, project, CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_PARTICIPANT);
-    }
-
-    private void assignCompanyAndMembers(Long companyId, List<Member> members, Project project, CompanyProjectRole companyRole, MemberProjectRole memberRole) {
-        Company company = companyService.getCompany(companyId);
-        companyProjectService.assignCompanyToProject(company, project, companyRole);
-        memberProjectService.assignMembersToProject(company, members, project, memberRole);
-    }
-
-    private ProjectCreateResponse createProjectCreateResponse(Project project) {
-        List<Member> devManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
-        List<Member> devParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
-        List<Member> clientManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
-        List<Member> clientParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
-
-        return ProjectCreateResponse.builder()
-                .projectId(project.getId())
-                .title(project.getTitle())
-                .description(project.getDescription())
-                .startDate(project.getStartDate())
-                .endDate(project.getEndDate())
-                .status(project.getStatus())
-                .devCompanyName(devManagers.get(0).getCompany().getName())
-                .devCompanyManagers(extractMemberNames(devManagers))
-                .devCompanyMembers(extractMemberNames(devParticipants))
-                .clientCompanyName(clientManagers.get(0).getCompany().getName())
-                .clientCompanyManagers(extractMemberNames(clientManagers))
-                .clientCompanyMembers(extractMemberNames(clientParticipants))
-                .build();
-    }
-
-    private List<String> extractMemberNames(List<Member> members) {
-        return members.stream()
-                .map(Member::getName)
-                .collect(Collectors.toList());
-    }
-
-    // 전체 프로젝트 조회
-    public List<ProjectListResponse> getAllProjects() {
-        return projectRepository.findByIsDeletedFalse().stream()
-                .map(this::mapToProjectListResponse)
-                .collect(Collectors.toList());
-    }
-
-    public List<ProjectListResponse> getMyProjects(Long userId, String userRole) {
-        if ("USER".equals(userRole)) {
-            List<Long> projectIds = memberProjectService.getProjectIdsByUserId(userId);
-            List<Project> userProjects = projectRepository.findByIdIn(projectIds);
-
-            return userProjects.stream()
-                    .map(this::mapToProjectListResponse)
-                    .collect(Collectors.toList());
-        }
-        return Collections.emptyList();
-    }
-
-    private ProjectListResponse mapToProjectListResponse(Project project) {
-        String devCompanyName = companyProjectService.getCompanyNameByRole(project, CompanyProjectRole.DEV_COMPANY);
-        String clientCompanyName = companyProjectService.getCompanyNameByRole(project, CompanyProjectRole.CLIENT_COMPANY);
-
-        return ProjectListResponse.builder()
-                .id(project.getId())
-                .title(project.getTitle())
-                .description(project.getDescription())
-                .startDate(project.getStartDate())
-                .endDate(project.getEndDate())
-                .status(project.getStatus())
-                .devCompanyName(devCompanyName)
-                .clientCompanyName(clientCompanyName)
-                .build();
-    }
-
-    // 개별 프로젝트 조회
-    public ProjectResponse getProject(Long projectId, Long userId, String userRole) {
-        Project project = getValidProject(projectId);
-        Member member = memberService.findMemberById(userId);
-
-        return mapToProjectResponse(project, member, userRole);
-    }
-
-    private ProjectResponse mapToProjectResponse(Project project, Member member, String userRole) {
-        String devCompanyName = companyProjectService.getCompanyNameByRole(project, CompanyProjectRole.DEV_COMPANY);
-        String clientCompanyName = companyProjectService.getCompanyNameByRole(project, CompanyProjectRole.CLIENT_COMPANY);
-
-        String currentMemberProjectRole = null;
-        String currentcompanyProjectRole = null;
-        if (userRole.equals("USER")) {
-            currentMemberProjectRole = memberProjectService.getMemberRoleInProject(member, project).getDescription();
-            currentcompanyProjectRole = companyProjectService.getCompanyRoleInProject(member.getCompany(), project).getDescription();
-        }
-        if (userRole.equals(ADMIN_ROLE)) {
-            currentMemberProjectRole = ADMIN_ROLE;
-            currentcompanyProjectRole = ADMIN_ROLE;
-        }
-
-
-        List<Member> devManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
-        List<Member> devParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
-        List<Member> clientManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
-        List<Member> clientParticipants = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
-
-        return ProjectResponse.builder()
-                .id(project.getId())
-                .title(project.getTitle())
-                .description(project.getDescription())
-                .startDate(project.getStartDate())
-                .endDate(project.getEndDate())
-                .status(project.getStatus())
-                .currentUserProjectRole(currentMemberProjectRole)
-                .currentUserCompanyRole(currentcompanyProjectRole)
-                .devCompanyName(devCompanyName)
-                .devCompanyManagers(extractMemberNames(devManagers))
-                .devCompanyMembers(extractMemberNames(devParticipants))
-                .clientCompanyName(clientCompanyName)
-                .clientCompanyManagers(extractMemberNames(clientManagers))
-                .clientCompanyMembers(extractMemberNames(clientParticipants))
-                .build();
-    }
-
-    // project 삭제 (연관된 company_project, member_project 같이 삭제)
-    @LoggableEntityAction(action = "DELETE", entityClass = Project.class)
-    @Transactional
-    public void deleteProject(Long projectId) {
-        // 1. 프로젝트 존재 여부 체크
-        Project project = getValidProject(projectId);
-
-        // 2. 프로젝트 상태를 삭제된 상태로 변경
-        project.delete();
-
-        // 3. company project, member project 삭제된 상태로 변경
-        companyProjectService.deleteCompanyProjects(project);
-        memberProjectService.deleteMemberProjects(project);
-    }
-
-    /*
-        프로젝트 수정하기
-        - 기본 정보 수정
-        - 개발사 수정, 관리자/직원 수정
-        - 고객사 수정, 관리자/직원 수정
-     */
-    @LoggableEntityAction(action = "UPDATE", entityClass = Project.class)
-    @Transactional
-    public ProjectCreateResponse updateProject(Long projectId, ProjectCreateRequest request) {
-        validateProjectDates(request.getStartDate(), request.getEndDate());
-        // 1. 프로젝트 존재 여부 체크
-        Project project = getValidProject(projectId);
-
-        // 프로젝트 제목 중복 체크
-        projectRepository.findByTitleAndIdNot(request.getTitle(), projectId).ifPresent(p -> {
-            throw new GeneralException(ProjectErrorCode.PROJECT_TITLE_DUPLICATED);
-        });
-
-        // 2. 프로젝트 기본 정보 수정
-        updateProjectInfo(project, request);
-
-        // 3. 개발사 및 고객사 담당자들 및 참여자들 수정
-        updateCompanyAndMembersForProject(request, project);
-
-        return createProjectCreateResponse(project);
-    }
-
-    private void updateCompanyAndMembersForProject(ProjectCreateRequest request, Project project) {
-        // 4개의 역할에 대해 멤버를 추가하거나 수정
-        updateCompanyAndMembers(request.getDevCompanyId(), request.getDevManagers(), request.getDevMembers(), project,
-                CompanyProjectRole.DEV_COMPANY, MemberProjectRole.DEV_MANAGER, MemberProjectRole.DEV_PARTICIPANT);
-        updateCompanyAndMembers(request.getClientCompanyId(), request.getClientManagers(), request.getClientMembers(), project,
-                CompanyProjectRole.CLIENT_COMPANY, MemberProjectRole.CLI_MANAGER, MemberProjectRole.CLI_PARTICIPANT);
-    }
-
-    private void updateCompanyAndMembers(Long companyId, List<Long> managerIds, List<Long> memberIds, Project project,
-                                         CompanyProjectRole companyRole, MemberProjectRole managerRole, MemberProjectRole memberRole) {
-        // 1. 회사 지정
-        Company company = companyService.getCompany(companyId);
-        companyProjectService.assignCompanyToProject(company, project, companyRole);
-
-        // 2. 개발사/고객사 관리자 및 참여자 지정
-        List<Member> managers = memberService.findByIds(managerIds);
-        List<Member> members = memberService.findByIds(memberIds);
-
-        // 3. 관리자 및 참여자 멤버 추가/수정
-        memberProjectService.addOrUpdateMembersInProject(project, managers, managerRole);
-        memberProjectService.addOrUpdateMembersInProject(project, members, memberRole);
-    }
-
-    private void updateProjectInfo(Project project, ProjectCreateRequest request) {
-        project.updateProject(
-                request.getTitle(),
-                request.getDescription(),
-                request.getStartDate(),
-                request.getEndDate(),
-                request.getStatus());
-        projectRepository.save(project);  // 프로젝트 수정 사항 저장
-    }
-
-    public Project getValidProject(Long projectId) {
-        return projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
-    }
-
     private void validateProjectDates(LocalDateTime startDate, LocalDateTime endDate) {
         if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+            log.error("잘못된 날짜 범위: 시작 날짜 = {}, 종료 날짜 = {}", startDate, endDate);
             throw new GeneralException(ProjectErrorCode.INVALID_DATE_RANGE);
         }
     }
 
-    @LoggableEntityAction(action = "UPDATE_STATUS", entityClass = Project.class)
+    /**
+     * 기존 프로젝트에 개발사 및 해당 개발사의 담당자/참여자를 지정하는 메서드
+     *
+     * @param projectId 프로젝트 ID (기존에 존재하는 프로젝트)
+     * @param userRole 현재 요청자의 역할 (ADMIN만 허용)
+     * @param request 개발사 및 구성원 지정 요청 정보를 담은 DTO
+     * @return 개발사 이름, 담당자 목록, 일반 참여자 목록이 포함된 응답 DTO
+     * @throws GeneralException 프로젝트가 존재하지 않거나, 요청자가 ADMIN 아닐 경우 예외 발생
+     */
+    // TODO 우선 log 안달고 진행
     @Transactional
-    public ProjectCreateResponse updateProjectStatus(Long projectId, ProjectStatusUpdateRequest request) {
+    public DevCompanyAssignmentResponse assignDevCompany(Long projectId, String userRole, DevCompanyAssignmentRequest request) {
+        log.info("개발사 지정 시작: 프로젝트 ID = {}", projectId);
+
+        // project 유효성 검사
         Project project = getValidProject(projectId);
 
-        project.changeStatus(request.getStatus());
+        // ADMIN 확인
+        validateAdminRole(userRole);
 
-        projectRepository.save(project);
+        // 고객사 지정
+        assignDevCompanies(request, project);
 
-        return createProjectCreateResponse(project);
+        log.info("개발사 지정 완료: 프로젝트 ID = {}", projectId);
 
+        // response 생성
+        return createDevCompanyAssignmentResponse(project);
     }
+
+    private DevCompanyAssignmentResponse createDevCompanyAssignmentResponse(Project project) {
+        log.info("개발사 지정 응답 생성 시작: 프로젝트 ID = {}", project.getId());
+
+        List<Company> devCompanies = companyProjectService.getClientCompaniesByRole(project, CompanyProjectRole.DEV_COMPANY);
+        List<Member> devManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
+        List<Member> devMembers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
+
+        return DevCompanyAssignmentResponse.from(devCompanies, devManagers, devMembers);
+    }
+
+
+    private void assignClientCompanies(ProjectCreateRequest request, Project project) {
+        log.info("고객사 지정 시작: 프로젝트 ID = {}", project.getId());
+
+        assignCompaniesAndMembers(
+                request.getClientCompanyIds(),
+                request.getClientMangerIds(),
+                request.getClientMemberIds(),
+                project,
+                CompanyProjectRole.CLIENT_COMPANY,
+                MemberProjectRole.CLI_MANAGER,
+                MemberProjectRole.CLI_PARTICIPANT
+        );
+    }
+
+    void assignDevCompanies(DevCompanyAssignmentRequest request, Project project) {
+        log.info("개발사 및 구성원 지정 시작: 프로젝트 ID = {}", project.getId());
+
+        assignCompaniesAndMembers(
+                request.getDevCompanyIds(),
+                request.getDevMangerIds(),
+                request.getDevMemberIds(),
+                project,
+                CompanyProjectRole.DEV_COMPANY,
+                MemberProjectRole.DEV_MANAGER,
+                MemberProjectRole.DEV_PARTICIPANT
+        );
+    }
+
+    private void assignCompaniesAndMembers( List<Long> companyIds,
+                                            List<Long> managerIds,
+                                            List<Long> memberIds,
+                                            Project project,
+                                            CompanyProjectRole companyRole,
+                                            MemberProjectRole managerRole,
+                                            MemberProjectRole memberRole) {
+        log.info("회사 및 구성원 지정 시작: 프로젝트 ID = {}", project.getId());
+
+        List<Member> managers = memberService.findByIds(managerIds);
+        List<Member> members = memberService.findByIds(memberIds);
+
+        for (Long companyId : companyIds) {
+            Company company = companyService.getCompany(companyId);
+            companyProjectService.assignCompanyToProject(company, project, companyRole);
+            memberProjectService.assignMembersToProject(company, managers, project, managerRole);
+            memberProjectService.assignMembersToProject(company, members, project, memberRole);
+        }
+
+        log.info("회사 및 구성원 지정 완료: 프로젝트 ID = {}", project.getId());
+    }
+
+    private void validateAdminRole(String userRole) {
+        if (!ADMIN_ROLE.equals(userRole)) {
+            log.error("권한 없음: 요청한 사용자 역할 = {}", userRole);
+            throw new GeneralException(ProjectErrorCode.UNAUTHORIZED_USER);
+        }
+    }
+
+    public Project getValidProject(Long projectId) {
+        log.info("프로젝트 조회 시작: 프로젝트 ID = {}", projectId);
+
+        return projectRepository.findByIdAndIsDeletedFalse(projectId)
+                .orElseThrow(() -> {
+                    log.error("프로젝트를 찾을 수 없음: 프로젝트 ID = {}", projectId);
+                    return new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);
+                });
+    }
+
+    /**
+     * 전체 프로젝트 목록 조회하는 메서드
+     * 프로젝트 상태에 따라 필터링해서 반환할 수 있음
+     * @param status 필터링할 프로젝트 상태 (만약 null일 경우 전체 프로젝트 반환)
+     * @return ProjectListResponse 형식으로 프로젝트 목록 반환
+     */
+    public Page<ProjectListResponse> getAllProjects(ProjectStatus status, Pageable pageable) {
+        log.info("전체 프로젝트 조회 시작: 상태 = {}, 페이지 번호 = {}, 페이지 크기 = {}",
+                status != null ? status : "전체",
+                pageable.getPageNumber(),
+                pageable.getPageSize());
+
+        Page<Project> projectList;
+
+        if (status != null) {
+            projectList = projectRepository.findByStatusAndIsDeletedFalse(status, pageable);
+        } else {
+            projectList = projectRepository.findByIsDeletedFalse(pageable);
+        }
+
+        log.info("프로젝트 조회 완료: 조회된 페이지 크기 = {}, 총 프로젝트 수 = {}",
+                projectList.getSize(),
+                projectList.getTotalElements());
+
+        return projectList.map(this::mapToProjectListResponse);
+    }
+
+    /**
+     * 특정 사용자가 참여한 프로젝트 목록 조회 메서드
+     *
+     * @param userId 조회하려는 사용자 ID
+     * @param userRole 조회하려는 사용자의 역할
+     * @param pageable 페이지네이션
+     * @return ProjectListResponse 형식으로 참여 중 프로젝트 목록 반환
+     */
+    public Page<ProjectListResponse> getMyProjects(Long userId, String userRole, Pageable pageable) {
+        log.info("사용자 프로젝트 조회 시작: 사용자 ID = {}, 사용자 역할 = {}", userId, userRole);
+
+        // 사용자 확인
+        if (USER_ROLE.equals(userRole)) {
+            log.info("사용자 프로젝트 조회: 사용자 ID = {}에 대한 프로젝트 목록 조회 시작", userId);
+
+            Page<Long> projectIds = memberProjectService.getProjectIdsByUserId(userId, pageable);
+            log.info("사용자 ID = {}가 참여한 프로젝트 ID 목록 조회 완료: 조회된 프로젝트 수 = {}", userId, projectIds.getSize());
+
+            Page<Project> userProjectPage = projectRepository.findByIdIn(projectIds.getContent(), pageable);
+            log.info("사용자 ID = {}에 대한 프로젝트 목록 조회 완료: 조회된 프로젝트 수 = {}", userId, userProjectPage.getSize());
+
+            // 프로젝트 목록을 ProjectListResponse 형태로 변환 후 반환
+            return userProjectPage.map(this::mapToProjectListResponse);
+        }
+        log.warn("사용자 ID = {}가 USER_ROLE이 아님. 프로젝트 목록 조회 불가", userId);
+        return Page.empty();
+    }
+
+    private ProjectListResponse mapToProjectListResponse(Project project) {
+        return ProjectListResponse.from(project);
+    }
+
 }

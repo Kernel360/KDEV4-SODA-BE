@@ -1,24 +1,22 @@
-package com.soda.project.domain;
+package com.soda.project.dto;
 
 import com.soda.project.entity.Project;
 import com.soda.project.enums.ProjectStatus;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
 public class ProjectDTO {
-    private String title;
-    private String description;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-    private ProjectStatus status;
+    private final String title;
+    private final String description;
+    private final LocalDateTime startDate;
+    private final LocalDateTime endDate;
+    private final ProjectStatus status;
 
     @Builder
-    public ProjectDTO(String title,String description, LocalDateTime startDate, LocalDateTime endDate, ProjectStatus status) {
+    public ProjectDTO(String title, String description, LocalDateTime startDate, LocalDateTime endDate, ProjectStatus status) {
         this.title = title;
         this.description = description;
         this.startDate = startDate;

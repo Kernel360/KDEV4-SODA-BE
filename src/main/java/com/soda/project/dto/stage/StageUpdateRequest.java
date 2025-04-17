@@ -1,4 +1,4 @@
-package com.soda.project.domain.stage;
+package com.soda.project.dto.stage;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

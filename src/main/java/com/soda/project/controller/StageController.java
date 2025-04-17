@@ -1,9 +1,8 @@
 package com.soda.project.controller;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.project.domain.stage.*;
+import com.soda.project.dto.stage.*;
 import com.soda.project.service.StageService;
-import com.soda.request.entity.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

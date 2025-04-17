@@ -1,4 +1,4 @@
-package com.soda.project.domain.stage;
+package com.soda.project.dto.stage;
 
 import com.soda.project.entity.Stage;
 import lombok.Getter;

@@ -2,7 +2,7 @@ package com.soda.project.service;
 
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
-import com.soda.project.domain.CompanyProjectDTO;
+import com.soda.project.domain.CompanyProjectDTO2;
 import com.soda.project.entity.CompanyProject;
 import com.soda.project.entity.Project;
 import com.soda.member.enums.CompanyProjectRole;
@@ -24,7 +24,7 @@ public class CompanyProjectService {
 
     public void assignCompanyToProject(Company company, Project project, CompanyProjectRole role) {
         if (!company.getIsDeleted() && !companyProjectRepository.existsByCompanyAndProject(company, project)) {
-            CompanyProjectDTO companyProjectDTO = CompanyProjectDTO.builder()
+            CompanyProjectDTO2 companyProjectDTO = CompanyProjectDTO2.builder()
                     .companyId(company.getId())
                     .projectId(project.getId())
                     .companyProjectRole(role)

@@ -86,4 +86,8 @@ public class Request extends BaseEntity {
     public void reject() {
         this.status = RequestStatus.REJECTED;
     }
+
+    public void changeStatusToPending() {
+        this.status = RequestStatus.PENDING;
+    }
 }

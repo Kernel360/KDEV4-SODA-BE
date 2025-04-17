@@ -1,16 +1,16 @@
 package com.soda.project.controller;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.project.dto.DevCompanyAssignmentRequest;
-import com.soda.project.dto.DevCompanyAssignmentResponse;
-import com.soda.project.dto.ProjectCreateRequest;
-import com.soda.project.dto.ProjectCreateResponse;
+import com.soda.project.dto.*;
+import com.soda.project.enums.ProjectStatus;
 import com.soda.project.service.ProjectService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/projects")
@@ -33,6 +33,12 @@ public class ProjectController {
                                                                                           @Valid @RequestBody DevCompanyAssignmentRequest devCompanyAssignmentRequest) {
         String userRole = (String) request.getAttribute("userRole").toString();
         DevCompanyAssignmentResponse response = projectService.assignDevCompany(projectId, userRole, devCompanyAssignmentRequest);
-        return null;
+        return ResponseEntity.ok(ApiResponseForm.success(response, "project에 개발사 지정 성공"));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<ApiResponseForm<List<ProjectListResponse>>> getAllProjects(@RequestParam(required = false)ProjectStatus status) {
+        List<ProjectListResponse> projectList = projectService.getAllProjects(status);
+        return ResponseEntity.ok(ApiResponseForm.success(projectList));
     }
 }

@@ -15,11 +15,13 @@ import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional(readOnly = true)
@@ -93,7 +95,7 @@ public class ProjectService {
             throw new GeneralException(ProjectErrorCode.INVALID_DATE_RANGE);
         }
     }
-    
+
     /**
      * 기존 프로젝트에 개발사 및 해당 개발사의 담당자/참여자를 지정하는 메서드
      *
@@ -179,5 +181,29 @@ public class ProjectService {
     public Project getValidProject(Long projectId) {
         return projectRepository.findByIdAndIsDeletedFalse(projectId)
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
+    }
+
+    /**
+     * 전체 프로젝트 목록 조회하는 메서드
+     * 프로젝트 상태에 따라 필터링해서 반환할 수 있음
+     * @param status 필터링할 프로젝트 상태 (만약 null일 경우 전체 프로젝트 반환)
+     * @return ProjectListResponse 형식으로 프로젝트 목록 반환
+     */
+    public List<ProjectListResponse> getAllProjects(ProjectStatus status) {
+        List<Project> projectList;
+
+        if (status != null) {
+            projectList = projectRepository.findByStatusAndIsDeletedFalse(status);
+        } else {
+            projectList = projectRepository.findByIsDeletedFalse();
+        }
+
+        return projectList.stream()
+                .map(this::mapToProjectListResponse)
+                .collect(Collectors.toList());
+    }
+
+    private ProjectListResponse mapToProjectListResponse(Project project) {
+        return ProjectListResponse.from(project);
     }
 }

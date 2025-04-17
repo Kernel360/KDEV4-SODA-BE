@@ -94,4 +94,11 @@ public class Request extends BaseEntity {
     public void changeStatusToPending() {
         this.status = RequestStatus.PENDING;
     }
+
+    public void addApprovers(List<ApproverDesignation> approverDesignations) {
+        if (this.approvers == null) {
+            this.approvers = new ArrayList<>();
+        }
+        this.approvers.addAll(approverDesignations);
+    }
 }

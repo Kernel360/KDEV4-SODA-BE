@@ -197,7 +197,7 @@ public class RequestService {
                             .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
                 })
                 .collect(Collectors.toList());
-        approverDesignationRepository.saveAll(ApproverDesignation.designateApprover(request, approvers));
+        request.addApprovers(ApproverDesignation.designateApprover(request, approvers));
     }
 
     private Request buildRequest(RequestCreateRequest dto, Member member, Stage stage) {

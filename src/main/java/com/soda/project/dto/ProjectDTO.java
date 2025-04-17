@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class ProjectCommand {
+public class ProjectDTO {
     private final String title;
     private final String description;
     private final LocalDateTime startDate;
@@ -16,7 +16,7 @@ public class ProjectCommand {
     private final ProjectStatus status;
 
     @Builder
-    public ProjectCommand(String title, String description, LocalDateTime startDate, LocalDateTime endDate, ProjectStatus status) {
+    public ProjectDTO(String title, String description, LocalDateTime startDate, LocalDateTime endDate, ProjectStatus status) {
         this.title = title;
         this.description = description;
         this.startDate = startDate;
@@ -25,8 +25,8 @@ public class ProjectCommand {
     }
 
     // Entity → DTO 변환
-    public static ProjectCommand fromEntity(Project project) {
-        return ProjectCommand.builder()
+    public static ProjectDTO fromEntity(Project project) {
+        return ProjectDTO.builder()
                 .title(project.getTitle())
                 .description(project.getDescription())
                 .startDate(project.getStartDate())

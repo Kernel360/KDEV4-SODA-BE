@@ -8,22 +8,22 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class CompanyProjectCommand {
+public class CompanyProjectDTO {
 
     private final Long companyId;
     private final Long projectId;
     private final CompanyProjectRole companyProjectRole;
 
     @Builder
-    public CompanyProjectCommand(Long companyId, Long projectId, CompanyProjectRole companyProjectRole) {
+    public CompanyProjectDTO(Long companyId, Long projectId, CompanyProjectRole companyProjectRole) {
         this.companyId = companyId;
         this.projectId = projectId;
         this.companyProjectRole = companyProjectRole;
     }
 
     // Entity → DTO 변환
-    public static CompanyProjectCommand fromEntity(CompanyProject companyProject) {
-        return CompanyProjectCommand.builder()
+    public static CompanyProjectDTO fromEntity(CompanyProject companyProject) {
+        return CompanyProjectDTO.builder()
                 .companyId(companyProject.getCompany().getId())
                 .projectId(companyProject.getProject().getId())
                 .companyProjectRole(companyProject.getCompanyProjectRole())

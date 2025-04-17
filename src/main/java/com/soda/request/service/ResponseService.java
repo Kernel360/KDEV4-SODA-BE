@@ -107,7 +107,15 @@ public class ResponseService {
         // request 소프트 삭제
         response.delete();
 
+        checkAndchangeStatusToPending(response);
+
         return ResponseDeleteResponse.fromEntity(response);
+    }
+
+    private void checkAndchangeStatusToPending(Response response) {
+        if(responseRepository.countNotDeletedByRequestId(response.getRequest().getId()) == 0) {
+            requestService.changeStatusToPending(response.getRequest());
+        }
     }
 
 

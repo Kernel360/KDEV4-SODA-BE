@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,13 +40,14 @@ public class ProjectController {
 
     @GetMapping("")
     public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getAllProjects(@RequestParam(required = false) ProjectStatus status,
-                                                                                     Pageable pageable) {
+                                                                                     @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<ProjectListResponse> projectList = projectService.getAllProjects(status, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(projectList));
     }
 
     @GetMapping("/my")
-    public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getMyProjects(HttpServletRequest request, Pageable pageable) {
+    public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getMyProjects(HttpServletRequest request,
+                                                                                    @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) request.getAttribute("memberId");
         String userRole = (String) request.getAttribute("userRole").toString();
         Page<ProjectListResponse> response = projectService.getMyProjects(userId, userRole, pageable);

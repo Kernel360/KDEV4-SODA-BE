@@ -226,9 +226,9 @@ public class ProjectService {
         Page<Project> projectList;
 
         if (status != null) {
-            projectList = projectRepository.findByStatusAndIsDeletedFalseOrderByCreatedAtDesc(status, pageable);
+            projectList = projectRepository.findByStatusAndIsDeletedFalse(status, pageable);
         } else {
-            projectList = projectRepository.findByIsDeletedFalseOrderByCreatedAtDesc(pageable);
+            projectList = projectRepository.findByIsDeletedFalse(pageable);
         }
 
         log.info("프로젝트 조회 완료: 조회된 페이지 크기 = {}, 총 프로젝트 수 = {}",

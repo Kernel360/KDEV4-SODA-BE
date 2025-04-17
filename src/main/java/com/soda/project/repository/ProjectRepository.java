@@ -26,6 +26,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Optional<Project> findByTitleAndIdNot(String title, Long projectId);
 
     // project status 별로 조회
-    Page<Project> findByStatusAndIsDeletedFalse(@Param("status") ProjectStatus status, Pageable pageable);
+    Page<Project> findByStatusAndIsDeletedFalse(ProjectStatus status, Pageable pageable);
 
 }

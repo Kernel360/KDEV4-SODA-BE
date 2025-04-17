@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional(readOnly = true)
@@ -72,7 +73,7 @@ public class ProjectService {
         log.info("프로젝트 응답 생성 시작: 프로젝트 ID = {}", project.getId());
 
         // 고객사 관련 정보를 추출하는 메서드
-        List<Company> clientCompanies = companyProjectService.getClientCompaniesByRole(project, CompanyProjectRole.CLIENT_COMPANY);
+        List<Company> clientCompanies = companyProjectService.getCompaniesByRole(project, CompanyProjectRole.CLIENT_COMPANY);
         List<Member> clientManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
         List<Member> clientMembers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
 
@@ -136,7 +137,7 @@ public class ProjectService {
     private DevCompanyAssignmentResponse createDevCompanyAssignmentResponse(Project project) {
         log.info("개발사 지정 응답 생성 시작: 프로젝트 ID = {}", project.getId());
 
-        List<Company> devCompanies = companyProjectService.getClientCompaniesByRole(project, CompanyProjectRole.DEV_COMPANY);
+        List<Company> devCompanies = companyProjectService.getCompaniesByRole(project, CompanyProjectRole.DEV_COMPANY);
         List<Member> devManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
         List<Member> devMembers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
 
@@ -270,4 +271,100 @@ public class ProjectService {
         return ProjectListResponse.from(project);
     }
 
+    /**
+     * 개별 프로젝트 상세 정보 조회하는 메서드
+     *
+     * @param userId 요청을 보낸 사용자 ID
+     * @param userRole 요청을 보낸 사용자의 역할
+     * @param projectId 조회할 프로젝트 ID
+     * @return ProjectViewResponse 프로젝트 상세 응답
+     */
+    public ProjectViewResponse getProject(Long userId, String userRole, Long projectId) {
+        log.info("개별 프로젝트 조회 시작: projectId={}, userId={}, userRole={}", projectId, userId, userRole);
+        // 프로젝트 유효성 검사
+        Project project = getValidProject(projectId);
+
+        // 사용자 정보 조회
+        Member member = memberService.findMemberById(userId);
+
+        ProjectViewResponse response = buildProjectViewResponse(project, member, userRole);
+        log.info("프로젝트 상세 응답 DTO 생성 완료: projectId={}", projectId);
+
+        // response 생성
+        return response;
+    }
+
+    private ProjectViewResponse buildProjectViewResponse(Project project, Member member, String userRole) {
+        // 회사 이름 조회
+        List<String> devCompanyNames = companyProjectService.getCompanyNamesByRole(project, CompanyProjectRole.DEV_COMPANY);
+        List<String> clientCompanyNames = companyProjectService.getCompanyNamesByRole(project, CompanyProjectRole.CLIENT_COMPANY);
+
+        // 현재 사용자의 프로젝트 내 역할 조회
+        String currentMemberProjectRole = determineMemberProjectRole(member, project, userRole);
+        String currentCompanyProjectRole = determineCompanyProjectRole(member, project, userRole);
+
+        // 역할별 멤버 목록 조회
+        List<Member> devManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
+        List<Member> devMembers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
+        List<Member> clientManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
+        List<Member> clientMembers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
+
+        List<String> devManagerNames = extractMemberNames(devManagers);
+        List<String> devMemberNames = extractMemberNames(devMembers);
+        List<String> clientManagerNames = extractMemberNames(clientManagers);
+        List<String> clientMemberNames = extractMemberNames(clientMembers);
+
+        return ProjectViewResponse.from(
+                project,
+                currentMemberProjectRole,
+                currentCompanyProjectRole,
+                clientCompanyNames,
+                clientManagerNames,
+                clientMemberNames,
+                devCompanyNames,
+                devManagerNames,
+                devMemberNames
+        );
+    }
+
+    // 참여자 이름 가져오기
+    private List<String> extractMemberNames(List<Member> members) {
+        if (members == null || members.isEmpty()) {
+            return List.of();
+        }
+        return members.stream()
+                .map(Member::getName)
+                .collect(Collectors.toList());
+    }
+
+    // 현재 사용자가 재직 중인 company project role
+    private String determineCompanyProjectRole(Member member, Project project, String userRole) {
+        if (USER_ROLE.equals(userRole)) {
+            if (member == null || member.getCompany() == null) {
+                log.warn("회사 역할 결정 불가: 사용자 또는 회사 정보 없음. memberId={}, projectId={}",
+                        (member != null ? member.getId() : "null"), project.getId());
+                return "No Company Info";
+            }
+            CompanyProjectRole role = companyProjectService.getCompanyRoleInProject(member.getCompany(), project);
+            return (role != null) ? role.getDescription() : "Unknown Role";
+        } else if (ADMIN_ROLE.equals(userRole)) {
+            return ADMIN_ROLE;
+        }
+
+        log.warn("알 수 없는 사용자 company 역할({}) 감지됨: memberId={}, projectId={}", userRole, member.getId(), project.getId());
+        return "Unknown Role";
+    }
+
+    // 현재 사용자의 프로젝트 역할
+    private String determineMemberProjectRole(Member member, Project project, String userRole) {
+        if (USER_ROLE.equals(userRole)) {
+            MemberProjectRole role = memberProjectService.getMemberRoleInProject(member, project);
+            return (role != null) ? role.getDescription() : "Unknown Role";
+        } else if (ADMIN_ROLE.equals(userRole)) {
+            return ADMIN_ROLE;
+        }
+
+        log.warn("알 수 없는 사용자 역할({}) 감지됨: memberId={}, projectId={}", userRole, member.getId(), project.getId());
+        return "Unknown Role";
+    }
 }

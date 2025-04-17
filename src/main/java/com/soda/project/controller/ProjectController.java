@@ -53,4 +53,12 @@ public class ProjectController {
         Page<ProjectListResponse> response = projectService.getMyProjects(userId, userRole, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
+
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ApiResponseForm<ProjectViewResponse>> getProject(HttpServletRequest request, @PathVariable Long projectId) {
+        Long userId = (Long) request.getAttribute("memberId");
+        String userRole = (String) request.getAttribute("userRole").toString();
+        ProjectViewResponse response = projectService.getProject(userId, userRole, projectId);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
+    }
 }

@@ -7,6 +7,7 @@ import com.soda.project.service.ProjectService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,8 +38,9 @@ public class ProjectController {
     }
 
     @GetMapping("")
-    public ResponseEntity<ApiResponseForm<List<ProjectListResponse>>> getAllProjects(@RequestParam(required = false)ProjectStatus status) {
-        List<ProjectListResponse> projectList = projectService.getAllProjects(status);
+    public ResponseEntity<ApiResponseForm<List<ProjectListResponse>>> getAllProjects(@RequestParam(required = false) ProjectStatus status,
+                                                                                     Pageable pageable) {
+        List<ProjectListResponse> projectList = projectService.getAllProjects(status, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(projectList));
     }
 }

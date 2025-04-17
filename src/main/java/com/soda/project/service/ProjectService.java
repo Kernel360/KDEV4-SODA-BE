@@ -15,6 +15,8 @@ import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -215,18 +217,23 @@ public class ProjectService {
      * @param status 필터링할 프로젝트 상태 (만약 null일 경우 전체 프로젝트 반환)
      * @return ProjectListResponse 형식으로 프로젝트 목록 반환
      */
-    public List<ProjectListResponse> getAllProjects(ProjectStatus status) {
-        log.info("전체 프로젝트 조회 시작: 상태 = {}", status);
+    public List<ProjectListResponse> getAllProjects(ProjectStatus status, Pageable pageable) {
+        log.info("전체 프로젝트 조회 시작: 상태 = {}, 페이지 번호 = {}, 페이지 크기 = {}",
+                status != null ? status : "전체",
+                pageable.getPageNumber(),
+                pageable.getPageSize());
 
-        List<Project> projectList;
+        Page<Project> projectList;
 
         if (status != null) {
-            projectList = projectRepository.findByStatusAndIsDeletedFalse(status);
+            projectList = projectRepository.findByStatusAndIsDeletedFalseOrderByCreatedAtDesc(status, pageable);
         } else {
-            projectList = projectRepository.findByIsDeletedFalse();
+            projectList = projectRepository.findByIsDeletedFalseOrderByCreatedAtDesc(pageable);
         }
 
-        log.info("프로젝트 조회 완료: 조회된 프로젝트 수 = {}", projectList.size());
+        log.info("프로젝트 조회 완료: 조회된 페이지 크기 = {}, 총 프로젝트 수 = {}",
+                projectList.getSize(),
+                projectList.getTotalElements());
 
         return projectList.stream()
                 .map(this::mapToProjectListResponse)

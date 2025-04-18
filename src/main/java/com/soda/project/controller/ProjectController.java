@@ -101,4 +101,12 @@ public class ProjectController {
         projectService.deleteCompanyFromProject(userRole, projectId, companyId);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{projectId}/members")
+    public ResponseEntity<ApiResponseForm<ProjectMemberAddResponse>> addMembersToProject (HttpServletRequest request, @PathVariable Long projectId,
+                                                                   @Valid @RequestBody ProjectMemberAddRequest projectMemberAddRequest) {
+        String userRole = (String) request.getAttribute("userRole").toString();
+        ProjectMemberAddResponse response = projectService.addMemberToProject(userRole, projectId, projectMemberAddRequest);
+        return null;
+    }
 }

@@ -9,10 +9,12 @@ import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.dto.*;
+import com.soda.project.entity.MemberProject;
 import com.soda.project.entity.Project;
 import com.soda.project.enums.ProjectStatus;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.ProjectRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -366,5 +368,57 @@ public class ProjectService {
 
         log.warn("알 수 없는 사용자 역할({}) 감지됨: memberId={}, projectId={}", userRole, member.getId(), project.getId());
         return "Unknown Role";
+    }
+
+    /**
+     * 프로젝트 상태 업데이트
+     *
+     * @param userId 요청한 사용자의 ID
+     * @param userRole 요청한 사용자 역할 (ADMIN or USER)
+     * @param projectId 상태 변경할 프로젝트 ID
+     * @param request 변경할 상태 정보 DTO
+     * @return 상태 변경 결과 응답 DTO
+     * @throws GeneralException 프로젝트 찾을 수 없거나, 사용자 정보를 찾을 수 없거나, 권한이 없는 경우
+     */
+    @LoggableEntityAction(action = "UPDATE_STATUS", entityClass = Project.class)
+    @Transactional
+    public ProjectStatusUpdateResponse updateProjectStatus(Long userId, String userRole, Long projectId, @Valid ProjectStatusUpdateRequest request) {
+        log.info("프로젝트 상태 변경 시작: projectId={}, userId={}, userRole={}, newStatus={}",
+                projectId, userId, userRole, request.getStatus());
+
+        // 프로젝트 유효성 검사
+        Project project = getValidProject(projectId);
+
+        // 사용자 유효성 검사
+        // ADMIN, 프로젝트 참여 중인 사람들만 상태 변경 가능
+        Member member = memberService.findMemberById(userId);
+        validateAdminOrUser(member, userRole, project);
+
+        // 프로젝트 상태 업데이트
+        project.changeStatus(request.getStatus());
+        projectRepository.save(project);
+        log.info("프로젝트 상태 변경 완료: projectId={}, newStatus={}", project.getId(), project.getStatus());
+
+        // ProjectStatusUpdateResponse 생성
+        return ProjectStatusUpdateResponse.from(project);
+    }
+
+    // ADMIN 또는 해당 프로젝트에 참여 중인 USER 경우 허용하는 메소드
+    private void validateAdminOrUser(Member member, String userRole, Project project) {
+        if (ADMIN_ROLE.equals(userRole)) {
+            return;
+        }
+
+        if (USER_ROLE.equals(userRole)) {
+            MemberProjectRole roleInProject = memberProjectService.getMemberRoleInProject(member, project);
+
+            if (roleInProject != null) {
+                return;
+            }
+        }
+
+        // 권한이 없는 경우 오류 발생
+        log.warn("프로젝트 상태 변경 권한 없음: userId={}, userRole={}, projectId={}", member.getId(), userRole, project.getId());
+        throw new GeneralException(ProjectErrorCode.NO_PERMISSION_TO_UPDATE_STATUS);
     }
 }

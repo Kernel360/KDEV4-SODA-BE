@@ -77,4 +77,12 @@ public class ProjectController {
         projectService.deleteProject(projectId);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{projectId}")
+    public ResponseEntity<ApiResponseForm<ProjectInfoUpdateResponse>> updateProjectInfo(HttpServletRequest request, @PathVariable Long projectId,
+                                                                @Valid @RequestBody ProjectInfoUpdateRequest projectInfoUpdateRequest) {
+        String userRole = (String) request.getAttribute("userRole").toString();
+        ProjectInfoUpdateResponse response = projectService.updateProjectInfo(userRole, projectId, projectInfoUpdateRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 기본 정보 수정 성공"));
+    }
 }

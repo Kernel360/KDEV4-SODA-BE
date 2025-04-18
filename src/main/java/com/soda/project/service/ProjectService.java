@@ -9,7 +9,6 @@ import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.dto.*;
-import com.soda.project.entity.MemberProject;
 import com.soda.project.entity.Project;
 import com.soda.project.enums.ProjectStatus;
 import com.soda.project.error.ProjectErrorCode;
@@ -422,6 +421,12 @@ public class ProjectService {
         throw new GeneralException(ProjectErrorCode.NO_PERMISSION_TO_UPDATE_STATUS);
     }
 
+    /**
+     * 프로젝트 삭제
+     *
+     * @param projectId 삭제할 프로젝트 ID
+     * @throws GeneralException 프로젝트가 존재하지 않거나 이미 삭제된 경우
+     */
     @LoggableEntityAction(action = "DELETE", entityClass = Project.class)
     @Transactional
     public void deleteProject(Long projectId) {
@@ -435,5 +440,35 @@ public class ProjectService {
         project.delete();
         companyProjectService.deleteCompanyProjects(project);
         memberProjectService.deleteMemberProjects(project);
+    }
+
+    /**
+     * 프로젝트 기본 정보 수정
+     * 
+     * @param userRole 요청한 사용자의 역할 (ADMIN만 수정 가능)
+     * @param projectId 수정할 프로젝트 ID
+     * @param request 수정 요청 정보 DTO
+     * @return 수정한 프로젝트 정보 DTO
+     * @throws GeneralException 프로젝트가 존재하지 않거나 ADMIN 아닌 경우
+     */
+    @Transactional
+    public ProjectInfoUpdateResponse updateProjectInfo(String userRole, Long projectId, ProjectInfoUpdateRequest request) {
+        // 프로젝트 유효성 검사
+        Project project = getValidProject(projectId);
+
+        // ADMIN 또는 참여 중인 USER인지 유효성 검사
+        validateAdminRole(userRole);
+
+        // 프로젝트 기본 정보 업데이트
+        project.updateProjectInfo(
+                request.getTitle(),
+                request.getDescription(),
+                request.getStartDate(),
+                request.getEndDate()
+        );
+        projectRepository.save(project);
+
+        // response 생성
+        return ProjectInfoUpdateResponse.from(project);
     }
 }

@@ -191,12 +191,16 @@ public class RequestService {
     }
 
     private void designateApprover(List<MemberAssignDTO> dtos, Request request) {
-        List<Member> approvers = dtos.stream()
-                .map(memberDTO -> {
-                    return memberRepository.findById(memberDTO.getId())
-                            .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
-                })
+        List<Long> memberIds = dtos.stream()
+                .map(MemberAssignDTO::getId)
                 .collect(Collectors.toList());
+
+        List<Member> approvers = memberRepository.findAllById(memberIds);
+
+        if (approvers.size() != memberIds.size()) {
+            throw new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+        }
+
         request.addApprovers(ApproverDesignation.designateApprover(request, approvers));
     }
 

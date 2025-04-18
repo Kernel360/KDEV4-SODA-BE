@@ -91,8 +91,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "https://soda-sooty.vercel.app",
-                "http://s0da.co.kr",
-                "https://s0da.co.kr",
+                "http://www.s0da.co.kr",
+                "https://www.s0da.co.kr",
                 "http://api.s0da.co.kr",
                 "https://api.s0da.co.kr"
         ));

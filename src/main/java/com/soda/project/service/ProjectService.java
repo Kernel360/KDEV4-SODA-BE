@@ -652,4 +652,16 @@ public class ProjectService {
             throw new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND);
         }
     }
+
+    @Transactional
+    public void deleteMemberFromProject(String userRole, Long projectId, Long memberId) {
+        // 프로젝트 유효성 검사
+        Project project = getValidProject(projectId);
+
+        // ADMIN인지 유효성 검사
+        validateAdminRole(userRole);
+
+        memberProjectService.deleteSingleMemberFromProject(project, memberId);
+        log.info("프로젝트에서 단일 멤버 제거 완료: projectId={}, memberId={}", projectId, memberId);
+    }
 }

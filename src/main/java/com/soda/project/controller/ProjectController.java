@@ -109,4 +109,11 @@ public class ProjectController {
         ProjectMemberAddResponse response = projectService.addMemberToProject(userRole, projectId, projectMemberAddRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트에 멤버 추가 성공"));
     }
+
+    @DeleteMapping("/{projectId}/members/{memberId}")
+    public ResponseEntity<Void> deleteMemberFromProject (HttpServletRequest request, @PathVariable Long projectId, @PathVariable Long memberId) {
+        String userRole = (String) request.getAttribute("userRole").toString();
+        projectService.deleteMemberFromProject(userRole, projectId, memberId);
+        return ResponseEntity.noContent().build();
+    }
 }

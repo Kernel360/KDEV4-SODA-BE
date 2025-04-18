@@ -1,6 +1,9 @@
 package com.soda.request.service;
 
 import com.soda.global.response.GeneralException;
+import com.soda.member.entity.Member;
+import com.soda.member.enums.MemberRole;
+import com.soda.member.service.MemberService;
 import com.soda.request.dto.request.ApproverDeleteResponse;
 import com.soda.request.entity.ApproverDesignation;
 import com.soda.request.error.ApproverDesignationErrorCode;
@@ -15,13 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ApproverDesignationService {
     private final ApproverDesignationRepository approverDesignationRepository;
+    private final MemberService memberService;
 
     @Transactional
     public ApproverDeleteResponse deleteApprover(Long approverId, Long memberId) {
         ApproverDesignation approver = getApproveDesignationOrThrow(approverId);
+        Member currentMember = memberService.findMemberById(memberId);
 
         // 현재 유저가 승인 생성자이닞 확인
-        validateRequestWriter(memberId, approver);
+        validateRequestWriter(currentMember, approver);
 
         // request 소프트 삭제
         approver.delete();
@@ -29,8 +34,8 @@ public class ApproverDesignationService {
         return ApproverDeleteResponse.fromEntity(approver);
     }
 
-    private void validateRequestWriter(Long memberId, ApproverDesignation approver) {
-        if(!approver.getRequest().getMember().getId().equals(memberId)) {
+    private void validateRequestWriter(Member currentMember, ApproverDesignation approver) {
+        if(!approver.getRequest().getMember().equals(currentMember) && !currentMember.getRole().equals(MemberRole.ADMIN)) {
             throw new GeneralException(RequestErrorCode.USER_NOT_WRITE_REQUEST);
         }
     }

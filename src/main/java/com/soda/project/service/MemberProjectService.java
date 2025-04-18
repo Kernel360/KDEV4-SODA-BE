@@ -113,4 +113,21 @@ public class MemberProjectService {
         Optional<MemberProject> memberProjectOpt = memberProjectRepository.findByMemberAndProjectAndIsDeletedFalse(member, project);
         return memberProjectOpt.map(MemberProject::getRole).orElse(null);
     }
+
+    @Transactional
+    public void deleteMembersFromProject(Project project, Long companyId) {
+        List<MemberProject> membersToDelete = memberProjectRepository
+                .findAllByProjectAndMember_CompanyIdAndIsDeletedFalse(project, companyId);
+
+        if (membersToDelete.isEmpty()) {
+            log.info("삭제할 멤버 연결 없음: projectId={}, companyId={}", project.getId(), companyId);
+            return; // 처리할 대상 없으면 종료
+        }
+
+        for (MemberProject memberProject: membersToDelete) {
+            memberProject.delete();
+        }
+
+        log.info("멤버 {}명이 프로젝트 ID {} 에서 삭제되었습니다.", membersToDelete.size(), project.getId());
+    }
 }

@@ -14,7 +14,8 @@ public enum ProjectErrorCode implements ErrorCode {
     UNAUTHORIZED_USER("1008", "Unauthorized: Only ADMIN users can create a project.", HttpStatus.FORBIDDEN),
     NO_PERMISSION_TO_UPDATE_STATUS("1009", "Unauthorized: You do not have permission to update the project status.", HttpStatus.FORBIDDEN),
     MEMBER_LIST_EMPTY("1010", "Either manager or participant member list must be provided.", HttpStatus.NOT_FOUND),
-    MEMBER_NOT_IN_SPECIFIED_COMPANY ("1011", "One or more requested members do not belong to the specified company.", HttpStatus.BAD_REQUEST);
+    MEMBER_NOT_IN_SPECIFIED_COMPANY ("1011", "One or more requested members do not belong to the specified company.", HttpStatus.BAD_REQUEST),
+    MEMBER_PROJECT_NOT_FOUND("1012", "Invalid member project", HttpStatus.NOT_FOUND);
 
     private final String code;
     private final String message;

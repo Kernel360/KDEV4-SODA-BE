@@ -130,4 +130,14 @@ public class MemberProjectService {
 
         log.info("멤버 {}명이 프로젝트 ID {} 에서 삭제되었습니다.", membersToDelete.size(), project.getId());
     }
+
+    @Transactional
+    public void deleteSingleMemberFromProject(Project project, Long memberId) {
+        MemberProject memberToDelete = memberProjectRepository.findByProjectAndMemberIdAndIsDeletedFalse(project, memberId)
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_PROJECT_NOT_FOUND));
+
+        memberToDelete.delete();
+        log.info("단일 멤버 연결 삭제 완료: projectId={}, memberId={}, memberProjectId={}",
+                project.getId(), memberId, memberToDelete.getId());
+    }
 }

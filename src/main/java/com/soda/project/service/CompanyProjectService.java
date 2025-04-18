@@ -72,7 +72,7 @@ public class CompanyProjectService {
 
     private CompanyProject findByProjectAndCompanyProjectRole(Project project, CompanyProjectRole role) {
         return companyProjectRepository.findByProjectAndCompanyProjectRole(project, role)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND));
     }
 
     /**
@@ -84,5 +84,14 @@ public class CompanyProjectService {
     public CompanyProjectRole getCompanyRoleInProject(Company company, Project project) {
         Optional<CompanyProject> companyProjectOpt = companyProjectRepository.findByCompanyAndProjectAndIsDeletedFalse(company, project);
         return companyProjectOpt.map(CompanyProject::getCompanyProjectRole).orElse(null);
+    }
+
+    public void deleteCompanyFromProject(Project project, Long companyId) {
+
+        CompanyProject companyProject = companyProjectRepository.findByProjectIdAndCompanyIdAndIsDeletedFalse(project.getId(), companyId)
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND));
+
+        companyProject.delete();
+        log.info("프로젝트 ID {} 에서 회사 ID {} 삭제 완료", project.getId(), companyId);
     }
 }

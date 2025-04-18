@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -496,34 +497,49 @@ public class ProjectService {
         // 요청 정보 추출
         Company company = companyService.getCompany(request.getCompanyId());
         CompanyProjectRole companyRole = request.getRole();
-        List<Member> managers = memberService.findByIds(request.getManagerIds());
-        List<Member> members = memberService.findByIds(request.getMemberIds());
+        List<Long> managerIds = request.getManagerIds();
+        List<Long> memberIds = request.getMemberIds() != null ? request.getMemberIds() : Collections.emptyList();
+
+        // 멤버들이 회사 소속인지 검증
+        List<Member> managers = memberService.findByIds(managerIds);
+        List<Member> members = memberService.findByIds(memberIds);
+        validateMembersBelongToCompany(managers, company);
+        validateMembersBelongToCompany(members, company);
 
         // 회사 할당
         companyProjectService.assignCompanyToProject(company, project, companyRole);
+        log.info("회사-프로젝트 연결 완료: projectId={}, companyId={}, role={}", projectId, company.getId(), companyRole);
 
         // 역할 할당
-        assignMembersToProject(company, project, companyRole, managers, members);
+        MemberProjectRole targetManagerRole = determineTargetManagerRole(companyRole);
+        MemberProjectRole targetMemberRole = determineTargetMemberRole(companyRole);
+        log.debug("자동 결정된 멤버 역할: managerRole={}, memberRole={}", targetManagerRole, targetMemberRole);
+
+        memberProjectService.assignMembersToProject(company, managers, project, targetManagerRole);
+        log.info("담당자 {}명 프로젝트 연결 완료", managers.size());
+        if (!members.isEmpty()) {
+            memberProjectService.assignMembersToProject(company, members, project, targetMemberRole);
+            log.info("참여자 {}명 프로젝트 연결 완료", members.size());
+        }
 
         log.info("프로젝트에 회사 및 멤버 추가 완료: projectId={}, companyId={}, companyRole={}, managerCount={}, memberCount={}",
-                projectId, company.getId(), companyRole, managers.size(), members != null ? members.size() : 0);
+                projectId, company.getId(), companyRole, managers.size(), members.size());
 
         // response 생성
         return buildResponse(project, company, companyRole, managers, members);
     }
 
-    private void assignMembersToProject(Company company, Project project, CompanyProjectRole companyRole,
-                                        List<Member> managers, List<Member> members) {
-        // 역할 할당
-        MemberProjectRole managerRole = companyRole.getManagerRole();
-        MemberProjectRole memberRole = companyRole.getMemberRole();
-
-        // 매니저 할당
-        memberProjectService.assignMembersToProject(company, managers, project, managerRole);
-
-        // 일반 참여자 할당 (null 체크 필요)
-        if (members != null && !members.isEmpty()) {
-            memberProjectService.assignMembersToProject(company, members, project, memberRole);
+    private void validateMembersBelongToCompany(List<Member> members, Company company) {
+        if (CollectionUtils.isEmpty(members)) {
+            return;
+        }
+        Long expectedCompanyId = company.getId();
+        for (Member member : members) {
+            if (member.getCompany() == null || !member.getCompany().getId().equals(expectedCompanyId)) {
+                log.error("멤버가 예상된 회사({}) 소속이 아닙니다: memberId={}, memberCompany={}",
+                        company.getName(), member.getId(), (member.getCompany() != null ? member.getCompany().getName() : "없음"));
+                throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_SPECIFIED_COMPANY);
+            }
         }
     }
 
@@ -537,5 +553,115 @@ public class ProjectService {
                 managers,
                 members != null ? members : Collections.emptyList()
         );
+    }
+
+    /**
+     * 프로젝트에 참여 중인 회사 삭제 메서드 (회사 삭제되면 해당 회사의 멤버도 자동 삭제)
+     *
+     * @param userRole 요청자의 역할 (ADMIN만 가능)
+     * @param projectId 삭제할 회사가 참여 중인 프로젝트 ID
+     * @param companyId 삭제할 회사 ID
+     * @throws GeneralException ADMIN이 아니거나 유효한 프로젝트가 아닌 경우
+     */
+    @Transactional
+    public void deleteCompanyFromProject(String userRole, Long projectId, Long companyId) {
+        // 프로젝트 유효성 확인
+        Project project = getValidProject(projectId);
+
+        // ADMIN인지 유효성 검사
+        validateAdminRole(userRole);
+
+        // CompanyProject, MemberProject 삭제
+        companyProjectService.deleteCompanyFromProject(project, companyId);
+        log.info("프로젝트에서 회사 연결 삭제 완료: projectId={}, companyId={}", projectId, companyId);
+
+        memberProjectService.deleteMembersFromProject(project, companyId);
+        log.info("프로젝트에서 회사 소속 멤버 삭제 완료: projectId={}, companyId={}", projectId, companyId);
+    }
+
+    @Transactional
+    public ProjectMemberAddResponse addMemberToProject(String userRole, Long projectId, ProjectMemberAddRequest request) {
+        // 요청 유효성 검사 (추가할 멤버가 있는가)
+        List<Long> managerIds = request.getManagerIds() != null ? request.getManagerIds() : Collections.emptyList();
+        List<Long> memberIds = request.getMemberIds() != null ? request.getMemberIds() : Collections.emptyList();
+
+        if (CollectionUtils.isEmpty(managerIds) && CollectionUtils.isEmpty(memberIds)) {
+            log.error("추가할 담당자 또는 일반 참여자 ID 목록이 비어 있습니다.");
+            throw new GeneralException(ProjectErrorCode.MEMBER_LIST_EMPTY); // 에러 코드 정의 필요
+        }
+
+        // 프로젝트 유효성 검사
+        Project project = getValidProject(projectId);
+
+        // ADMIN인지 유효성 검사
+        validateAdminRole(userRole);
+
+        // 회사 유효성 검사 및 프로젝트 참여 확인
+        Company company = companyService.getCompany(request.getCompanyId());
+        CompanyProjectRole companyRole = companyProjectService.getCompanyRoleInProject(company, project);
+
+        if (companyRole == null) {
+            log.error("회사가 프로젝트에 참여하고 있지 않습니다: projectId={}, companyId={}", projectId, request.getCompanyId());
+            throw new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND);
+        }
+
+        // 멤버 역할 할당
+        MemberProjectRole targetManagerRole = determineTargetManagerRole(companyRole);
+        MemberProjectRole targetMemberRole = determineTargetMemberRole(companyRole);
+
+        List<Member> managers = managerIds.isEmpty() ? Collections.emptyList() : memberService.findByIds(managerIds);
+        List<Member> members = memberIds.isEmpty() ? Collections.emptyList() : memberService.findByIds(memberIds);
+
+        memberProjectService.assignMembersToProject(company, managers, project, targetManagerRole);
+        memberProjectService.assignMembersToProject(company, members, project, targetMemberRole);
+
+        log.info("프로젝트에 멤버 추가/업데이트 완료: projectId={}, companyId={}, managers={}, members={}",
+                projectId, request.getCompanyId(), managers.size(), members.size());
+
+        List<Member> addedManagers = memberProjectService.getMembersByRole(project, targetManagerRole);
+        List<Member> addedMembers = memberProjectService.getMembersByRole(project, targetMemberRole);
+
+        // response 생성
+        return ProjectMemberAddResponse.from(
+                project.getId(),
+                company.getName(),
+                addedManagers,
+                addedMembers
+        );
+
+    }
+
+    private MemberProjectRole determineTargetMemberRole(CompanyProjectRole companyRole) {
+        if (companyRole == CompanyProjectRole.DEV_COMPANY) {
+            return MemberProjectRole.DEV_PARTICIPANT;
+        } else if (companyRole == CompanyProjectRole.CLIENT_COMPANY) {
+            return MemberProjectRole.CLI_PARTICIPANT;
+        } else {
+            log.error("멤버 역할을 결정할 수 없는 회사 역할입니다: {}", companyRole);
+            throw new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND);
+        }
+    }
+
+    private MemberProjectRole determineTargetManagerRole(CompanyProjectRole companyRole) {
+        if (companyRole == CompanyProjectRole.DEV_COMPANY) {
+            return MemberProjectRole.DEV_MANAGER;
+        } else if (companyRole == CompanyProjectRole.CLIENT_COMPANY) {
+            return MemberProjectRole.CLI_MANAGER;
+        } else {
+            log.error("매니저 역할을 결정할 수 없는 회사 역할입니다: {}", companyRole);
+            throw new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND);
+        }
+    }
+
+    @Transactional
+    public void deleteMemberFromProject(String userRole, Long projectId, Long memberId) {
+        // 프로젝트 유효성 검사
+        Project project = getValidProject(projectId);
+
+        // ADMIN인지 유효성 검사
+        validateAdminRole(userRole);
+
+        memberProjectService.deleteSingleMemberFromProject(project, memberId);
+        log.info("프로젝트에서 단일 멤버 제거 완료: projectId={}, memberId={}", projectId, memberId);
     }
 }

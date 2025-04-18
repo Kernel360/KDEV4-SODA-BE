@@ -9,6 +9,7 @@ import com.soda.member.enums.CompanyProjectRole;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.CompanyProjectRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
@@ -38,7 +40,7 @@ public class CompanyProjectService {
         }
     }
 
-    public List<Company> getClientCompaniesByRole(Project project, CompanyProjectRole role) {
+    public List<Company> getCompaniesByRole(Project project, CompanyProjectRole role) {
         return companyProjectRepository.findByProjectAndCompanyProjectRoleAndIsDeletedFalse(project, role)
                 .stream()
                 .map(CompanyProject::getCompany)
@@ -51,10 +53,21 @@ public class CompanyProjectService {
         companyProjectRepository.saveAll(companyProjects);
     }
 
-    public String getCompanyNameByRole(Project project, CompanyProjectRole role) {
-        CompanyProject companyProject = companyProjectRepository.findByProjectAndCompanyProjectRole(project, role)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_NOT_FOUND));
-        return companyProject.getCompany().getName();
+    public List<String> getCompanyNamesByRole(Project project, CompanyProjectRole role) {
+        List<CompanyProject> companyProjects = companyProjectRepository.findByProjectAndCompanyProjectRoleAndIsDeletedFalse(project, role);
+
+        if(companyProjects.isEmpty()) {
+            log.debug("해당 역할의 활성 회사 없음: projectId={}, role={}", project.getId(), role);
+            return List.of();
+        }
+
+        List<String> companyNames = companyProjects.stream()
+                .map(cp -> cp.getCompany().getName())
+                .distinct()
+                .toList();
+
+        log.info("회사 이름 목록 조회 완료: projectId={}, role={}", project.getId(), role);
+        return companyNames;
     }
 
     private CompanyProject findByProjectAndCompanyProjectRole(Project project, CompanyProjectRole role) {

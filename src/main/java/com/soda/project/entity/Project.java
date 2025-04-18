@@ -52,12 +52,11 @@ public class Project extends BaseEntity {
         this.markAsDeleted();
     }
 
-    public void updateProject(String title, String description, LocalDateTime startDate, LocalDateTime endDate,ProjectStatus status) {
+    public void updateProjectInfo(String title, String description, LocalDateTime startDate, LocalDateTime endDate) {
         this.title = title;
         this.description = description;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.status = status;
     }
 
     public void changeStatus(ProjectStatus newStatus) {

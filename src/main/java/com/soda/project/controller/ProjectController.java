@@ -53,4 +53,44 @@ public class ProjectController {
         Page<ProjectListResponse> response = projectService.getMyProjects(userId, userRole, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
+
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ApiResponseForm<ProjectViewResponse>> getProject(HttpServletRequest request, @PathVariable Long projectId) {
+        Long userId = (Long) request.getAttribute("memberId");
+        String userRole = (String) request.getAttribute("userRole").toString();
+        ProjectViewResponse response = projectService.getProject(userId, userRole, projectId);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
+    }
+
+    @PatchMapping("/{projectId}/status")
+    public ResponseEntity<ApiResponseForm<ProjectStatusUpdateResponse>> updateProjectStatus(HttpServletRequest request, @PathVariable Long projectId,
+                                                                                            @Valid @RequestBody ProjectStatusUpdateRequest updateRequest) {
+        Long userId = (Long) request.getAttribute("memberId");
+        String userRole = (String) request.getAttribute("userRole").toString();
+        ProjectStatusUpdateResponse response = projectService.updateProjectStatus(userId, userRole, projectId, updateRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 상태 변경 성공"));
+    }
+
+    @DeleteMapping("/{projectId}")
+    public ResponseEntity<Void> deleteProject(HttpServletRequest request, @PathVariable Long projectId) {
+        String userRole = (String) request.getAttribute("userRole").toString();
+        projectService.deleteProject(projectId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{projectId}")
+    public ResponseEntity<ApiResponseForm<ProjectInfoUpdateResponse>> updateProjectInfo(HttpServletRequest request, @PathVariable Long projectId,
+                                                                @Valid @RequestBody ProjectInfoUpdateRequest projectInfoUpdateRequest) {
+        String userRole = (String) request.getAttribute("userRole").toString();
+        ProjectInfoUpdateResponse response = projectService.updateProjectInfo(userRole, projectId, projectInfoUpdateRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 기본 정보 수정 성공"));
+    }
+
+    @PostMapping("/{projectId}/companies")
+    public ResponseEntity<ApiResponseForm<ProjectCompanyAddResponse>> addCompanyToProject (HttpServletRequest request, @PathVariable Long projectId,
+                                                                   @Valid @RequestBody ProjectCompanyAddRequest projectCompanyAddRequest) {
+        String userRole = (String) request.getAttribute("userRole").toString();
+        ProjectCompanyAddResponse response = projectService.addCompanyToProject(userRole, projectId, projectCompanyAddRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트에 새로운 회사/멤버 추가 성공"));
+    }
 }

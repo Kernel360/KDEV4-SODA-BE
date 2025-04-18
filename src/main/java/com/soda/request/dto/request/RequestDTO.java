@@ -50,6 +50,7 @@ public class RequestDTO {
                 )
                 .approvers(
                         request.getApprovers().stream()
+                                .filter(approver -> !approver.getIsDeleted())
                                 .map(ApproverDTO::fromEntity)
                                 .collect(Collectors.toList())
                 )

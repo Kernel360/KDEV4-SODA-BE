@@ -118,12 +118,7 @@ public class MemberProjectService {
     public void deleteMembersFromProject(Project project, Long companyId) {
         List<MemberProject> membersToDelete = memberProjectRepository
                 .findAllByProjectAndMember_CompanyIdAndIsDeletedFalse(project, companyId);
-
-        if (membersToDelete.isEmpty()) {
-            log.info("삭제할 멤버 연결 없음: projectId={}, companyId={}", project.getId(), companyId);
-            return; // 처리할 대상 없으면 종료
-        }
-
+        
         for (MemberProject memberProject: membersToDelete) {
             memberProject.delete();
         }

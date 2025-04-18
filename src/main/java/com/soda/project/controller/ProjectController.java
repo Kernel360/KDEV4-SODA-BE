@@ -70,4 +70,11 @@ public class ProjectController {
         ProjectStatusUpdateResponse response = projectService.updateProjectStatus(userId, userRole, projectId, updateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 상태 변경 성공"));
     }
+
+    @DeleteMapping("/{projectId}")
+    public ResponseEntity<Void> deleteProject(HttpServletRequest request, @PathVariable Long projectId) {
+        String userRole = (String) request.getAttribute("userRole").toString();
+        projectService.deleteProject(projectId);
+        return ResponseEntity.noContent().build();
+    }
 }

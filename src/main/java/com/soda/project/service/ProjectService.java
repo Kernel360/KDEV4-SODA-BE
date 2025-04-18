@@ -421,4 +421,19 @@ public class ProjectService {
         log.warn("프로젝트 상태 변경 권한 없음: userId={}, userRole={}, projectId={}", member.getId(), userRole, project.getId());
         throw new GeneralException(ProjectErrorCode.NO_PERMISSION_TO_UPDATE_STATUS);
     }
+
+    @LoggableEntityAction(action = "DELETE", entityClass = Project.class)
+    @Transactional
+    public void deleteProject(Long projectId) {
+        // 프로젝트 유효성 검사
+        Project project = getValidProject(projectId);
+
+        // TODO ADMIN만 프로젝트 삭제 가능 (로그 오류 발생해서 추후 수정 가능하면 유효성 검사 추가 예정)
+        //validateAdminRole(userRole);
+
+        // 프로젝트 삭제 (연관된 memberProject, companyProject 함께 삭제)
+        project.delete();
+        companyProjectService.deleteCompanyProjects(project);
+        memberProjectService.deleteMemberProjects(project);
+    }
 }

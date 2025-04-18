@@ -21,6 +21,7 @@ public class RequestCreateResponse {
     private String title;
     private String content;
     private List<LinkDTO> links;
+    private List<ApproverDTO> approvers;
     private RequestStatus status;
     private LocalDateTime createdAt;
 
@@ -35,6 +36,11 @@ public class RequestCreateResponse {
                 .links(
                         request.getLinks().stream()
                                 .map(LinkDTO::fromEntity)
+                                .collect(Collectors.toList())
+                )
+                .approvers(
+                        request.getApprovers().stream()
+                                .map(ApproverDTO::fromEntity)
                                 .collect(Collectors.toList())
                 )
                 .status(request.getStatus())

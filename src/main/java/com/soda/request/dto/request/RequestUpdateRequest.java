@@ -10,6 +10,7 @@ public class RequestUpdateRequest {
     private String title;
     private String content;
     private List<LinkUploadRequest.LinkUploadDTO> links;
+    private List<MemberAssignDTO> members;
 
     @Getter
     public static class LinkUploadDTO {

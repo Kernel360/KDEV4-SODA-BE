@@ -10,6 +10,7 @@ import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.request.dto.GetRequestCondition;
 import com.soda.request.dto.request.*;
+import com.soda.request.service.ApproverDesignationService;
 import com.soda.request.service.RequestService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RequestController {
     private final RequestService requestService;
+    private final ApproverDesignationService approverDesignationService;
     private final FileService fileService;
     private final LinkService linkService;
 
@@ -107,5 +109,13 @@ public class RequestController {
         Long memberId = (Long) request.getAttribute("memberId");
         LinkDeleteResponse linkDeleteResponse = linkService.delete("request", linkId, memberId);
         return ResponseEntity.ok(ApiResponseForm.success(linkDeleteResponse));
+    }
+
+    @DeleteMapping("requests/{requestId}/approver/{approverId}")
+    public ResponseEntity<ApiResponseForm<?>> deleteApprover(@PathVariable Long approverId,
+                                                             HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        ApproverDeleteResponse approverDeleteResponse = approverDesignationService.deleteApprover(approverId, memberId);
+        return ResponseEntity.ok(ApiResponseForm.success(approverDeleteResponse));
     }
 }

@@ -538,4 +538,28 @@ public class ProjectService {
                 members != null ? members : Collections.emptyList()
         );
     }
+
+    /**
+     * 프로젝트에 참여 중인 회사 삭제 메서드 (회사 삭제되면 해당 회사의 멤버도 자동 삭제)
+     *
+     * @param userRole 요청자의 역할 (ADMIN만 가능)
+     * @param projectId 삭제할 회사가 참여 중인 프로젝트 ID
+     * @param companyId 삭제할 회사 ID
+     * @throws GeneralException ADMIN이 아니거나 유효한 프로젝트가 아닌 경우
+     */
+    @Transactional
+    public void deleteCompanyFromProject(String userRole, Long projectId, Long companyId) {
+        // 프로젝트 유효성 확인
+        Project project = getValidProject(projectId);
+
+        // ADMIN인지 유효성 검사
+        validateAdminRole(userRole);
+
+        // CompanyProject, MemberProject 삭제
+        companyProjectService.deleteCompanyFromProject(project, companyId);
+        log.info("프로젝트에서 회사 연결 삭제 완료: projectId={}, companyId={}", projectId, companyId);
+
+        memberProjectService.deleteMembersFromProject(project, companyId);
+        log.info("프로젝트에서 회사 소속 멤버 삭제 완료: projectId={}, companyId={}", projectId, companyId);
+    }
 }

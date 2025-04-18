@@ -93,4 +93,12 @@ public class ProjectController {
         ProjectCompanyAddResponse response = projectService.addCompanyToProject(userRole, projectId, projectCompanyAddRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트에 새로운 회사/멤버 추가 성공"));
     }
+
+    @DeleteMapping("/{projectId}/companies/{companyId}")
+    public ResponseEntity<Void> deleteCompanyFromProject(@PathVariable Long projectId,
+                                                         @PathVariable Long companyId, HttpServletRequest request) {
+        String userRole = (String) request.getAttribute("userRole").toString();
+        projectService.deleteCompanyFromProject(userRole, projectId, companyId);
+        return ResponseEntity.noContent().build();
+    }
 }

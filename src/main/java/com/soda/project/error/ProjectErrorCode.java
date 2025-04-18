@@ -4,7 +4,7 @@ import com.soda.global.response.ErrorCode;
 import org.springframework.http.HttpStatus;
 
 public enum ProjectErrorCode implements ErrorCode {
-    COMPANY_NOT_FOUND("1001", "Company not found: The specified company does not exist.", HttpStatus.NOT_FOUND),
+    COMPANY_PROJECT_NOT_FOUND("1001", "Company not found: The specified company does not exist.", HttpStatus.NOT_FOUND),
     MEMBER_NOT_FOUND("1002", "Member not found: The specified member does not exist.", HttpStatus.NOT_FOUND),
     INVALID_MEMBER_COMPANY("1003", "Invalid member company: The member does not belong to the specified company.", HttpStatus.BAD_REQUEST),
     PROJECT_NOT_FOUND("1004", "Invalid project Id", HttpStatus.NOT_FOUND),

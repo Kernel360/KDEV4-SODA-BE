@@ -13,7 +13,7 @@ public enum ProjectErrorCode implements ErrorCode {
     INVALID_DATE_RANGE("1007","Invalid date range: The end date cannot be before the start date" ,HttpStatus.NOT_FOUND ),
     UNAUTHORIZED_USER("1008", "Unauthorized: Only ADMIN users can create a project.", HttpStatus.FORBIDDEN),
     NO_PERMISSION_TO_UPDATE_STATUS("1009", "Unauthorized: You do not have permission to update the project status.", HttpStatus.FORBIDDEN),
-    ;
+    INVALID_COMPANY_ROLE("1010", "This Company role does not exist", HttpStatus.NOT_FOUND);
 
     private final String code;
     private final String message;

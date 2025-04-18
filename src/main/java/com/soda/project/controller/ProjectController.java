@@ -85,4 +85,12 @@ public class ProjectController {
         ProjectInfoUpdateResponse response = projectService.updateProjectInfo(userRole, projectId, projectInfoUpdateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 기본 정보 수정 성공"));
     }
+
+    @PostMapping("/{projectId}/companies")
+    public ResponseEntity<ApiResponseForm<ProjectCompanyAddResponse>> addCompanyToProject (HttpServletRequest request, @PathVariable Long projectId,
+                                                                   @Valid @RequestBody ProjectCompanyAddRequest projectCompanyAddRequest) {
+        String userRole = (String) request.getAttribute("userRole").toString();
+        ProjectCompanyAddResponse response = projectService.addCompanyToProject(userRole, projectId, projectCompanyAddRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트에 새로운 회사/멤버 추가 성공"));
+    }
 }

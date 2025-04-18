@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -440,11 +441,13 @@ public class ProjectService {
         project.delete();
         companyProjectService.deleteCompanyProjects(project);
         memberProjectService.deleteMemberProjects(project);
+
+        log.info("프로젝트 삭제 완료: projectId={}", projectId);
     }
 
     /**
      * 프로젝트 기본 정보 수정
-     * 
+     *
      * @param userRole 요청한 사용자의 역할 (ADMIN만 수정 가능)
      * @param projectId 수정할 프로젝트 ID
      * @param request 수정 요청 정보 DTO
@@ -456,7 +459,7 @@ public class ProjectService {
         // 프로젝트 유효성 검사
         Project project = getValidProject(projectId);
 
-        // ADMIN 또는 참여 중인 USER인지 유효성 검사
+        // ADMIN인지 유효성 검사
         validateAdminRole(userRole);
 
         // 프로젝트 기본 정보 업데이트
@@ -468,7 +471,71 @@ public class ProjectService {
         );
         projectRepository.save(project);
 
+        log.info("프로젝트 정보 수정 완료: projectId={}, title={}", projectId, request.getTitle());
+
         // response 생성
         return ProjectInfoUpdateResponse.from(project);
+    }
+
+    /**
+     * 프로젝트에 회사 및 멤버 추가
+     * @param userRole 요청한 사용자의 역할 (ADMIN만 추가 가능)
+     * @param projectId 추가할 프로젝트 ID
+     * @param request 추가할 회사 및 멤버 정보 DTO
+     * @return 회사 및 멤버가 추가된 프로젝트 정보 DTO
+     * @throws GeneralException 프로젝트가 존재하지 않거나 ADMIN 아닌 경우
+     */
+    @Transactional
+    public ProjectCompanyAddResponse addCompanyToProject(String userRole, Long projectId, ProjectCompanyAddRequest request) {
+        // 프로젝트 유효성 검사
+        Project project = getValidProject(projectId);
+
+        // ADMIN인지 유효성 검사
+        validateAdminRole(userRole);
+
+        // 요청 정보 추출
+        Company company = companyService.getCompany(request.getCompanyId());
+        CompanyProjectRole companyRole = request.getRole();
+        List<Member> managers = memberService.findByIds(request.getManagerIds());
+        List<Member> members = memberService.findByIds(request.getMemberIds());
+
+        // 회사 할당
+        companyProjectService.assignCompanyToProject(company, project, companyRole);
+
+        // 역할 할당
+        assignMembersToProject(company, project, companyRole, managers, members);
+
+        log.info("프로젝트에 회사 및 멤버 추가 완료: projectId={}, companyId={}, companyRole={}, managerCount={}, memberCount={}",
+                projectId, company.getId(), companyRole, managers.size(), members != null ? members.size() : 0);
+
+        // response 생성
+        return buildResponse(project, company, companyRole, managers, members);
+    }
+
+    private void assignMembersToProject(Company company, Project project, CompanyProjectRole companyRole,
+                                        List<Member> managers, List<Member> members) {
+        // 역할 할당
+        MemberProjectRole managerRole = companyRole.getManagerRole();
+        MemberProjectRole memberRole = companyRole.getMemberRole();
+
+        // 매니저 할당
+        memberProjectService.assignMembersToProject(company, managers, project, managerRole);
+
+        // 일반 참여자 할당 (null 체크 필요)
+        if (members != null && !members.isEmpty()) {
+            memberProjectService.assignMembersToProject(company, members, project, memberRole);
+        }
+    }
+
+    private ProjectCompanyAddResponse buildResponse(Project project, Company company, CompanyProjectRole companyRole,
+                                                    List<Member> managers, List<Member> members) {
+        // response 생성
+        return ProjectCompanyAddResponse.from(
+                project.getId(),
+                company,
+                companyRole,
+                managers,
+                members != null ? members : Collections.emptyList()
+        );
     }
 }

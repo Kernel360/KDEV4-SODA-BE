@@ -14,4 +14,6 @@ public class RequestCreateRequest {
     private Long projectId;
     private Long stageId;
     private List<LinkUploadRequest.LinkUploadDTO> links;
+    private List<MemberAssignDTO> members;
+
 }

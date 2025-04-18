@@ -16,10 +16,12 @@ import com.soda.project.error.StageErrorCode;
 import com.soda.project.repository.StageRepository;
 import com.soda.request.dto.GetRequestCondition;
 import com.soda.request.dto.request.*;
+import com.soda.request.entity.ApproverDesignation;
 import com.soda.request.entity.Request;
 import com.soda.request.entity.RequestLink;
 import com.soda.request.enums.RequestStatus;
 import com.soda.request.error.RequestErrorCode;
+import com.soda.request.repository.ApproverDesignationRepository;
 import com.soda.request.repository.RequestLinkRepository;
 import com.soda.request.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,7 @@ public class RequestService {
     private final MemberRepository memberRepository;
     private final StageRepository stageRepository;
     private final RequestLinkRepository requestLinkRepository;
+    private final ApproverDesignationRepository approverDesignationRepository;
 
     /*
     Request(승인요청) 생성
@@ -174,13 +177,31 @@ public class RequestService {
         if(requestUpdateRequest.getLinks() != null) {
             request.addLinks(linkService.buildLinks("request", request, requestUpdateRequest.getLinks()));
         }
+        if(requestUpdateRequest.getMembers() != null) {
+            designateApprover(requestUpdateRequest.getMembers(), request);
+        }
     }
 
     public Request createRequest(RequestCreateRequest dto, Member member, Stage stage) {
         Request request = buildRequest(dto, member, stage);
         List<RequestLink> requestLinks = linkService.buildLinks("request", request, dto.getLinks());
         request.addLinks(requestLinks);
+        designateApprover(dto.getMembers(), request);
         return requestRepository.save(request);
+    }
+
+    private void designateApprover(List<MemberAssignDTO> dtos, Request request) {
+        List<Long> memberIds = dtos.stream()
+                .map(MemberAssignDTO::getId)
+                .collect(Collectors.toList());
+
+        List<Member> approvers = memberRepository.findAllById(memberIds);
+
+        if (approvers.size() != memberIds.size()) {
+            throw new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+        }
+
+        request.addApprovers(ApproverDesignation.designateApprover(request, approvers));
     }
 
     private Request buildRequest(RequestCreateRequest dto, Member member, Stage stage) {

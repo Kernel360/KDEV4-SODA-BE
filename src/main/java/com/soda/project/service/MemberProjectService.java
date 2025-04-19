@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -63,6 +64,29 @@ public class MemberProjectService {
         memberProjects.forEach(MemberProject::delete);
         memberProjectRepository.saveAll(memberProjects);
     }
+
+    public List<Member> getMembersByCompanyAndRole(Project project, Company company, MemberProjectRole role) {
+        log.debug("프로젝트 내 회사/역할별 멤버 조회 시작: projectId={}, companyId={}, role={}",
+                project.getId(), company.getId(), role);
+
+        List<MemberProject> memberProjects = memberProjectRepository
+                .findAllByProjectAndMember_CompanyAndRoleAndIsDeletedFalse(project, company, role);
+
+        if (CollectionUtils.isEmpty(memberProjects)) {
+            log.debug("해당 조건의 멤버 없음.");
+            return List.of(); // 빈 리스트 반환
+        }
+
+        // MemberProject 리스트에서 Member 엔티티만 추출하여 반환
+        List<Member> members = memberProjects.stream()
+                .map(MemberProject::getMember)
+                .distinct()
+                .collect(Collectors.toList());
+
+        log.debug("멤버 조회 완료: count={}", members.size());
+        return members;
+    }
+
 
     // 멤버 추가 및 수정 메서드
     public void addOrUpdateMembersInProject(Project project, List<Member> members, MemberProjectRole role) {

@@ -3,11 +3,7 @@ package com.soda.project.service;
 import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
-import com.soda.project.dto.stage.StageCreateRequest;
-import com.soda.project.dto.stage.StageMoveRequest;
-import com.soda.project.dto.stage.StageReadResponse;
-import com.soda.project.dto.stage.StageResponse;
-import com.soda.project.dto.stage.StageUpdateRequest;
+import com.soda.project.dto.stage.*;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
 import com.soda.project.error.ProjectErrorCode;
@@ -20,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,9 +30,6 @@ public class StageService {
 
     private static final float ORDER_INCREMENT = 1.0f;
     private static final float INITIAL_ORDER = 1.0f;
-    private static final List<String> INITIAL_STAGE_NAMES = Arrays.asList(
-            "요구사항 정의", "화면 설계", "디자인", "퍼블리싱", "개발", "검수"
-    );
 
     /**
      * 새로운 단계를 프로젝트에 추가합니다.
@@ -132,7 +124,7 @@ public class StageService {
                 stageId, stageToMove.getStageOrder(), newOrder);
         stageToMove.moveStageOrder(newOrder);
 
-         stageRepository.save(stageToMove);
+        stageRepository.save(stageToMove);
     }
 
     /**
@@ -154,12 +146,12 @@ public class StageService {
         stage.delete();
 
         log.info("단계 삭제 성공 (논리적): 단계 ID {}", stageId);
-         stageRepository.save(stage);
+        stageRepository.save(stage);
     }
 
     public Stage validateStage(Long stageId, Project project) {
         Stage stage = stageRepository.findById(stageId).orElseThrow(
-                ()-> new GeneralException(StageErrorCode.STAGE_NOT_FOUND)
+                () -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND)
         );
 
         if (!stage.getProject().equals(project)) {
@@ -171,53 +163,39 @@ public class StageService {
 
     /**
      * 특정 프로젝트에 미리 정의된 초기 단계들을 일괄 생성합니다.
-     * (예: "요구사항 정의", "화면 설계" 등)
+     * 단계 순서는 1.0부터 1.0씩 증가합니다.
      *
-     * @param projectId 초기 단계를 생성할 프로젝트의 ID
-     * @return 생성된 초기 단계들의 DTO 목록 (`List<StageReadResponse>`)
-     * @throws GeneralException 프로젝트(`ProjectErrorCode.PROJECT_NOT_FOUND`)를 찾을 수 없는 경우 발생합니다.
+     * @param project 초기 단계를 생성할 프로젝트
+     * @param stageNames 생성할 단계 이름 목록
      */
     @LoggableEntityAction(action = "CREATE", entityClass = Stage.class)
     @Transactional
-    public List<StageReadResponse> createInitialStages(Long projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> {
-                    log.error("초기 단계 생성 실패: 프로젝트 ID {} 를 찾을 수 없음", projectId);
-                    return new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);
-                });
-
-        List<Stage> initialStages = createStagesInternal(project);
-        stageRepository.saveAll(initialStages);
-        log.info("초기 단계 생성 성공: 프로젝트 ID {}, {}개 단계 생성됨", projectId, initialStages.size());
-
-        return initialStages.stream()
-                .map(StageReadResponse::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     *  주어진 프로젝트에 대해 초기 단계 엔티티 리스트를 생성합니다.
-     * @param project 단계를 생성할 프로젝트 엔티티
-     * @return 생성된 Stage 엔티티 리스트 (DB 저장 전 상태)
-     */
-    private List<Stage> createStagesInternal(Project project) {
-        List<Stage> stages = new ArrayList<>();
+    public void createInitialStages(Project project, List<String> stageNames) {
+        List<Stage> initialStages = new ArrayList<>();
         float order = INITIAL_ORDER;
 
-        for (String name : INITIAL_STAGE_NAMES) {
+        if (stageNames == null || stageNames.isEmpty()) {
+            log.info("초기 단계 설정 넘어감: 제공된 단계 이름 목록이 비어 있습니다 (프로젝트 ID: {}).", project.getId());
+            return;
+        }
+
+        for (String name : stageNames) {
             Stage stage = Stage.builder()
                     .project(project)
                     .name(name)
                     .stageOrder(order)
                     .build();
-            stages.add(stage);
+            initialStages.add(stage);
             order += ORDER_INCREMENT;
         }
-        return stages;
+
+        stageRepository.saveAll(initialStages);
+        log.info("초기 단계 생성 성공: 프로젝트 Title {}, {}개 단계 생성됨", project.getTitle(), initialStages.size());
     }
 
     /**
-     *  이전/다음 단계 ID를 기반으로 새 단계의 순서(`stageOrder`)를 계산합니다.
+     * 이전/다음 단계 ID를 기반으로 새 단계의 순서(`stageOrder`)를 계산합니다.
+     *
      * @param project     단계가 속할 프로젝트
      * @param prevStageId 이전 단계 ID (없으면 null)
      * @param nextStageId 다음 단계 ID (없으면 null)
@@ -316,7 +294,7 @@ public class StageService {
             log.info("단계 이름 변경 없음 (동일한 이름 요청): stageId={}, name='{}'", stageId, newName);
         }
 
-         Stage updatedStage = stageRepository.save(stageToUpdate);
+        Stage updatedStage = stageRepository.save(stageToUpdate);
 
         return StageResponse.fromEntity(updatedStage);
     }

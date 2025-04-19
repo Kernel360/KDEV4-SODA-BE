@@ -28,6 +28,9 @@ public class ProjectCreateRequest {
     @NotNull(message = "종료일은 필수입니다.")
     private LocalDateTime endDate;
 
+    @NotNull
+    private List<String> stageNames;
+
     // 고객사 지정 (프로젝트 생성 시 계약 단계이므로 고객사만 지정)
     @NotNull(message = "고객사 선택은 필수입니다.")
     private List<Long> clientCompanyIds;

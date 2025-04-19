@@ -40,6 +40,7 @@ public class ProjectService {
     private final CompanyService companyService;
     private final CompanyProjectService companyProjectService;
     private final MemberProjectService memberProjectService;
+    private final StageService stageService;
 
     /**
      * 프로젝트를 생성하는 메서드입니다.
@@ -64,7 +65,8 @@ public class ProjectService {
         // 고객사 지정
         assignClientCompanies(request, project);
 
-        // TODO stage 수정 로직 추가 예정
+        // 초기 stage 생성
+        stageService.createInitialStages(project, request.getStageNames());
 
         log.info("프로젝트 생성 완료: 프로젝트 ID = {}", project.getId());
 

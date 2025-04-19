@@ -1,6 +1,7 @@
 package com.soda.project.dto;
 
 import com.soda.project.enums.ProjectStatus;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,12 +33,8 @@ public class ProjectCreateRequest {
     private List<String> stageNames;
 
     // 고객사 지정 (프로젝트 생성 시 계약 단계이므로 고객사만 지정)
-    @NotNull(message = "고객사 선택은 필수입니다.")
-    private List<Long> clientCompanyIds;
-
-    @NotNull(message = "고객사 담당자 선택은 필수입니다.")
-    private List<Long> clientMangerIds;
-
-    private List<Long> clientMemberIds;
+    @NotNull
+    @Valid
+    private List<CompanyAssignment> clientAssignments;
 
 }

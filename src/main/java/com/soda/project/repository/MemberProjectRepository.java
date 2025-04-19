@@ -1,5 +1,6 @@
 package com.soda.project.repository;
 
+import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.entity.MemberProject;
@@ -21,12 +22,6 @@ public interface MemberProjectRepository extends JpaRepository<MemberProject, Lo
 
     List<MemberProject> findByProjectAndRoleAndIsDeletedFalse(Project project, MemberProjectRole role);
 
-    List<MemberProject> findByProjectAndRole(Project project, MemberProjectRole role);
-
-    MemberProject findByMemberAndProjectAndRole(Member member, Project project, MemberProjectRole role);
-
-    List<Project> findByMemberIdAndIsDeletedFalse(Long memberId);
-
     Optional<MemberProject> findByMemberAndProject(Member member, Project project);
 
     Page<MemberProject> findByMemberId(Long userId, Pageable pageable);
@@ -36,4 +31,9 @@ public interface MemberProjectRepository extends JpaRepository<MemberProject, Lo
     List<MemberProject> findAllByProjectAndMember_CompanyIdAndIsDeletedFalse(Project project, Long companyId);
 
     Optional<MemberProject> findByProjectAndMemberIdAndIsDeletedFalse(Project project, Long memberId);
-}
+
+    List<MemberProject> findAllByProjectAndMember_CompanyAndRoleAndIsDeletedFalse(
+            Project project,
+            Company company,
+            MemberProjectRole role
+    );}

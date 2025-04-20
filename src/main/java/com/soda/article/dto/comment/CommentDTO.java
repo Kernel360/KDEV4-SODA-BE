@@ -1,4 +1,4 @@
-package com.soda.article.domain.comment;
+package com.soda.article.dto.comment;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.article.entity.Comment;

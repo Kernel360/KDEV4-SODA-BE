@@ -1,6 +1,6 @@
 package com.soda.article.service;
 
-import com.soda.article.domain.article.ArticleLinkDTO;
+import com.soda.article.dto.article.ArticleLinkDTO;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.ArticleLink;
 import com.soda.article.error.ArticleErrorCode;

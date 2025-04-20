@@ -1,4 +1,4 @@
-package com.soda.article.domain.comment;
+package com.soda.article.dto.comment;
 
 import lombok.Builder;
 import lombok.Getter;

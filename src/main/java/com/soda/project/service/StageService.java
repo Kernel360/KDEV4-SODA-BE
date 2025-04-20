@@ -14,8 +14,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -302,5 +304,20 @@ public class StageService {
     public Stage findById(Long stageId) {
         return stageRepository.findById(stageId)
                 .orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
+    }
+
+    public List<Long> findStageIdsByProjectIds(List<Long> projectIds) {
+        log.info("프로젝트 ID 목록에 속하는 스테이지 ID 목록 조회 시작: projectIds count={}", projectIds != null ? projectIds.size() : 0);
+
+        // 입력된 프로젝트 ID 목록이 비어있으면 빈 리스트 반환
+        if (CollectionUtils.isEmpty(projectIds)) {
+            log.warn("조회할 프로젝트 ID 목록이 비어있습니다. 빈 목록을 반환합니다.");
+            return Collections.emptyList();
+        }
+
+        // StageRepository의 JPQL 쿼리 메소드를 호출
+        List<Long> stageIds = stageRepository.findAllIdsByProjectIdIn(projectIds);
+        log.info("스테이지 ID 목록 조회 완료: {}개", stageIds.size());
+        return stageIds;
     }
 }

@@ -21,4 +21,6 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     List<Article> findByStage_Project(Project project);
 
     List<Article> findByStageAndStage_Project(Stage stage, Project project);
+
+    List<Article> findTop3ByStage_IdInAndIsDeletedFalseOrderByCreatedAtDesc(List<Long> stageIds);
 }

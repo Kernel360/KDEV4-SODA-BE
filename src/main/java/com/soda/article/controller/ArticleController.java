@@ -1,6 +1,6 @@
 package com.soda.article.controller;
 
-import com.soda.article.domain.article.*;
+import com.soda.article.dto.article.*;
 import com.soda.article.service.ArticleService;
 import com.soda.common.file.dto.FileDeleteResponse;
 import com.soda.common.file.dto.FileUploadResponse;
@@ -93,5 +93,12 @@ public class ArticleController {
         Long memberId = (Long) request.getAttribute("memberId");
         LinkDeleteResponse linkDeleteResponse = linkService.delete("article", linkId, memberId);
         return ResponseEntity.ok(ApiResponseForm.success(linkDeleteResponse));
+    }
+
+    @GetMapping("/articles/recent-articles")
+    public ResponseEntity<ApiResponseForm<List<RecentArticleResponse>>> getRecentArticles(HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        List<RecentArticleResponse> recentArticles = articleService.getRecentArticlesForUser(memberId);
+        return ResponseEntity.ok(ApiResponseForm.success(recentArticles));
     }
 }

@@ -124,7 +124,7 @@ public class RequestService {
     }
 
     private static boolean isAllApproversApproved(Request request) {
-        return request.getResponses().stream().filter(response -> response.getStatus() == ResponseStatus.APPROVED).count() == request.getApprovers().size();
+        return request.getResponses().stream().filter(response -> response.getStatus() == ResponseStatus.APPROVED && !response.getIsDeleted()).count() == request.getApprovers().size();
     }
 
     @Transactional

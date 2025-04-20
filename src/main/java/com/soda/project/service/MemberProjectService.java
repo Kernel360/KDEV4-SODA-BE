@@ -151,4 +151,11 @@ public class MemberProjectService {
                 pageable
         );
     }
+
+    public List<Long> findProjectIdsByMemberId(Long memberId) {
+        log.info("회원 ID {}가 참여하는 프로젝트 ID 목록 조회 시작", memberId);
+        List<Long> projectIds = memberProjectRepository.findAllProjectIdsByMemberIdAndIsDeletedFalse(memberId);
+        log.info("회원 ID {}가 참여하는 프로젝트 ID 목록 조회 완료: {}개", memberId, projectIds.size());
+        return projectIds;
+    }
 }

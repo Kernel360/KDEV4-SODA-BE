@@ -2,6 +2,7 @@ package com.soda.request.entity;
 
 import com.soda.common.BaseEntity;
 import com.soda.member.entity.Member;
+import com.soda.request.enums.ResponseStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,6 +19,8 @@ public class Response extends BaseEntity {
 
     private String comment;
 
+    private ResponseStatus status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id")
     private Request request;
@@ -33,9 +36,10 @@ public class Response extends BaseEntity {
     private List<ResponseLink> links;
 
     @Builder
-    public Response(Member member, String comment, Request request, List<ResponseFile> files, List<ResponseLink> links) {
+    public Response(Member member, String comment, ResponseStatus status, Request request, List<ResponseFile> files, List<ResponseLink> links) {
         this.member = member;
         this.comment = comment;
+        this.status = status;
         this.request = request;
         this.files = files;
         this.links = links;

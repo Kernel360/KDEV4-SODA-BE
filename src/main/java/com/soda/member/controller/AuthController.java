@@ -62,4 +62,10 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponseForm.success(null, "비밀번호 변경 성공"));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponseForm<Void>> logout(HttpServletResponse response) {
+        authService.logout(response);
+        return ResponseEntity.ok(ApiResponseForm.success(null, "로그아웃 성공"));
+    }
+
 }

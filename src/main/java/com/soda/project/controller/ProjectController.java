@@ -122,14 +122,10 @@ public class ProjectController {
     @GetMapping("/{projectId}/members")
     public ResponseEntity<ApiResponseForm<Page<ProjectMemberResponse>>> getProjectMembers(
             @PathVariable Long projectId,
-            @RequestParam(required = false) CompanyProjectRole companyRole,
-            @RequestParam(required = false) Long companyId,
-            @RequestParam(required = false) MemberProjectRole memberRole,
+            @ModelAttribute ProjectMemberSearchCondition searchCondition,
             @PageableDefault(sort = "member.name", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        Page<ProjectMemberResponse> memberPage = projectService.getProjectMembers(
-                projectId, companyRole, companyId, memberRole, pageable
-        );
+        Page<ProjectMemberResponse> memberPage = projectService.getProjectMembers(projectId, searchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(memberPage));
     }
 }

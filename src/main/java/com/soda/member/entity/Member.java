@@ -2,6 +2,7 @@ package com.soda.member.entity;
 
 import com.soda.common.BaseEntity;
 import com.soda.member.enums.MemberRole;
+import com.soda.member.enums.MemberStatus;
 import com.soda.notice.entity.MemberNotice;
 import com.soda.project.entity.MemberProject;
 import jakarta.persistence.*;
@@ -35,6 +36,7 @@ public class Member extends BaseEntity {
 
     private String phoneNumber;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private MemberRole role;
 
@@ -47,6 +49,12 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<MemberNotice> noticeList = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private MemberStatus memberStatus = MemberStatus.AVAILABLE;
+
+    public void updateMemberStatus(MemberStatus memberStatus) {this.memberStatus = memberStatus;}
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;

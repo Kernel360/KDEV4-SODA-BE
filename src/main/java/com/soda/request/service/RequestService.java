@@ -20,6 +20,7 @@ import com.soda.request.entity.ApproverDesignation;
 import com.soda.request.entity.Request;
 import com.soda.request.entity.RequestLink;
 import com.soda.request.enums.RequestStatus;
+import com.soda.request.enums.ResponseStatus;
 import com.soda.request.error.RequestErrorCode;
 import com.soda.request.repository.ApproverDesignationRepository;
 import com.soda.request.repository.RequestLinkRepository;
@@ -115,7 +116,15 @@ public class RequestService {
 
     @Transactional
     public void approve(Request request) {
-        request.approve();
+        if (isAllApproversApproved(request)) {
+            request.approve();
+        } else {
+            request.approving();
+        }
+    }
+
+    private static boolean isAllApproversApproved(Request request) {
+        return request.getResponses().stream().filter(response -> response.getStatus() == ResponseStatus.APPROVED).count() == request.getApprovers().size();
     }
 
     @Transactional

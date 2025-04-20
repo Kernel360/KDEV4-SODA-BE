@@ -15,6 +15,7 @@ import com.soda.request.entity.ApproverDesignation;
 import com.soda.request.entity.Request;
 import com.soda.request.entity.Response;
 import com.soda.request.entity.ResponseLink;
+import com.soda.request.enums.ResponseStatus;
 import com.soda.request.error.RequestErrorCode;
 import com.soda.request.error.ResponseErrorCode;
 import com.soda.request.repository.ResponseRepository;
@@ -45,7 +46,7 @@ public class ResponseService {
         validateProjectAuthority(member, requestApproveRequest.getProjectId());
         validateApprover(member, request.getApprovers());
 
-        Response approval = createResponse(member, request, requestApproveRequest.getComment(), requestApproveRequest.getLinks());
+        Response approval = createResponse(member, request, requestApproveRequest.getComment(), requestApproveRequest.getLinks(), ResponseStatus.APPROVED);
         responseRepository.save(approval);
 
         requestService.approve(request);
@@ -62,7 +63,7 @@ public class ResponseService {
         validateProjectAuthority(member, requestRejectRequest.getProjectId());
         validateApprover(member, request.getApprovers());
 
-        Response rejection = createResponse(member, request, requestRejectRequest.getComment(), requestRejectRequest.getLinks());
+        Response rejection = createResponse(member, request, requestRejectRequest.getComment(), requestRejectRequest.getLinks(), ResponseStatus.REJECTED);
         responseRepository.save(rejection);
 
         requestService.reject(request);
@@ -130,18 +131,19 @@ public class ResponseService {
 
 
     // 분리한 메서드들
-    private Response createResponse(Member member, Request request, String comment, List<LinkUploadRequest.LinkUploadDTO> linkDTOs) {
-        Response response = buildResponse(member, request, comment);
+    private Response createResponse(Member member, Request request, String comment, List<LinkUploadRequest.LinkUploadDTO> linkDTOs, ResponseStatus responseStatus) {
+        Response response = buildResponse(member, request, comment, responseStatus);
         List<ResponseLink> links = linkService.buildLinks("response", response, linkDTOs);
         response.addLinks(links);
         return response;
     }
 
-    private Response buildResponse(Member member, Request request, String comment) {
+    private Response buildResponse(Member member, Request request, String comment, ResponseStatus responseStatus) {
         return Response.builder()
                 .member(member)
                 .request(request)
                 .comment(comment)
+                .status(responseStatus)
                 .build();
     }
 

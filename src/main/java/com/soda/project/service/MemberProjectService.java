@@ -143,7 +143,7 @@ public class MemberProjectService {
                 projectId, filteredCompanyIds, specificCompanyId, memberRole);
 
         // 수정된 Repository 메서드 호출
-        return memberProjectRepository.findFilteredMembersAndIsDeletedFalse( // 변경된 메서드 이름 사용
+        return memberProjectRepository.findFilteredMembers(
                 projectId,
                 filteredCompanyIds,
                 specificCompanyId,

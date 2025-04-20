@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MemberProjectRepository extends JpaRepository<MemberProject, Long> {
+public interface MemberProjectRepository extends JpaRepository<MemberProject, Long>, MemberProjectRepositoryCustom {
 
     List<MemberProject> findByProject(Project project);
 
@@ -37,22 +37,5 @@ public interface MemberProjectRepository extends JpaRepository<MemberProject, Lo
             Company company,
             MemberProjectRole role
     );
-
-    @Query(value = "SELECT mp FROM MemberProject mp JOIN FETCH mp.member m JOIN FETCH m.company c " +
-            "WHERE mp.project.id = :projectId AND mp.isDeleted = false " +
-            "AND (:companyIds IS NULL OR c.id IN :companyIds) " +
-            "AND (:companyId IS NULL OR c.id = :companyId) " +
-            "AND (:memberRole IS NULL OR mp.role = :memberRole)",
-            countQuery = "SELECT COUNT(mp) FROM MemberProject mp JOIN mp.member m JOIN m.company c " +
-                    "WHERE mp.project.id = :projectId AND mp.isDeleted = false " +
-                    "AND (:companyIds IS NULL OR c.id IN :companyIds) " +
-                    "AND (:companyId IS NULL OR c.id = :companyId) " +
-                    "AND (:memberRole IS NULL OR mp.role = :memberRole)")
-    Page<MemberProject> findFilteredMembersAndIsDeletedFalse(
-                                                              @Param("projectId") Long projectId,
-                                                              @Param("companyIds") List<Long> companyIds,
-                                                              @Param("companyId") Long companyId,
-                                                              @Param("memberRole") MemberProjectRole memberRole,
-                                                              Pageable pageable);
 
 }

@@ -40,6 +40,15 @@ public class RequestController {
         return ResponseEntity.ok(ApiResponseForm.success(requestCreateResponse));
     }
 
+    @PostMapping("/requests/{requestId}/re-requests")
+    public ResponseEntity<ApiResponseForm<?>> createReRequest(@PathVariable Long requestId,
+                                                              @RequestBody ReRequestCreateRequest reRequestCreateRequest,
+                                                              HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        ReRequestCreateResponse reRequestCreateResponse = requestService.createReRequest(memberId, reRequestCreateRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(reRequestCreateResponse));
+    }
+
     @GetMapping("/projects/{projectId}/requests")
     public ResponseEntity<ApiResponseForm<?>> getRequests(@PathVariable Long projectId,
                                                                  @ModelAttribute GetRequestCondition condition,

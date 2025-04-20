@@ -94,4 +94,11 @@ public class ArticleController {
         LinkDeleteResponse linkDeleteResponse = linkService.delete("article", linkId, memberId);
         return ResponseEntity.ok(ApiResponseForm.success(linkDeleteResponse));
     }
+
+    @GetMapping("/articles/recent-articles")
+    public ResponseEntity<ApiResponseForm<List<RecentArticleResponse>>> getRecentArticles(HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        List<RecentArticleResponse> recentArticles = articleService.getRecentArticlesForUser(memberId);
+        return ResponseEntity.ok(ApiResponseForm.success(recentArticles));
+    }
 }

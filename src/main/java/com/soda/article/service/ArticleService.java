@@ -18,13 +18,17 @@ import com.soda.project.service.MemberProjectService;
 import com.soda.project.service.ProjectService;
 import com.soda.project.service.StageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
@@ -252,4 +256,35 @@ public class ArticleService {
                 .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
     }
 
+    /**
+     * 특정 사용자가 속한 모든 프로젝트의 Stage들에 포함된 최신 아티클 3개를 조회합니다.
+     *
+     * @param memberId 조회할 사용자의 ID
+     * @return 최신 아티클 DTO 리스트 (최대 3개)
+     */
+    public List<RecentArticleResponse> getRecentArticlesForUser(Long memberId) {
+        List<Long> projectIds = memberProjectService.findProjectIdsByMemberId(memberId);
+
+        if (CollectionUtils.isEmpty(projectIds)) {
+            log.info("사용자 {}는 참여중인 프로젝트가 없습니다.", memberId);
+            return Collections.emptyList(); // 빈 리스트 반환
+        }
+        log.debug("사용자 {} 참여 프로젝트 ID 목록: {}", memberId, projectIds);
+
+        List<Long> stageIds = stageService.findStageIdsByProjectIds(projectIds);
+
+        if (CollectionUtils.isEmpty(stageIds)) {
+            log.info("사용자 {}의 프로젝트들에 속한 Stage가 없습니다.", memberId);
+            return Collections.emptyList(); // 빈 리스트 반환
+        }
+        log.debug("사용자 {} 관련 Stage ID 목록: {}", memberId, stageIds);
+
+        List<Article> recentArticles = articleRepository.findTop3ByStage_IdInAndIsDeletedFalseOrderByCreatedAtDesc(stageIds);
+
+        log.info("최신 아티클 조회 완료 (ArticleService): {}개 조회됨", recentArticles.size());
+
+        return recentArticles.stream()
+                .map(RecentArticleResponse::from)
+                .collect(Collectors.toList());
+    }
 }

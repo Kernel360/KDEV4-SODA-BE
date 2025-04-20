@@ -13,5 +13,6 @@ public interface MemberProjectRepositoryCustom {
                                             List<Long> companyIds,
                                             Long companyId,
                                             MemberProjectRole memberRole,
+                                            Long memberId,
                                             Pageable pageable);
 }

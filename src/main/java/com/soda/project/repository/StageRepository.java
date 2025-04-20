@@ -3,6 +3,8 @@ package com.soda.project.repository;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,4 +25,7 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
     boolean existsByProjectAndIsDeletedFalse(Project project);
 
     boolean existsByProjectAndNameAndIsDeletedFalseAndIdNot(Project project, String name, Long stageId);
+
+    @Query("SELECT s.id FROM Stage s WHERE s.project.id IN :projectIds")
+    List<Long> findAllIdsByProjectIdIn(@Param("projectIds") List<Long> projectIds);
 }

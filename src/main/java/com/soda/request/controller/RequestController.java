@@ -42,10 +42,10 @@ public class RequestController {
 
     @PostMapping("/requests/{requestId}/re-requests")
     public ResponseEntity<ApiResponseForm<?>> createReRequest(@PathVariable Long requestId,
-                                                              @RequestBody RequestCreateRequest requestCreateRequest,
+                                                              @RequestBody ReRequestCreateRequest reRequestCreateRequest,
                                                               HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        RequestCreateResponse requestCreateResponse = requestService.createRequest(memberId, requestCreateRequest);
+        RequestCreateResponse requestCreateResponse = requestService.createReRequest(memberId, requestId, reRequestCreateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestCreateResponse));
     }
 

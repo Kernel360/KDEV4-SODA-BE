@@ -219,6 +219,7 @@ public class RequestService {
                 .stage(stage)
                 .title(dto.getTitle())
                 .content(dto.getContent())
+                .parentId(dto.getParentId()==null ? null : dto.getParentId())
                 .status(RequestStatus.PENDING)
                 .build();
     }
@@ -226,4 +227,5 @@ public class RequestService {
     public void changeStatusToPending(Request request) {
         request.changeStatusToPending();
     }
+
 }

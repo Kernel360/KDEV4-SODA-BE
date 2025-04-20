@@ -59,6 +59,7 @@ public class Request extends BaseEntity {
     public Request(Member member, Stage stage, Long parentId, String title, String content, RequestStatus status, List<RequestFile> files, List<RequestLink> links) {
         this.member = member;
         this.stage = stage;
+        this.parentId = parentId;
         this.title = title;
         this.status = status;
         this.content = content;

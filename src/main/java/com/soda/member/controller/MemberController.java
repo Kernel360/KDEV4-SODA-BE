@@ -44,6 +44,13 @@ public class MemberController {
         return ResponseEntity.ok(ApiResponseForm.success(null, "초기 사용자 정보가 등록 성공"));
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponseForm<MemberDetailDto>> getMemberDetail(HttpServletRequest request){
+        Long currentMemberId = (Long) request.getAttribute("memberId");
+        MemberDetailDto member = memberService.getMemberDetail(currentMemberId);
+        return ResponseEntity.ok(ApiResponseForm.success(member,"마이페이지 조회 성공 "));
+    }
+
     @GetMapping("/{memberId}/status")
     public ResponseEntity<ApiResponseForm<MemberStatusResponse>> getMemberStatus(@PathVariable Long memberId) {
         MemberStatusResponse responseDto = memberService.getMemberStatus(memberId);

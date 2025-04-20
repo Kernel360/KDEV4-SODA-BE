@@ -5,6 +5,7 @@ import com.soda.member.dto.FindAuthIdRequest;
 import com.soda.member.dto.FindAuthIdResponse;
 import com.soda.member.dto.InitialUserInfoRequestDto;
 import com.soda.member.dto.member.MemberStatusResponse;
+import com.soda.member.dto.member.admin.MemberDetailDto;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.enums.MemberStatus;
@@ -231,7 +232,7 @@ public class MemberService {
      * 삭제되지 않은 회원 중 특정 키워드와 일치하는 목록을 페이징 처리하여 조회합니다.
      * 검색 대상 필드는 Repository의 @Query 정의에 따릅니다.
      *
-     * @param keyword  검색할 키워드
+     * @param keyword 검색할 키워드
      * @param pageable 페이징 및 정렬 정보를 담은 객체
      * @return 검색 조건에 맞고 페이징된 회원 목록 (`Page` 객체)
      */
@@ -254,6 +255,11 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    public MemberDetailDto getMemberDetail(Long currentMemberId) {
+        Member member = findByIdAndIsDeletedFalse(currentMemberId);
+        return MemberDetailDto.fromEntity(member);
+    }
+
     /**
      * 특정 멤버의 현재 상태를 조회합니다.
      *
@@ -272,8 +278,8 @@ public class MemberService {
     /**
      * 특정 멤버의 상태를 업데이트합니다.
      *
-     * @param memberId  업데이트할 멤버의 ID
-     * @param newStatus 새로운 멤버 상태
+     * @param memberId    업데이트할 멤버의 ID
+     * @param newStatus   새로운 멤버 상태
      * @return 업데이트된 멤버 상태 정보 DTO
      * @throws EntityNotFoundException 해당 ID의 멤버가 없을 경우
      */
@@ -287,5 +293,4 @@ public class MemberService {
         memberRepository.save(member);
         return MemberStatusResponse.fromEntity(member);
     }
-
 }

@@ -137,6 +137,7 @@ public class MemberProjectService {
                                                                            List<Long> filteredCompanyIds,
                                                                            Long specificCompanyId,
                                                                            MemberProjectRole memberRole,
+                                                                           Long memberId,
                                                                            Pageable pageable) {
 
         log.debug("삭제되지 않은 MemberProject 필터링 조회 (Repository 호출): projectId={}, filteredCompanyIds={}, specificCompanyId={}, memberRole={}",
@@ -148,6 +149,7 @@ public class MemberProjectService {
                 filteredCompanyIds,
                 specificCompanyId,
                 memberRole,
+                memberId,
                 pageable
         );
     }

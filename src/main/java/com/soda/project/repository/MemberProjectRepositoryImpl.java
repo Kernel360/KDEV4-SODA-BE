@@ -17,11 +17,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import static com.soda.project.entity.QMemberProject.memberProject;
-import static com.soda.member.entity.QMember.member;
-import static com.soda.member.entity.QCompany.company;
-
 import java.util.List;
+
+import static com.soda.member.entity.QCompany.company;
+import static com.soda.member.entity.QMember.member;
+import static com.soda.project.entity.QMemberProject.memberProject;
 
 @Repository
 @RequiredArgsConstructor
@@ -33,6 +33,7 @@ public class MemberProjectRepositoryImpl implements MemberProjectRepositoryCusto
                                                    List<Long> companyIds,
                                                    Long companyId,
                                                    MemberProjectRole memberRole,
+                                                   Long memberId,
                                                    Pageable pageable) {
 
         // 1. 데이터 조회 쿼리 (fetch join 사용)
@@ -45,7 +46,8 @@ public class MemberProjectRepositoryImpl implements MemberProjectRepositoryCusto
                         memberProject.isDeleted.isFalse(),
                         companyIdsIn(companyIds),
                         companyIdEq(companyId),
-                        memberRoleEq(memberRole)
+                        memberRoleEq(memberRole),
+                        memberIdEq(memberId)
                 )
                 .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .offset(pageable.getOffset())
@@ -64,11 +66,16 @@ public class MemberProjectRepositoryImpl implements MemberProjectRepositoryCusto
                         memberProject.isDeleted.isFalse(),
                         companyIdsIn(companyIds),
                         companyIdEq(companyId),
-                        memberRoleEq(memberRole)
+                        memberRoleEq(memberRole),
+                        memberIdEq(memberId)
                 );
 
         // 3. Page 객체 생성 및 반환
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression memberIdEq(Long memberId) {
+        return ObjectUtils.isEmpty(memberId) ? null : member.id.eq(memberId);
     }
 
     /**

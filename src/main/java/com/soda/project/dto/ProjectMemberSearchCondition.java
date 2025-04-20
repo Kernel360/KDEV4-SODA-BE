@@ -14,5 +14,6 @@ public class ProjectMemberSearchCondition {
     private CompanyProjectRole companyRole;
     private Long companyId;
     private MemberProjectRole memberRole;
+    private Long memberId;
 
 }

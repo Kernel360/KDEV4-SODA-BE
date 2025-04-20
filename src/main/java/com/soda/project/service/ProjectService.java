@@ -467,6 +467,7 @@ public class ProjectService {
         // 3. MemberProjectService 호출
         Long companyId = searchCondition.getCompanyId();
         MemberProjectRole memberRole = searchCondition.getMemberRole();
+        Long memberId = searchCondition.getMemberId();
 
         log.debug("MemberProjectService 필터링 조회 시작: projectId={}, filteredCompanyIds={}, companyId={}, memberRole={}",
                 projectId, filteredCompanyIds != null ? filteredCompanyIds : "N/A", companyId, memberRole);
@@ -477,6 +478,7 @@ public class ProjectService {
                 filteredCompanyIds,
                 companyId,
                 memberRole,
+                memberId,
                 pageable
         );
         log.debug("MemberProjectService 조회 완료: {}개의 삭제되지 않은 MemberProject 조회됨 (Total Elements)", memberProjectPage.getTotalElements());

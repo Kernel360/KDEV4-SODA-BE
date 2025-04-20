@@ -440,51 +440,51 @@ public class ProjectService {
      * 특정 프로젝트의 멤버 목록을 필터링하여 조회합니다. (수정된 로직)
      *
      * @param projectId 대상 프로젝트 ID
-     * @param companyRole 필터링할 회사의 프로젝트 역할 (선택 사항)
-     * @param companyId 필터링할 특정 회사 ID (선택 사항)
-     * @param memberRole 필터링할 특정 멤버 역할 (선택 사항)
      * @param pageable 페이징 및 정렬 정보
      * @return 필터링 및 페이징된 멤버 정보 응답 페이지
      * @throws GeneralException 프로젝트를 찾을 수 없는 경우
      */
     public Page<ProjectMemberResponse> getProjectMembers(
             Long projectId,
-            CompanyProjectRole companyRole,
-            Long companyId,
-            MemberProjectRole memberRole,
+            ProjectMemberSearchCondition searchCondition,
             Pageable pageable) {
-
-        log.info("삭제되지 않은 프로젝트 멤버 필터링 조회 요청: projectId={}, companyRole={}, companyId={}, memberRole={}, pageable={}",
-                projectId, companyRole, companyId, memberRole, pageable);
-
         // 1. 프로젝트 유효성 검사
         Project project = getValidProject(projectId);
 
-        // 2. companyRole 필터가 있으면 해당 역할의 삭제되지 않은 회사 ID 목록 조회
+        // 2. companyRole 필터 처리
+        CompanyProjectRole companyRole = searchCondition.getCompanyRole();
         List<Long> filteredCompanyIds = null;
         if (companyRole != null) {
-            // 수정된 CompanyProjectService 메서드 호출
+            log.debug("CompanyRole 필터({}) 조회 시작", companyRole);
             filteredCompanyIds = companyProjectService.getCompanyIdsByProjectAndRoleAndIsDeletedFalse(project, companyRole);
             if (CollectionUtils.isEmpty(filteredCompanyIds)) {
-                log.info("요청된 companyRole({})에 해당하는 삭제되지 않은 회사가 프로젝트에 없습니다.", companyRole);
+                log.info("요청된 companyRole({})에 해당하는 삭제되지 않은 회사가 프로젝트({})에 없습니다. 빈 페이지 반환.", companyRole, projectId);
                 return Page.empty(pageable);
             }
             log.debug("CompanyRole 필터 적용 (IsDeletedFalse): {} 역할의 회사 ID 목록 = {}", companyRole, filteredCompanyIds);
         }
 
-        // 3. MemberProjectService 호출하여 최종 멤버 목록 조회 (수정된 메서드 호출)
-        Page<MemberProject> memberProjectPage = memberProjectService.getFilteredMemberProjectsAndIsDeletedFalse( // 메서드 이름 변경
+        // 3. MemberProjectService 호출
+        Long companyId = searchCondition.getCompanyId();
+        MemberProjectRole memberRole = searchCondition.getMemberRole();
+
+        log.debug("MemberProjectService 필터링 조회 시작: projectId={}, filteredCompanyIds={}, companyId={}, memberRole={}",
+                projectId, filteredCompanyIds != null ? filteredCompanyIds : "N/A", companyId, memberRole);
+
+        // 리포지토리/서비스 호출 시 DTO에서 추출한 값들 사용
+        Page<MemberProject> memberProjectPage = memberProjectService.getFilteredMemberProjectsAndIsDeletedFalse(
                 project.getId(),
                 filteredCompanyIds,
                 companyId,
                 memberRole,
                 pageable
         );
-        log.debug("MemberProjectService 조회 완료: {}개의 삭제되지 않은 MemberProject 조회됨", memberProjectPage.getTotalElements());
+        log.debug("MemberProjectService 조회 완료: {}개의 삭제되지 않은 MemberProject 조회됨 (Total Elements)", memberProjectPage.getTotalElements());
 
-        // 4. DTO 변환
+        // 4. DTO 변환 (기존 로직 유지)
         Page<ProjectMemberResponse> responsePage = memberProjectPage.map(ProjectMemberResponse::from);
-        log.info("삭제되지 않은 프로젝트 멤버 조회 완료: 반환 페이지 정보 = {}", responsePage);
+        log.info("삭제되지 않은 프로젝트 멤버 조회 완료: 반환 페이지 정보 (Number={}, Size={}, TotalElements={})",
+                responsePage.getNumber(), responsePage.getSize(), responsePage.getTotalElements());
 
         return responsePage;
     }

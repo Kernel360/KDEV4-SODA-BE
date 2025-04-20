@@ -70,11 +70,6 @@ public class CompanyProjectService {
         return companyNames;
     }
 
-    private CompanyProject findByProjectAndCompanyProjectRole(Project project, CompanyProjectRole role) {
-        return companyProjectRepository.findByProjectAndCompanyProjectRole(project, role)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND));
-    }
-
     /**
      * 특정 회사와 프로젝트의 관계에 대한 CompanyProjectRole을 반환합니다.
      * @param company 회사 엔티티
@@ -93,5 +88,13 @@ public class CompanyProjectService {
 
         companyProject.delete();
         log.info("프로젝트 ID {} 에서 회사 ID {} 삭제 완료", project.getId(), companyId);
+    }
+
+    public List<Long> getCompanyIdsByProjectAndRoleAndIsDeletedFalse(Project project, CompanyProjectRole role) {
+        log.debug("삭제되지 않은 회사 ID 목록 조회 시작: projectId={}, role={}", project.getId(), role);
+
+        List<Long> companyIds = companyProjectRepository.findCompanyIdsByProjectAndRoleAndIsDeletedFalse(project, role);
+        log.debug("삭제되지 않은 회사 ID 목록 조회 완료: count={}", companyIds.size());
+        return companyIds;
     }
 }

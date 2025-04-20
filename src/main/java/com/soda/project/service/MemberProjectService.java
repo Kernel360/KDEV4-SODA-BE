@@ -3,9 +3,9 @@ package com.soda.project.service;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
+import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.entity.MemberProject;
 import com.soda.project.entity.Project;
-import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.MemberProjectRepository;
 import lombok.RequiredArgsConstructor;
@@ -87,34 +87,6 @@ public class MemberProjectService {
         return members;
     }
 
-
-    // 멤버 추가 및 수정 메서드
-    public void addOrUpdateMembersInProject(Project project, List<Member> members, MemberProjectRole role) {
-        // 각 멤버에 대해 처리
-        for (Member member : members) {
-            // 멤버가 해당 프로젝트에 이미 있는지 확인
-            MemberProject existingMemberProject = memberProjectRepository.findByMemberAndProject(member, project).orElse(null);
-//                    .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT));
-
-            if (existingMemberProject != null) {
-                // 멤버가 이미 존재하면, 삭제되지 않은 상태에서만 역할을 업데이트
-                if (!existingMemberProject.getIsDeleted()) {
-                    // 역할 업데이트 (멤버가 해당 프로젝트에 이미 있는 경우)
-                    existingMemberProject.updateMemberProject(member, project, role);
-                    memberProjectRepository.save(existingMemberProject);
-                } else {
-                    // 멤버가 삭제된 상태라면 복구 후 역할 업데이트
-                    existingMemberProject.reActive();  // isDeleted = false
-                    existingMemberProject.updateMemberProject(member, project, role);
-                    memberProjectRepository.save(existingMemberProject);
-                }
-            } else {
-                // 멤버가 존재하지 않으면 새로 추가
-                createAndSaveMemberProject(member, project, role);
-            }
-        }
-    }
-
     // 사용자가 참여한 프로젝트 리스트 조회
     public Page<Long> getProjectIdsByUserId(Long userId, Pageable pageable) {
         log.info("사용자가 참여한 프로젝트 ID 목록 조회 시작: 사용자 ID = {}", userId);
@@ -158,5 +130,25 @@ public class MemberProjectService {
         memberToDelete.delete();
         log.info("단일 멤버 연결 삭제 완료: projectId={}, memberId={}, memberProjectId={}",
                 project.getId(), memberId, memberToDelete.getId());
+    }
+
+    public Page<MemberProject> getFilteredMemberProjectsAndIsDeletedFalse(
+                                                                           Long projectId,
+                                                                           List<Long> filteredCompanyIds,
+                                                                           Long specificCompanyId,
+                                                                           MemberProjectRole memberRole,
+                                                                           Pageable pageable) {
+
+        log.debug("삭제되지 않은 MemberProject 필터링 조회 (Repository 호출): projectId={}, filteredCompanyIds={}, specificCompanyId={}, memberRole={}",
+                projectId, filteredCompanyIds, specificCompanyId, memberRole);
+
+        // 수정된 Repository 메서드 호출
+        return memberProjectRepository.findFilteredMembersAndIsDeletedFalse( // 변경된 메서드 이름 사용
+                projectId,
+                filteredCompanyIds,
+                specificCompanyId,
+                memberRole,
+                pageable
+        );
     }
 }

@@ -38,6 +38,8 @@ public class Request extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    private Long parentId;
+
     @TrackUpdate
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
     private List<RequestFile> files;

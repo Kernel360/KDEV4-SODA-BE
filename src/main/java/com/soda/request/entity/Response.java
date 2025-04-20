@@ -19,6 +19,7 @@ public class Response extends BaseEntity {
 
     private String comment;
 
+    @Enumerated(EnumType.STRING)
     private ResponseStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)

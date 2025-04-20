@@ -20,6 +20,7 @@ import java.util.List;
 public class Request extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private RequestStatus status;
 
     @TrackUpdate
@@ -103,5 +104,9 @@ public class Request extends BaseEntity {
             this.approvers = new ArrayList<>();
         }
         this.approvers.addAll(approverDesignations);
+    }
+
+    public void approving() {
+        this.status = RequestStatus.APPROVING;
     }
 }

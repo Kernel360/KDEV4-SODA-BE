@@ -1,6 +1,6 @@
 package com.soda.article.service;
 
-import com.soda.article.domain.article.ArticleFileDTO;
+import com.soda.article.dto.article.ArticleFileDTO;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.ArticleFile;
 import com.soda.article.error.ArticleErrorCode;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Transactional(readOnly = true)
 @Service

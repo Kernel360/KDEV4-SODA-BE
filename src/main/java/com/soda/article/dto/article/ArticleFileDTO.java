@@ -1,4 +1,4 @@
-package com.soda.article.domain.article;
+package com.soda.article.dto.article;
 
 import lombok.Builder;
 import lombok.Getter;

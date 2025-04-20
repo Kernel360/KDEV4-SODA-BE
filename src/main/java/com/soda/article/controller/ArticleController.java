@@ -1,6 +1,6 @@
 package com.soda.article.controller;
 
-import com.soda.article.domain.article.*;
+import com.soda.article.dto.article.*;
 import com.soda.article.service.ArticleService;
 import com.soda.common.file.dto.FileDeleteResponse;
 import com.soda.common.file.dto.FileUploadResponse;

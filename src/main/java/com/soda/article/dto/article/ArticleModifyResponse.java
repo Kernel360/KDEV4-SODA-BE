@@ -1,4 +1,4 @@
-package com.soda.article.domain.article;
+package com.soda.article.dto.article;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.article.entity.Article;
@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Builder

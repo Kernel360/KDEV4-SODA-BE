@@ -1,6 +1,6 @@
 package com.soda.article.service;
 
-import com.soda.article.domain.comment.*;
+import com.soda.article.dto.comment.*;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.Comment;
 import com.soda.article.error.CommentErrorCode;
@@ -9,7 +9,6 @@ import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
-import com.soda.member.error.MemberErrorCode;
 import com.soda.member.service.MemberService;
 import com.soda.project.entity.Project;
 import com.soda.project.error.ProjectErrorCode;

@@ -11,7 +11,7 @@ public enum RequestErrorCode implements ErrorCode {
     REQUEST_LINK_NOT_FOUND("3005", "This request_link is not found" , HttpStatus.NOT_FOUND ),
     USER_NOT_UPLOAD_LINK("3006", "This user didn't upload the request_link" , HttpStatus.BAD_REQUEST ),
     USER_IS_NOT_APPROVER("3007", "This user is not approver", HttpStatus.BAD_REQUEST ),
-    ;
+    REQUEST_NOT_REJECTED("3008", "This request is not rejected" , HttpStatus.BAD_REQUEST ),;
 
     private final String code;
     private final String message;

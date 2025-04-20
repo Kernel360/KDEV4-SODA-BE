@@ -74,10 +74,17 @@ public class RequestService {
         Stage stage = getStageOrThrow(parentRequest.getStage().getId());
 
         validateProjectAuthority(member, parentRequest.getStage().getProject().getId());
+        validateRequestStatus(parentRequest);
 
         Request reRequest = createReRequest(reRequestCreateRequest, requestId, member, stage);
 
         return RequestCreateResponse.fromEntity(reRequest);
+    }
+
+    private void validateRequestStatus(Request parentRequest) {
+        if (parentRequest.getStatus() != RequestStatus.REJECTED) {
+            throw new GeneralException(RequestErrorCode.REQUEST_NOT_REJECTED);
+        }
     }
 
     public Page<RequestDTO> findRequests(GetRequestCondition condition, Pageable pageable) {

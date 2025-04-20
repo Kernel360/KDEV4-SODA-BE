@@ -49,4 +49,14 @@ public class MemberController {
         MemberStatusResponse responseDto = memberService.getMemberStatus(memberId);
         return ResponseEntity.ok(ApiResponseForm.success(responseDto,"멤버 상태 조회 성공"));
     }
+
+    @PatchMapping("/{memberId}/status")
+    public ResponseEntity<ApiResponseForm<MemberStatusResponse>> updateMemberStatus(
+            @PathVariable Long memberId,
+            @Valid @RequestBody MemberStatusUpdate requestDto) {
+
+        MemberStatusResponse updatedStatusDto = memberService.updateMemberStatus(memberId, requestDto.getNewStatus());
+        return ResponseEntity.ok(ApiResponseForm.success(updatedStatusDto,"멤버 상태 수정 성공"));
+    }
+
 }

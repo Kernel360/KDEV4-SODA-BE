@@ -1,6 +1,8 @@
 package com.soda.project.controller;
 
 import com.soda.global.response.ApiResponseForm;
+import com.soda.member.enums.CompanyProjectRole;
+import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.dto.*;
 import com.soda.project.enums.ProjectStatus;
 import com.soda.project.service.ProjectService;
@@ -115,5 +117,19 @@ public class ProjectController {
         String userRole = (String) request.getAttribute("userRole").toString();
         projectService.deleteMemberFromProject(userRole, projectId, memberId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{projectId}/members")
+    public ResponseEntity<ApiResponseForm<Page<ProjectMemberResponse>>> getProjectMembers(
+            @PathVariable Long projectId,
+            @RequestParam(required = false) CompanyProjectRole companyRole,
+            @RequestParam(required = false) Long companyId,
+            @RequestParam(required = false) MemberProjectRole memberRole,
+            @PageableDefault(sort = "member.name", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        Page<ProjectMemberResponse> memberPage = projectService.getProjectMembers(
+                projectId, companyRole, companyId, memberRole, pageable
+        );
+        return ResponseEntity.ok(ApiResponseForm.success(memberPage));
     }
 }

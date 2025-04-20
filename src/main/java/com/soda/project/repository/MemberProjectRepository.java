@@ -8,6 +8,8 @@ import com.soda.project.entity.Project;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,8 +24,6 @@ public interface MemberProjectRepository extends JpaRepository<MemberProject, Lo
 
     List<MemberProject> findByProjectAndRoleAndIsDeletedFalse(Project project, MemberProjectRole role);
 
-    Optional<MemberProject> findByMemberAndProject(Member member, Project project);
-
     Page<MemberProject> findByMemberId(Long userId, Pageable pageable);
 
     Optional<MemberProject> findByMemberAndProjectAndIsDeletedFalse(Member member, Project project);
@@ -36,4 +36,23 @@ public interface MemberProjectRepository extends JpaRepository<MemberProject, Lo
             Project project,
             Company company,
             MemberProjectRole role
-    );}
+    );
+
+    @Query(value = "SELECT mp FROM MemberProject mp JOIN FETCH mp.member m JOIN FETCH m.company c " +
+            "WHERE mp.project.id = :projectId AND mp.isDeleted = false " +
+            "AND (:companyIds IS NULL OR c.id IN :companyIds) " +
+            "AND (:companyId IS NULL OR c.id = :companyId) " +
+            "AND (:memberRole IS NULL OR mp.role = :memberRole)",
+            countQuery = "SELECT COUNT(mp) FROM MemberProject mp JOIN mp.member m JOIN m.company c " +
+                    "WHERE mp.project.id = :projectId AND mp.isDeleted = false " +
+                    "AND (:companyIds IS NULL OR c.id IN :companyIds) " +
+                    "AND (:companyId IS NULL OR c.id = :companyId) " +
+                    "AND (:memberRole IS NULL OR mp.role = :memberRole)")
+    Page<MemberProject> findFilteredMembersAndIsDeletedFalse(
+                                                              @Param("projectId") Long projectId,
+                                                              @Param("companyIds") List<Long> companyIds,
+                                                              @Param("companyId") Long companyId,
+                                                              @Param("memberRole") MemberProjectRole memberRole,
+                                                              Pageable pageable);
+
+}

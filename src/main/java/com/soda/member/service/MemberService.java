@@ -4,10 +4,14 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.dto.FindAuthIdRequest;
 import com.soda.member.dto.FindAuthIdResponse;
 import com.soda.member.dto.InitialUserInfoRequestDto;
+import com.soda.member.dto.member.MemberStatusResponse;
+import com.soda.member.dto.member.admin.MemberDetailDto;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
+import com.soda.member.enums.MemberStatus;
 import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -250,4 +254,20 @@ public class MemberService {
 
         memberRepository.save(member);
     }
+
+    /**
+     * 특정 멤버의 현재 상태를 조회합니다.
+     *
+     * @param memberId 조회할 멤버의 ID
+     * @return 멤버 상태 정보 DTO
+     * @throws EntityNotFoundException 해당 ID의 멤버가 없을 경우
+     */
+    @Transactional(readOnly = true)
+    public MemberStatusResponse getMemberStatus(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("ID " + memberId + " 에 해당하는 멤버를 찾을 수 없습니다."));
+
+        return MemberStatusResponse.fromEntity(member);
+    }
+
 }

@@ -4,8 +4,12 @@ import com.soda.global.response.ApiResponseForm;
 import com.soda.member.dto.FindAuthIdRequest;
 import com.soda.member.dto.FindAuthIdResponse;
 import com.soda.member.dto.InitialUserInfoRequestDto;
+import com.soda.member.dto.member.MemberStatusResponse;
+import com.soda.member.dto.member.MemberStatusUpdate;
 import com.soda.member.dto.member.admin.MemberDetailDto;
+import com.soda.member.entity.Member;
 import com.soda.member.service.MemberService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,10 +37,16 @@ public class MemberController {
     }
 
     @PutMapping("/{memberId}/initial-profile")
-    public ResponseEntity<ApiResponseForm<MemberDetailDto>> setupInitialProfile(
+    public ResponseEntity<ApiResponseForm<Void>> setupInitialProfile(
             @PathVariable Long memberId,
             @Valid @RequestBody InitialUserInfoRequestDto requestDto) {
         memberService.setupInitialProfile(memberId, requestDto);
-        return ResponseEntity.ok(ApiResponseForm.success(null, "초기 사용자 정보가 성공적으로 등록되었습니다."));
+        return ResponseEntity.ok(ApiResponseForm.success(null, "초기 사용자 정보가 등록 성공"));
+    }
+
+    @GetMapping("/{memberId}/status")
+    public ResponseEntity<ApiResponseForm<MemberStatusResponse>> getMemberStatus(@PathVariable Long memberId) {
+        MemberStatusResponse responseDto = memberService.getMemberStatus(memberId);
+        return ResponseEntity.ok(ApiResponseForm.success(responseDto,"멤버 상태 조회 성공"));
     }
 }

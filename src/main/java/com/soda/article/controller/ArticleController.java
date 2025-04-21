@@ -11,6 +11,8 @@ import com.soda.global.response.ApiResponseForm;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -101,6 +103,16 @@ public class ArticleController {
         Long memberId = (Long) request.getAttribute("memberId");
         List<RecentArticleResponse> recentArticles = articleService.getRecentArticlesForUser(memberId);
         return ResponseEntity.ok(ApiResponseForm.success(recentArticles));
+    }
+
+    @GetMapping("/articles/my")
+    public ResponseEntity<ApiResponseForm<Page<MyArticleListResponse>>> getMyArticles(HttpServletRequest request,
+                                                                                      @RequestParam(required = false) Long projectId,
+                                                                                      Pageable pageable
+                                                                                      ) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        Page<MyArticleListResponse> response = articleService.getMyArticles(memberId, projectId, pageable);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
     @PostMapping("/articles/{articleId}/vote")

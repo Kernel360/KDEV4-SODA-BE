@@ -4,6 +4,7 @@ import com.soda.article.dto.article.*;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.ArticleLink;
 import com.soda.article.error.ArticleErrorCode;
+import com.soda.article.error.VoteErrorCode;
 import com.soda.article.repository.ArticleRepository;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
@@ -42,6 +43,7 @@ public class ArticleService {
     private final ArticleLinkService articleLinkService;
     private final MemberService memberService;
     private final LinkService linkService;
+    private final VoteService voteService;
 
     /**
      * 게시글 생성하기
@@ -286,5 +288,38 @@ public class ArticleService {
         return recentArticles.stream()
                 .map(RecentArticleResponse::from)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 특정 게시물에 투표를 생성
+     * @param articleId 투표 생성할 게시글 ID
+     * @param userId 요청 사용자 ID
+     * @param userRole 요청 사용자의 역할
+     * @param request 투표 생성 정보 DTO
+     * @return 생성된 투표 정보 DTO
+     */
+    @Transactional
+    public VoteCreateResponse createVoteForArticle(Long articleId, Long userId, String userRole, VoteCreateRequest request) {
+        log.info("게시글 {} 에 투표 생성 요청 시작 (ArticleService): userId={}", articleId, userId);
+
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Article article = validateArticle(articleId);
+        Project project = article.getStage().getProject();
+
+        if (!article.getMember().getId().equals(userId)) {
+            log.warn("권한 없음: 게시글 작성자가 아닌 사용자가 투표 생성을 시도. articleId={}, userId={}", articleId, userId);
+            throw new GeneralException(ArticleErrorCode.NO_PERMISSION_TO_MODIFY_ARTICLE);
+        }
+
+        // 기존에 투표가 존재하는지 확인
+        if (voteService.doesActiveVoteExistForArticle(articleId)) {
+            log.warn("게시글 {} 에 이미 활성 투표가 존재합니다.", articleId);
+            throw new GeneralException(VoteErrorCode.VOTE_ALREADY_EXISTS);
+        }
+
+        VoteCreateResponse voteResponse = voteService.createVote(article, request);
+        log.info("게시글 {} 에 투표 생성 완료 (ArticleService): voteId={}", articleId, voteResponse.getVoteId());
+
+        return voteResponse;
     }
 }

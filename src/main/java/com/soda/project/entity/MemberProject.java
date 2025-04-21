@@ -40,6 +40,12 @@ public class MemberProject extends BaseEntity {
         this.markAsActive();
     }
 
+    public void changeRole(MemberProjectRole newRole) {
+        if (newRole != null) {
+            this.role = newRole;
+        }
+    }
+
     public void updateMemberProject(Member member, Project project, MemberProjectRole memberProjectRole) {
         this.member = member;
         this.project = project;

@@ -29,15 +29,56 @@ public class MemberProjectService {
     private final MemberProjectRepository memberProjectRepository;
 
     public void assignMembersToProject(Company company, List<Member> members, Project project, MemberProjectRole role) {
+        if (CollectionUtils.isEmpty(members)) {
+            log.debug("할당할 멤버 목록이 비어있습니다. projectId={}, companyId={}", project.getId(), company.getId());
+            return; // 처리할 멤버 없으면 종료
+        }
+
+        log.info("멤버 할당 시작: projectId={}, companyId={}, role={}, memberCount={}",
+                project.getId(), company.getId(), role, members.size());
+
         members.forEach(member -> {
-            if (!member.getCompany().getId().equals(company.getId())) {
+            // 1. 멤버가 제공된 회사 소속인지 검증
+            if (member.getCompany() == null || !member.getCompany().getId().equals(company.getId())) {
+                log.error("멤버(id:{})가 지정된 회사(id:{}) 소속이 아닙니다.", member.getId(), company.getId());
                 throw new GeneralException(ProjectErrorCode.INVALID_MEMBER_COMPANY);
             }
 
-            if (!existsByMemberAndProjectAndIsDeletedFalse(member, project)) {
+            // 2. 해당 멤버와 프로젝트에 대한 MemberProject 조회
+            Optional<MemberProject> existingEntryOpt = memberProjectRepository.findByMemberAndProject(member, project);
+
+            if (existingEntryOpt.isPresent()) {
+                // 3. 기존 레코드가 존재할 경우
+                MemberProject existingEntry = existingEntryOpt.get();
+
+                if (existingEntry.getIsDeleted()) {
+                    // 3-1. 삭제된 상태였으면 활성화하고 역할 업데이트
+                    log.info("기존 삭제된 멤버-프로젝트 연결 활성화 및 역할 업데이트: memberId={}, projectId={}, newRole={}",
+                            member.getId(), project.getId(), role);
+                    existingEntry.reActive();
+                    existingEntry.changeRole(role);
+                    memberProjectRepository.save(existingEntry);
+                } else {
+                    // 3-2. 이미 활성 상태면 역할 비교 후 업데이트
+                    if (!existingEntry.getRole().equals(role)) {
+                        log.info("기존 활성 멤버-프로젝트 연결 역할 변경: memberId={}, projectId={}, oldRole={}, newRole={}",
+                                member.getId(), project.getId(), existingEntry.getRole(), role);
+                        existingEntry.changeRole(role); // 역할 변경
+                        memberProjectRepository.save(existingEntry); // 변경사항 저장
+                    } else {
+                        log.debug("멤버(id:{})는 이미 프로젝트(id:{})에 동일한 역할({})로 활성 상태입니다. 변경 없음.",
+                                member.getId(), project.getId(), role);
+                        // 역할이 동일하면 아무 작업도 하지 않음
+                    }
+                }
+            } else {
+                // 4. 기존 정보가 존재하지 않으면 새로 생성
+                log.info("신규 멤버-프로젝트 연결 생성: memberId={}, projectId={}, role={}",
+                        member.getId(), project.getId(), role);
                 createAndSaveMemberProject(member, project, role);
             }
         });
+        log.info("멤버 할당 완료: projectId={}, companyId={}", project.getId(), company.getId());
     }
 
     private void createAndSaveMemberProject(Member member, Project project, MemberProjectRole role) {

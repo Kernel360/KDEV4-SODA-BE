@@ -1,6 +1,6 @@
 package com.soda.article.entity;
 
-import com.soda.article.error.ArticleErrorCode;
+import com.soda.article.error.VoteErrorCode;
 import com.soda.common.BaseEntity;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
@@ -40,12 +40,12 @@ public class VoteAnswer extends BaseEntity {
     public VoteAnswer(Vote vote, Member member, String textAnswer) {
         // 투표 마감 확인
         if (vote.isClosed()) {
-            throw new GeneralException(ArticleErrorCode.VOTE_ALREADY_CLOSED);
+            throw new GeneralException(VoteErrorCode.VOTE_ALREADY_CLOSED);
         }
 
         // text 답변 허용 여부 확인
         if (textAnswer != null && !vote.isAllowTextAnswer()) {
-            throw new GeneralException(ArticleErrorCode.VOTE_TEXT_ANSWER_NOT_ALLOWED);
+            throw new GeneralException(VoteErrorCode.VOTE_TEXT_ANSWER_NOT_ALLOWED);
         }
 
         this.vote = vote;
@@ -61,7 +61,7 @@ public class VoteAnswer extends BaseEntity {
 
         // 단일 선택 검증
         if (!this.vote.isAllowMultipleSelection() && !this.selectedItems.isEmpty()) {
-            throw new GeneralException(ArticleErrorCode.VOTE_MULTIPLE_SELECTION_NOT_ALLOWED);
+            throw new GeneralException(VoteErrorCode.VOTE_MULTIPLE_SELECTION_NOT_ALLOWED);
         }
 
         this.selectedItems.add(item);

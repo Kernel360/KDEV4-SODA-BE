@@ -4,17 +4,15 @@ import com.soda.global.response.ErrorCode;
 import org.springframework.http.HttpStatus;
 
 public enum ArticleErrorCode implements ErrorCode {
-    INVALID_INPUT("1101", "Invalid Input", HttpStatus.BAD_REQUEST),
-    ARTICLE_ALREADY_DELETED("1102","This article is already deleted", HttpStatus.NOT_FOUND),
-    INVALID_ARTICLE("1103", "The Article does not exist", HttpStatus.NOT_FOUND),
-    PARENT_ARTICLE_NOT_FOUND("1104", "This parent article does not exist", HttpStatus.NOT_FOUND),
-    ARTICLE_FILE_NOT_FOUND("1105", "This article file does not exist", HttpStatus.NOT_FOUND),
-    USER_NOT_UPLOAD_ARTICLE_FILE("1106", "This user does not upload article_file", HttpStatus.NOT_FOUND),
-    ARTICLE_LINK_NOT_FOUND("1107", "This link does not exist" , HttpStatus.NOT_FOUND ),
-    USER_NOT_UPLOAD_ARTICLE_LINK("1108", "This user does not upload article_link" , HttpStatus.NOT_FOUND ),
-    VOTE_ALREADY_CLOSED("1109", "마감된 투표에는 응답할 수 없습니다.", HttpStatus.BAD_REQUEST),
-    VOTE_TEXT_ANSWER_NOT_ALLOWED("1110", "이 투표는 텍스트 답변을 허용하지 않습니다", HttpStatus.BAD_REQUEST),
-    VOTE_MULTIPLE_SELECTION_NOT_ALLOWED("1111", "이 투표는 복수 선택을 허용하지 않습니다", HttpStatus.BAD_REQUEST);
+    INVALID_INPUT("1101", "잘못된 입력입니다.", HttpStatus.BAD_REQUEST),
+    ARTICLE_ALREADY_DELETED("1102","이미 삭제된 게시글입니다.", HttpStatus.NOT_FOUND),
+    INVALID_ARTICLE("1103", "해당 게시글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    PARENT_ARTICLE_NOT_FOUND("1104", "부모 게시글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    ARTICLE_FILE_NOT_FOUND("1105", "해당 게시글의 파일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    USER_NOT_UPLOAD_ARTICLE_FILE("1106", "해당 사용자가 업로드한 게시글 파일이 아닙니다.", HttpStatus.NOT_FOUND),
+    ARTICLE_LINK_NOT_FOUND("1107", "해당 게시글의 링크를 찾을 수 없습니다." , HttpStatus.NOT_FOUND ),
+    USER_NOT_UPLOAD_ARTICLE_LINK("1108", "해당 사용자가 업로드한 게시글 링크가 아닙니다." , HttpStatus.NOT_FOUND ),
+    NO_PERMISSION_TO_MODIFY_ARTICLE("1109", "게시글 작성자만 투표를 생성할 수 있습니다.", HttpStatus.FORBIDDEN);
 
     private final String code;
     private final String message;

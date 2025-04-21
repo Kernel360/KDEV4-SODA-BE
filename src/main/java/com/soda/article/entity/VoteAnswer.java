@@ -20,7 +20,7 @@ import java.util.List;
         // 한 명의 사용자는 하나의 투표에 한 번만 응답 가능
         @UniqueConstraint(columnNames = {"vote_id", "member_id"})
 })
-public class VoteResponse extends BaseEntity {
+public class VoteAnswer extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vote_id", nullable = false)
@@ -34,10 +34,10 @@ public class VoteResponse extends BaseEntity {
     private String textAnswer;
 
     @OneToMany(mappedBy = "voteResponse", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VoteResponseItem> selectedItems = new ArrayList<>();
+    private List<VoteAnswerItem> selectedItems = new ArrayList<>();
 
     @Builder
-    public VoteResponse(Vote vote, Member member, String textAnswer) {
+    public VoteAnswer(Vote vote, Member member, String textAnswer) {
         // 투표 마감 확인
         if (vote.isClosed()) {
             throw new GeneralException(ArticleErrorCode.VOTE_ALREADY_CLOSED);
@@ -54,7 +54,7 @@ public class VoteResponse extends BaseEntity {
     }
 
     // VoteResponseItem 추가
-    public void addSelectedItem(VoteResponseItem item) {
+    public void addSelectedItem(VoteAnswerItem item) {
         if (this.selectedItems == null) {
             this.selectedItems = new ArrayList<>();
         }
@@ -70,7 +70,7 @@ public class VoteResponse extends BaseEntity {
     public void delete() {
         this.markAsDeleted();
         if (this.selectedItems != null) {
-            this.selectedItems.forEach(VoteResponseItem::delete);
+            this.selectedItems.forEach(VoteAnswerItem::delete);
         }
     }
 }

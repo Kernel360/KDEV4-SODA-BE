@@ -35,7 +35,7 @@ public class Vote extends BaseEntity {
     private List<VoteItem> voteItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "vote", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VoteResponse> voteResponses = new ArrayList<>();
+    private List<VoteAnswer> voteResponses = new ArrayList<>();
 
     @Builder
     public Vote(String title, boolean allowMultipleSelection, boolean allowTextAnswer,
@@ -58,7 +58,7 @@ public class Vote extends BaseEntity {
     public void delete() {
         this.markAsActive();
         this.voteItems.forEach(VoteItem::delete);
-        this.voteResponses.forEach(VoteResponse::delete);
+        this.voteResponses.forEach(VoteAnswer::delete);
     }
 
     protected void associateArticle(Article article) {

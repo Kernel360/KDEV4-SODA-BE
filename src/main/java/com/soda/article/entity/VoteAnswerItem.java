@@ -13,18 +13,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-public class VoteResponseItem extends BaseEntity {
+public class VoteAnswerItem extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vote_response_id", nullable = false)
-    private VoteResponse voteResponse;
+    private VoteAnswer voteResponse;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vote_item_id", nullable = false)
     private VoteItem voteItem;
 
     @Builder
-    public VoteResponseItem(VoteResponse voteResponse, VoteItem voteItem) {
+    public VoteAnswerItem(VoteAnswer voteResponse, VoteItem voteItem) {
         this.voteResponse = voteResponse;
         this.voteItem = voteItem;
     }

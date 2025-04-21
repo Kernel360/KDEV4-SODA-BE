@@ -11,7 +11,10 @@ public enum ArticleErrorCode implements ErrorCode {
     ARTICLE_FILE_NOT_FOUND("1105", "This article file does not exist", HttpStatus.NOT_FOUND),
     USER_NOT_UPLOAD_ARTICLE_FILE("1106", "This user does not upload article_file", HttpStatus.NOT_FOUND),
     ARTICLE_LINK_NOT_FOUND("1107", "This link does not exist" , HttpStatus.NOT_FOUND ),
-    USER_NOT_UPLOAD_ARTICLE_LINK("1108", "This user does not upload article_link" , HttpStatus.NOT_FOUND ),;
+    USER_NOT_UPLOAD_ARTICLE_LINK("1108", "This user does not upload article_link" , HttpStatus.NOT_FOUND ),
+    VOTE_ALREADY_CLOSED("1109", "마감된 투표에는 응답할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    VOTE_TEXT_ANSWER_NOT_ALLOWED("1110", "이 투표는 텍스트 답변을 허용하지 않습니다", HttpStatus.BAD_REQUEST),
+    VOTE_MULTIPLE_SELECTION_NOT_ALLOWED("1111", "이 투표는 복수 선택을 허용하지 않습니다", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String message;

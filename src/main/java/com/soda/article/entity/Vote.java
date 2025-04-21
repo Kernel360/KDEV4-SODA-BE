@@ -60,4 +60,12 @@ public class Vote extends BaseEntity {
         this.voteItems.forEach(VoteItem::delete);
         this.voteResponses.forEach(VoteResponse::delete);
     }
+
+    protected void associateArticle(Article article) {
+        this.article = article;
+    }
+
+    protected void disassociateArticle() {
+        this.article = null;
+    }
 }

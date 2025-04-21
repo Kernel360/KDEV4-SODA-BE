@@ -48,11 +48,11 @@ public class ProjectController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getMyProjects(HttpServletRequest request,
+    public ResponseEntity<ApiResponseForm<Page<MyProjectListResponse>>> getMyProjects(HttpServletRequest request,
                                                                                     @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) request.getAttribute("memberId");
         String userRole = (String) request.getAttribute("userRole").toString();
-        Page<ProjectListResponse> response = projectService.getMyProjects(userId, userRole, pageable);
+        Page<MyProjectListResponse> response = projectService.getMyProjects(userId, userRole, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -127,5 +127,13 @@ public class ProjectController {
     ) {
         Page<ProjectMemberResponse> memberPage = projectService.getProjectMembers(projectId, searchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(memberPage));
+    }
+
+    @GetMapping("/my-company")
+    public ResponseEntity<ApiResponseForm<Page<MyProjectListResponse>>> getMyCompanyProjects (HttpServletRequest request,
+                                                                          @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Long userId = (Long) request.getAttribute("memberId");
+        Page<MyProjectListResponse> response = projectService.getMyCompanyProjects(userId, pageable);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 }

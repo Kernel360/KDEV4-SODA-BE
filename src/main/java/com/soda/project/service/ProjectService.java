@@ -1,5 +1,6 @@
 package com.soda.project.service;
 
+import com.querydsl.core.Tuple;
 import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
@@ -150,30 +151,70 @@ public class ProjectService {
      * @param pageable 페이지네이션
      * @return ProjectListResponse 형식으로 참여 중 프로젝트 목록 반환
      */
-    public Page<ProjectListResponse> getMyProjects(Long userId, String userRole, Pageable pageable) {
+    public Page<MyProjectListResponse> getMyProjects(Long userId, String userRole, Pageable pageable) {
         log.info("사용자 프로젝트 조회 시작: 사용자 ID = {}, 사용자 역할 = {}", userId, userRole);
 
-        // 사용자 확인
-        if (USER_ROLE.equals(userRole)) {
-            log.info("사용자 프로젝트 조회: 사용자 ID = {}에 대한 프로젝트 목록 조회 시작", userId);
-
-            Page<Long> projectIds = memberProjectService.getProjectIdsByUserId(userId, pageable);
-            log.info("사용자 ID = {}가 참여한 프로젝트 ID 목록 조회 완료: 조회된 프로젝트 수 = {}", userId, projectIds.getSize());
-
-            // 사용자가 참여 중인 프로젝트가 없는 경우
-            if (projectIds.isEmpty()) {
-                log.info("사용자 ID = {}가 참여한 프로젝트가 없습니다. 빈 목록 반환", userId);
-                return Page.empty(pageable);
-            }
-
-            Page<Project> userProjectPage = projectRepository.findByIdIn(projectIds.getContent(), pageable);
-            log.info("사용자 ID = {}에 대한 프로젝트 목록 조회 완료: 조회된 프로젝트 수 = {}", userId, userProjectPage.getSize());
-
-            // 프로젝트 목록을 ProjectListResponse 형태로 변환 후 반환
-            return userProjectPage.map(this::mapToProjectListResponse);
+        if (!USER_ROLE.equals(userRole)) {
+            log.warn("사용자 ID = {}가 USER_ROLE이 아님. 프로젝트 목록 조회 불가", userId);
+            return Page.empty(pageable);
         }
-        log.warn("사용자 ID = {}가 USER_ROLE이 아님. 프로젝트 목록 조회 불가", userId);
-        return Page.empty();
+
+        Page<Tuple> tuplePage = projectRepository.findMyProjectsData(userId, pageable);
+        if (tuplePage.isEmpty()) {
+            log.info("사용자 ID {}가 참여한 프로젝트가 없습니다. 빈 페이지 반환.", userId);
+        } else {
+            log.debug("사용자 ID {}의 프로젝트 데이터(Tuple) 조회 완료. 변환 시작...", userId);
+        }
+
+        Page<MyProjectListResponse> responsePage = tuplePage.map(tuple -> mapTupleToMyProjectListResponse(tuple, true)); // memberRole 필수
+
+        log.info("사용자 참여 프로젝트 조회 및 DTO 변환 완료 (서비스): 사용자 ID = {}, 조회된 프로젝트 수 = {}", userId, responsePage.getTotalElements());
+        return responsePage;
+    }
+
+    public Page<MyProjectListResponse> getMyCompanyProjects(Long userId, Pageable pageable) {
+        log.info("사용자 ID {}의 회사 참여 프로젝트 목록 조회 시작 (서비스, 단일 DTO 사용)", userId);
+
+        Member member = memberService.findMemberById(userId);
+        Company company = member.getCompany();
+
+        if (company == null) {
+            log.warn("사용자 ID {} 는 회사에 소속되어 있지 않습니다. 빈 목록 반환.", userId);
+            return Page.empty(pageable);
+        }
+        Long companyId = company.getId();
+        log.info("사용자 ID {}의 회사 ID {} 확인 완료. 프로젝트 데이터 조회 시작.", userId, companyId);
+
+        Page<Tuple> tuplePage = projectRepository.findMyCompanyProjectsData(userId, companyId, pageable);
+        if (tuplePage.isEmpty()) {
+            log.info("회사 ID {}가 참여한 프로젝트가 없습니다. 빈 페이지 반환.", companyId);
+        } else {
+            log.debug("회사 ID {}의 프로젝트 데이터(Tuple) 조회 완료 (기준 사용자 ID: {}). 변환 시작...", companyId, userId);
+        }
+
+        Page<MyProjectListResponse> responsePage = tuplePage.map(tuple -> mapTupleToMyProjectListResponse(tuple, false)); // memberRole 선택적
+
+        log.info("회사 ID {} 참여 프로젝트 목록 조회 및 DTO 변환 완료 (서비스, 단일 DTO 사용): {}개 조회됨", companyId, responsePage.getTotalElements());
+        return responsePage;
+    }
+
+    private MyProjectListResponse mapTupleToMyProjectListResponse(Tuple tuple, boolean isMemberRoleRequired) {
+        Project project = tuple.get(0, Project.class);
+        CompanyProjectRole companyRole = tuple.get(1, CompanyProjectRole.class);
+        MemberProjectRole memberRole = tuple.get(2, MemberProjectRole.class); // getMyCompanyProjects의 경우 null일 수 있음
+
+        // 필수 데이터 누락 체크
+        if (project == null || companyRole == null) {
+            log.error("Tuple에서 필수 데이터 누락 (Project 또는 CompanyRole): tuple={}", tuple);
+            throw new IllegalStateException("프로젝트 데이터 조회 중 오류 발생 (필수 데이터 누락)");
+        }
+        // memberRole 필수 여부 체크
+        if (isMemberRoleRequired && memberRole == null) {
+            log.error("Tuple에서 필수 데이터 누락 (MemberRole): tuple={}", tuple);
+            throw new IllegalStateException("프로젝트 데이터 조회 중 오류 발생 (멤버 역할 누락)");
+        }
+
+        return MyProjectListResponse.from(project, companyRole, memberRole);
     }
 
     /**
@@ -766,10 +807,6 @@ public class ProjectService {
         );
     }
 
-
-
-
-
     private MemberProjectRole determineTargetMemberRole(CompanyProjectRole companyRole) {
         if (companyRole == CompanyProjectRole.DEV_COMPANY) {
             return MemberProjectRole.DEV_PARTICIPANT;
@@ -791,4 +828,5 @@ public class ProjectService {
             throw new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND);
         }
     }
+
 }

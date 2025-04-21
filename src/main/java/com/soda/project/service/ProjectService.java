@@ -160,6 +160,12 @@ public class ProjectService {
             Page<Long> projectIds = memberProjectService.getProjectIdsByUserId(userId, pageable);
             log.info("사용자 ID = {}가 참여한 프로젝트 ID 목록 조회 완료: 조회된 프로젝트 수 = {}", userId, projectIds.getSize());
 
+            // 사용자가 참여 중인 프로젝트가 없는 경우
+            if (projectIds.isEmpty()) {
+                log.info("사용자 ID = {}가 참여한 프로젝트가 없습니다. 빈 목록 반환", userId);
+                return Page.empty(pageable);
+            }
+
             Page<Project> userProjectPage = projectRepository.findByIdIn(projectIds.getContent(), pageable);
             log.info("사용자 ID = {}에 대한 프로젝트 목록 조회 완료: 조회된 프로젝트 수 = {}", userId, userProjectPage.getSize());
 

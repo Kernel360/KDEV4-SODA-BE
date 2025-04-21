@@ -3,8 +3,6 @@ package com.soda.project.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.soda.member.entity.QCompany;
-import com.soda.member.entity.QMember;
 import com.soda.project.entity.QCompanyProject;
 import com.soda.project.entity.QMemberProject;
 import com.soda.project.entity.QProject;

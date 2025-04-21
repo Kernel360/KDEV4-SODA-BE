@@ -3,7 +3,7 @@ package com.soda.request.dto.response;
 import com.soda.common.file.dto.FileDTO;
 import com.soda.common.link.dto.LinkDTO;
 import com.soda.request.entity.Response;
-import com.soda.request.enums.RequestStatus;
+import com.soda.request.enums.ResponseStatus;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -21,7 +21,7 @@ public class ResponseDTO {
     private String comment;
     private List<LinkDTO> links;
     private List<FileDTO> files;
-    private RequestStatus status;
+    private ResponseStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -45,7 +45,7 @@ public class ResponseDTO {
                                 .map(FileDTO::fromEntity)
                                 .collect(Collectors.toList())
                 )
-                .status(response.getRequest().getStatus())
+                .status(response.getStatus())
                 .createdAt(response.getCreatedAt())
                 .updatedAt(response.getUpdatedAt())
                 .build();

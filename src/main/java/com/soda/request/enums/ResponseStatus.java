@@ -1,15 +1,13 @@
 package com.soda.request.enums;
 
-public enum RequestStatus {
+public enum ResponseStatus {
     APPROVED("승인됨"),
-    APPROVING("승인중"),
-    PENDING("대기중"),
     REJECTED("거절됨")
     ;
 
     private final String description;
 
-    RequestStatus(String description) {
+    ResponseStatus(String description) {
         this.description = description;
     }
 }

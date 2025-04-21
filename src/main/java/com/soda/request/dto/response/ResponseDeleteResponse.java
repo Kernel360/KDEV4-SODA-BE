@@ -1,8 +1,7 @@
 package com.soda.request.dto.response;
 
-import com.soda.request.entity.Request;
 import com.soda.request.entity.Response;
-import com.soda.request.enums.RequestStatus;
+import com.soda.request.enums.ResponseStatus;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -16,7 +15,7 @@ public class ResponseDeleteResponse {
     private Long memberId;
     private String memberName;
     private String comment;
-    private RequestStatus status;
+    private ResponseStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isDeleted;
@@ -28,7 +27,7 @@ public class ResponseDeleteResponse {
                 .memberId(response.getMember().getId())
                 .memberName(response.getMember().getName())
                 .comment(response.getComment())
-                .status(response.getRequest().getStatus())
+                .status(response.getStatus())
                 .createdAt(response.getCreatedAt())
                 .updatedAt(response.getUpdatedAt())
                 .isDeleted(response.getIsDeleted())

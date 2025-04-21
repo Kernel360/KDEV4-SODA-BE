@@ -66,6 +66,27 @@ public class RequestService {
         return RequestCreateResponse.fromEntity(request);
     }
 
+    @LoggableEntityAction(action = "CREATE", entityClass = Request.class)
+    @Transactional
+    public RequestCreateResponse createReRequest(Long memberId, Long requestId, ReRequestCreateRequest reRequestCreateRequest) {
+        Request parentRequest = getRequestOrThrow(requestId);
+        Member member = getMemberWithProjectOrThrow(memberId);
+        Stage stage = getStageOrThrow(parentRequest.getStage().getId());
+
+        validateProjectAuthority(member, parentRequest.getStage().getProject().getId());
+        validateRequestStatus(parentRequest);
+
+        Request reRequest = createReRequest(reRequestCreateRequest, requestId, member, stage);
+
+        return RequestCreateResponse.fromEntity(reRequest);
+    }
+
+    private void validateRequestStatus(Request parentRequest) {
+        if (parentRequest.getStatus() != RequestStatus.REJECTED) {
+            throw new GeneralException(RequestErrorCode.REQUEST_NOT_REJECTED);
+        }
+    }
+
     public Page<RequestDTO> findRequests(GetRequestCondition condition, Pageable pageable) {
         return requestRepository.searchByCondition(condition, pageable)
                 .map(RequestDTO::fromEntity);
@@ -124,7 +145,7 @@ public class RequestService {
     }
 
     private static boolean isAllApproversApproved(Request request) {
-        return request.getResponses().stream().filter(response -> response.getStatus() == ResponseStatus.APPROVED).count() == request.getApprovers().size();
+        return request.getResponses().stream().filter(response -> response.getStatus() == ResponseStatus.APPROVED && !response.getIsDeleted()).count() == request.getApprovers().size();
     }
 
     @Transactional
@@ -192,7 +213,15 @@ public class RequestService {
     }
 
     public Request createRequest(RequestCreateRequest dto, Member member, Stage stage) {
-        Request request = buildRequest(dto, member, stage);
+        Request request = buildRequest(dto.getTitle(), dto.getContent(), dto.getParentId(), member, stage);
+        List<RequestLink> requestLinks = linkService.buildLinks("request", request, dto.getLinks());
+        request.addLinks(requestLinks);
+        designateApprover(dto.getMembers(), request);
+        return requestRepository.save(request);
+    }
+
+    private Request createReRequest(ReRequestCreateRequest dto, Long requestId, Member member, Stage stage) {
+        Request request = buildRequest(dto.getTitle(), dto.getContent(), requestId, member, stage);
         List<RequestLink> requestLinks = linkService.buildLinks("request", request, dto.getLinks());
         request.addLinks(requestLinks);
         designateApprover(dto.getMembers(), request);
@@ -213,12 +242,13 @@ public class RequestService {
         request.addApprovers(ApproverDesignation.designateApprover(request, approvers));
     }
 
-    private Request buildRequest(RequestCreateRequest dto, Member member, Stage stage) {
+    private Request buildRequest(String title, String content, Long parentId, Member member, Stage stage) {
         return Request.builder()
                 .member(member)
                 .stage(stage)
-                .title(dto.getTitle())
-                .content(dto.getContent())
+                .title(title)
+                .content(content)
+                .parentId(parentId==null ? null : parentId)
                 .status(RequestStatus.PENDING)
                 .build();
     }
@@ -226,4 +256,5 @@ public class RequestService {
     public void changeStatusToPending(Request request) {
         request.changeStatusToPending();
     }
+
 }

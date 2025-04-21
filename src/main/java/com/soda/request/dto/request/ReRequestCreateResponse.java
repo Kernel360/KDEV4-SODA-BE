@@ -10,10 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Builder
 @Getter
-public class RequestCreateResponse {
+public class ReRequestCreateResponse {
     private Long requestId;
     private Long stageId;
     private Long memberId;
@@ -26,13 +25,13 @@ public class RequestCreateResponse {
     private RequestStatus status;
     private LocalDateTime createdAt;
 
-    public static RequestCreateResponse fromEntity(Request request) {
-        return RequestCreateResponse.builder()
+    public static ReRequestCreateResponse fromEntity(Request request) {
+        return ReRequestCreateResponse.builder()
                 .requestId(request.getId())
                 .stageId(request.getStage().getId())
                 .memberId(request.getMember().getId())
                 .memberName(request.getMember().getName())
-                .parentId(request.getParentId() == null ? null : request.getParentId())
+                .parentId(request.getParentId())
                 .title(request.getTitle())
                 .content(request.getContent())
                 .links(

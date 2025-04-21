@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -58,7 +60,32 @@ public class VoteService {
     }
 
     private void validateVoteRequest(VoteCreateRequest request) {
+        boolean hasItems = !CollectionUtils.isEmpty(request.getVoteItems());
+        boolean textAllowed = request.getAllowTextAnswer(); // DTO에서 @NotNull 보장
 
+        // 1. 항목 선택 투표 시 항목 필수 검증
+        if (!textAllowed && !hasItems) {
+            log.warn("유효성 검증 실패: 항목 선택 투표에는 항목이 필수입니다.");
+            throw new GeneralException(VoteErrorCode.VOTE_ITEM_REQUIRED);
+        }
+
+        // 2. 텍스트 답변 투표 시 항목 불가 검증
+        if (textAllowed && hasItems) {
+            log.warn("유효성 검증 실패: 텍스트 답변 투표에는 항목을 포함할 수 없습니다.");
+            throw new GeneralException(VoteErrorCode.VOTE_CANNOT_HAVE_BOTH_ITEMS_AND_TEXT);
+        }
+
+        // 3. 항목 중복 검사 (항목이 있는 경우에만)
+        if (hasItems) {
+            List<String> itemTexts = request.getVoteItems();
+            Set<String> distinctItems = new HashSet<>(itemTexts);
+            if (distinctItems.size() != itemTexts.size()) {
+                log.warn("유효성 검증 실패: 투표 항목에 중복된 내용이 있습니다.");
+                throw new GeneralException(VoteErrorCode.VOTE_DUPLICATE_ITEM_TEXT);
+            }
+        }
+
+        log.debug("투표 생성 요청 데이터 유효성 검증 통과");
     }
 
     public boolean doesActiveVoteExistForArticle(Long articleId) {

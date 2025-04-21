@@ -12,7 +12,9 @@ import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.log.dataLog.domain.DataLog;
 import com.soda.global.log.dataLog.domain.DataLogRepository;
 import com.soda.member.dto.company.CompanyResponse;
+import com.soda.member.dto.company.MemberResponse;
 import com.soda.member.entity.Company;
+import com.soda.member.entity.Member;
 import com.soda.project.dto.ProjectDTO;
 import com.soda.project.dto.stage.StageResponse;
 import com.soda.project.entity.Project;
@@ -58,7 +60,7 @@ public class EntityLogAspect {
     private static final Map<Class<?>, Function<Object, Object>> dtoConverters = new HashMap<>();
 
     static {
-//        dtoConverters.put(Member.class, e -> MemberDTO.fromEntity((Member) e)); // 멤버 조회 DTO가 아직 없어 주석처리 해두었음
+        dtoConverters.put(Member.class, e -> MemberResponse.fromEntity((Member) e)); // 멤버 조회 DTO가 아직 없어 주석처리 해두었음
         dtoConverters.put(Company.class, e -> CompanyResponse.fromEntity((Company) e));
 
         dtoConverters.put(Project.class, e -> ProjectDTO.fromEntity((Project) e));
@@ -144,6 +146,7 @@ public class EntityLogAspect {
         for (String key : after.keySet()) {
             Object beforeVal = before.getOrDefault(key, "N/A"); // 디폴트 값 설정
             Object afterVal = after.getOrDefault(key, "N/A");
+            System.out.println(beforeVal + " and " + afterVal);
             if (!Objects.equals(beforeVal, afterVal)) {
                 diff.put(key, Map.of("before", beforeVal, "after", afterVal));
             }

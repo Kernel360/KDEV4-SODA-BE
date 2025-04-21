@@ -57,6 +57,14 @@ public class RequestController {
         return ResponseEntity.ok(ApiResponseForm.success(requests));
     }
 
+    @GetMapping("/members/{memberId}/requests")
+    public ResponseEntity<ApiResponseForm<?>> getMemberRequests(@PathVariable Long memberId,
+                                                                @ModelAttribute GetMemberRequestCondition condition,
+                                                                Pageable pageable) {
+        Page<RequestDTO> requests = requestService.findMemberRequests(condition, pageable);
+        return ResponseEntity.ok(ApiResponseForm.success(requests));
+    }
+
     @GetMapping("/stages/{stageId}/requests")
     public ResponseEntity<ApiResponseForm<?>> getAllRequests(@PathVariable Long stageId) {
         List<RequestDTO> requestDTOList = requestService.findAllByStageId(stageId);

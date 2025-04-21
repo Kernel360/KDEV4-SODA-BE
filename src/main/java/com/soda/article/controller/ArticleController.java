@@ -9,6 +9,7 @@ import com.soda.common.link.dto.LinkDeleteResponse;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -100,5 +101,14 @@ public class ArticleController {
         Long memberId = (Long) request.getAttribute("memberId");
         List<RecentArticleResponse> recentArticles = articleService.getRecentArticlesForUser(memberId);
         return ResponseEntity.ok(ApiResponseForm.success(recentArticles));
+    }
+
+    @PostMapping("/articles/{articleId}/vote")
+    public ResponseEntity<ApiResponseForm<VoteCreateResponse>> createVote(@PathVariable Long articleId, HttpServletRequest request,
+                                                                          @Valid @RequestBody VoteCreateRequest voteRequest) {
+        Long userId = (Long) request.getAttribute("memberId");
+        String userRole = (String) request.getAttribute("userRole").toString();
+        VoteCreateResponse response = articleService.createVoteForArticle(articleId, userId, userRole, voteRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "투표 생성 성공"));
     }
 }

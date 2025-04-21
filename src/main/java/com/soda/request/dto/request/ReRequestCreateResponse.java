@@ -36,6 +36,7 @@ public class ReRequestCreateResponse {
                 .content(request.getContent())
                 .links(
                         request.getLinks().stream()
+                                .filter(link -> !link.getIsDeleted())
                                 .map(LinkDTO::fromEntity)
                                 .collect(Collectors.toList())
                 )

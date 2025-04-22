@@ -226,18 +226,55 @@ public class ProjectService {
      * @return ProjectViewResponse 프로젝트 상세 응답
      */
     public ProjectViewResponse getProject(Long userId, String userRole, Long projectId) {
-        log.info("개별 프로젝트 조회 시작: projectId={}, userId={}, userRole={}", projectId, userId, userRole);
-        // 프로젝트 유효성 검사
+        log.info("개별 프로젝트 조회 요청 시작: projectId={}, userId={}, userRole={}", projectId, userId, userRole);
+
+        // 1. 프로젝트 유효성 검사
         Project project = getValidProject(projectId);
+        log.debug("프로젝트 확인 완료: projectId={}", projectId);
 
-        // 사용자 정보 조회
+        // 2. 사용자 정보 조회
         Member member = memberService.findMemberById(userId);
+        log.debug("사용자 확인 완료: userId={}", userId);
 
+        // 3. 접근 권한 확인 (예외 대신 boolean 반환)
+        boolean hasAccess = checkProjectAccess(member, userRole, project);
+
+        // 4. 접근 권한이 없는 경우 null 반환
+        if (!hasAccess) {
+            log.warn("프로젝트 접근 권한 없음: projectId={}, userId={}", projectId, userId);
+            return null; // 예외 대신 null 반환
+        }
+
+        // 5. 접근 권한이 있는 경우, 상세 정보 조회 및 응답 생성
+        log.info("프로젝트 접근 권한 확인 완료. 상세 정보 생성 시작: projectId={}, userId={}", projectId, userId);
         ProjectViewResponse response = buildProjectViewResponse(project, member, userRole);
         log.info("프로젝트 상세 응답 DTO 생성 완료: projectId={}", projectId);
 
-        // response 생성
         return response;
+    }
+
+    private boolean checkProjectAccess(Member member, String userRole, Project project) {
+        // 1. ADMIN 역할은 항상 접근 가능
+        if (ADMIN_ROLE.equals(userRole)) {
+            log.debug("ADMIN({}) 접근 허용: projectId={}, userId={}", userRole, project.getId(), member.getId());
+            return true;
+        }
+
+        // 2. USER 역할인 경우, 프로젝트 참여 여부 확인
+        if (USER_ROLE.equals(userRole)) {
+            MemberProjectRole roleInProject = memberProjectService.getMemberRoleInProject(member, project);
+            boolean isParticipant = (roleInProject != null);
+            if (isParticipant) {
+                log.debug("프로젝트 참여자({}) 접근 허용: projectId={}, userId={}, role={}", userRole, project.getId(), member.getId(), roleInProject);
+            } else {
+                log.debug("프로젝트 접근 불가 (미참여 USER): projectId={}, userId={}", project.getId(), member.getId());
+            }
+            return isParticipant; // 참여 여부(true/false) 반환
+        }
+
+        // 3. ADMIN 또는 USER 역할이 아닌 경우, 접근 불가
+        log.warn("알 수 없는 사용자 역할({})로 프로젝트 접근 시도됨 (접근 불가 처리): projectId={}, userId={}", userRole, project.getId(), member.getId());
+        return false;
     }
 
 

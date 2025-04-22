@@ -2,9 +2,9 @@ package com.soda.article.service;
 
 import com.soda.article.dto.article.VoteCreateRequest;
 import com.soda.article.dto.article.VoteCreateResponse;
-import com.soda.article.entity.Article;
-import com.soda.article.entity.Vote;
-import com.soda.article.entity.VoteItem;
+import com.soda.article.dto.article.VoteSubmitRequest;
+import com.soda.article.dto.article.VoteSubmitResponse;
+import com.soda.article.entity.*;
 import com.soda.article.error.VoteErrorCode;
 import com.soda.article.repository.VoteRepository;
 import com.soda.global.response.GeneralException;
@@ -13,10 +13,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,6 +29,8 @@ public class VoteService {
 
     private final VoteRepository voteRepository;
     private final VoteItemService voteItemService;
+    private final VoteAnswerService voteAnswerService;
+    private final VoteAnswerItemService voteAnswerItemService;
 
     @Transactional
     public VoteCreateResponse createVote(Article article, VoteCreateRequest request) {
@@ -95,5 +100,108 @@ public class VoteService {
     public Vote findVoteById(Long voteId) {
         return voteRepository.findById(voteId)
                 .orElseThrow(() -> new GeneralException(VoteErrorCode.VOTE_NOT_FOUND));
+    }
+
+    @Transactional
+    public VoteSubmitResponse processVoteSubmit(Long voteId, Long userId, VoteSubmitRequest request) {
+        log.info("[투표 처리 시작(Response 반환)] Vote ID: {}, User ID: {}", voteId, userId);
+
+        // 1. 투표(Vote) 정보 조회 및 유효성 검증
+        Vote vote = voteRepository.findByIdAndIsDeletedFalse(voteId)
+                .orElseThrow(() -> {
+                    log.warn("[투표 처리 실패] Vote ID {} 를 찾을 수 없거나 삭제되었습니다.", voteId);
+                    return new GeneralException(VoteErrorCode.VOTE_NOT_FOUND);
+                });
+
+        // 2. 중복 투표 확인
+        if (voteAnswerService.hasUserVoted(voteId, userId)) {
+            log.warn("[투표 조율 실패] User ID {} 는 이미 Vote ID {} 에 투표했습니다.", userId, voteId);
+            throw new GeneralException(VoteErrorCode.ALREADY_VOTED);
+        }
+
+        // 3. 투표 입력값 유효성 검증
+        validateVoteInput(vote, request);
+        log.debug("[투표 조율] 입력값 유효성 검증 통과.");
+
+        // 4. 투표 답변 생성 및 저장
+        VoteAnswer savedAnswer = voteAnswerService.createAndSaveVoteAnswer(vote, userId, request.getTextAnswer());
+        log.info("[투표 조율] VoteAnswer 저장 위임 완료. Answer ID: {}", savedAnswer.getId());
+
+        // 5. 투표 답변 항목 생성 및 저장
+        List<Long> savedItemIds = Collections.emptyList();
+        if (!vote.isAllowTextAnswer()) {
+            List<VoteItem> selectedItems = voteItemService.findVoteItemsByIds(request.getSelectedItemIds());
+
+            voteAnswerItemService.createAndSaveVoteAnswerItems(savedAnswer, selectedItems);
+            savedItemIds = request.getSelectedItemIds();
+            log.info("[투표 조율] VoteAnswerItem 저장 위임 완료. Answer ID: {}, Item IDs: {}",
+                    savedAnswer.getId(), savedItemIds);
+        }
+
+        VoteSubmitResponse response = VoteSubmitResponse.builder()
+                .voteId(voteId)
+                .voterId(userId)
+                .voteAnswerId(savedAnswer.getId())
+                .selectedItemIds(savedItemIds) // 텍스트 투표 시 비어있음
+                .build();
+
+        log.info("[투표 조율 성공(Response 반환)] Vote ID: {}, User ID: {}, Answer ID: {}",
+                response.getVoteId(), response.getVoterId(), response.getVoteAnswerId());
+
+        return response;
+    }
+
+    private void validateVoteInput(Vote vote, VoteSubmitRequest request) {
+        boolean hasTextAnswer = StringUtils.hasText(request.getTextAnswer());
+        boolean hasSelectedItems = !CollectionUtils.isEmpty(request.getSelectedItemIds());
+
+        if (vote.isAllowTextAnswer()) {
+            if (!hasTextAnswer) {
+                log.warn("입력 검증 실패: 텍스트 투표에는 답변이 필요합니다. Vote ID: {}", vote.getId());
+                throw new GeneralException(VoteErrorCode.INVALID_VOTE_INPUT);
+            }
+
+            log.debug("Vote ID {} 텍스트 입력값 검증 통과", vote.getId());
+        } else {
+            if (!hasSelectedItems) {
+                log.warn("입력 검증 실패: 항목 선택 투표에는 항목 선택이 필요합니다. Vote ID: {}", vote.getId());
+                throw new GeneralException(VoteErrorCode.INVALID_VOTE_INPUT);
+            }
+
+            // 선택한 항목들이 이 투표에 속하는지 검증
+            validateSelectedItemsBelongToVote(vote, request.getSelectedItemIds());
+
+            // 단일/다중 선택 제약 조건 검증
+            if (!vote.isAllowMultipleSelection()) {
+                // 단일 선택만 허용
+                if (request.getSelectedItemIds().size() != 1) {
+                    log.warn("입력 검증 실패: 단일 선택 투표에 여러 항목({})이 선택되었습니다. Vote ID: {}", request.getSelectedItemIds().size(), vote.getId());
+                    throw new GeneralException(VoteErrorCode.INVALID_VOTE_INPUT);
+                }
+                log.debug("Vote ID {} 단일 선택 입력값 검증 통과", vote.getId());
+            } else {
+                // 다중 선택 허용
+                log.debug("Vote ID {} 다중 선택 입력값 검증 통과", vote.getId());
+            }
+        }
+    }
+
+    private void validateSelectedItemsBelongToVote(Vote vote, List<Long> selectedItemIds) {
+        Set<Long> actualItemIds = vote.getVoteItems().stream()
+                .map(VoteItem::getId)
+                .collect(Collectors.toSet());
+
+        if (actualItemIds.isEmpty() && !selectedItemIds.isEmpty()) {
+            log.error("Vote ID {} 에는 VoteItem이 없는데 항목 선택이 요청되었습니다.", vote.getId());
+            throw new GeneralException(VoteErrorCode.VOTE_ITEM_NOT_FOUND);
+        }
+
+        for (Long selectedId : selectedItemIds) {
+            if (!actualItemIds.contains(selectedId)) {
+                log.warn("[항목 검증 실패] 선택된 항목 ID {} 는 Vote ID {} 에 속하지 않습니다.", selectedId, vote.getId());
+                throw new GeneralException(VoteErrorCode.INVALID_VOTE_ITEM);
+            }
+        }
+        log.debug("Vote ID {} 선택 항목 ID {} 유효성 검증 통과", vote.getId(), selectedItemIds);
     }
 }

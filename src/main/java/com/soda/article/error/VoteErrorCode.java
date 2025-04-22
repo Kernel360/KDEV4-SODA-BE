@@ -11,7 +11,12 @@ public enum VoteErrorCode implements ErrorCode {
     VOTE_ALREADY_EXISTS("1305", "이미 투표가 존재합니다.", HttpStatus.BAD_REQUEST),
     VOTE_ITEM_REQUIRED("1306", "항목 선택 투표에는 최소 하나 이상의 항목이 필요합니다.", HttpStatus.BAD_REQUEST),
     VOTE_CANNOT_HAVE_BOTH_ITEMS_AND_TEXT("1307", "텍스트 답변을 허용하는 투표에는 선택 항목을 지정할 수 없습니다.", HttpStatus.BAD_REQUEST),
-    VOTE_DUPLICATE_ITEM_TEXT("1308", "투표 항목에 중복된 내용이 포함되어 있습니다.", HttpStatus.BAD_REQUEST);;
+    VOTE_DUPLICATE_ITEM_TEXT("1308", "투표 항목에 중복된 내용이 포함되어 있습니다.", HttpStatus.BAD_REQUEST),
+    VOTE_PERMISSION_DENIED("1309", "투표를 할 권한이 없습니다", HttpStatus.FORBIDDEN),
+    INVALID_VOTE_ITEM("1310",  "선택한 항목 중 존재하지 않는 항목이 있습니다.", HttpStatus.BAD_REQUEST),
+    ALREADY_VOTED("1311", "이미 투표를 했습니다.", HttpStatus.BAD_REQUEST),
+    INVALID_VOTE_INPUT("1312", "유효하지 않는 입력입니다." , HttpStatus.BAD_REQUEST),
+    VOTE_ITEM_NOT_FOUND("1313", "유효하지 않은 투표 항목입니다", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String message;

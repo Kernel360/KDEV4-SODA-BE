@@ -372,15 +372,7 @@ public class ArticleService {
         }
 
         // DTO 생성
-        return MyArticleListResponse.builder()
-                .articleId(articleId)
-                .title(title)
-                .projectId(projId)
-                .projectName(projName)
-                .stageId(stgId)
-                .stageName(stgName)
-                .createdAt(createdAt)
-                .build();
+        return MyArticleListResponse.from(articleId, title, projId, projName, stgId, stgName, createdAt);
     }
 
 }

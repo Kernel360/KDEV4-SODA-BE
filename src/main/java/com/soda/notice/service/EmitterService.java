@@ -4,65 +4,102 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * SseEmitter 객체를 중앙에서 관리하는 서비스
- * 사용자 ID를 키로 사용하여 Emitter를 저장, 조회, 삭제합니다.
- */
 @Service
 @Slf4j
 public class EmitterService {
 
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
+    private static final Long DEFAULT_TIMEOUT = 5000L; //60L * 1000 * 60; // 1시간 (필요시 조정)
 
     /**
-     * 지정된 사용자 ID에 대한 SseEmitter를 저장합니다.
-     *
+     * 지정된 사용자 ID에 대한 SseEmitter를 생성하고 저장합니다.
+     * 생성 시 완료, 타임아웃, 에러 콜백을 등록하여 자동으로 제거되도록 합니다.
+     * 초기 연결 확인 이벤트도 전송합니다.
      * @param userId 사용자 ID
-     * @param emitter 저장할 SseEmitter 객체
+     * @return 생성된 SseEmitter 객체
      */
-    public void addEmitter(Long userId, SseEmitter emitter) {
+    public SseEmitter createAndAddEmitter(Long userId) {
+        SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
+        log.info("Creating SseEmitter for User ID: {}. Timeout: {}ms", userId, DEFAULT_TIMEOUT);
+
         this.emitters.put(userId, emitter);
-        log.info("Emitter added for user ID: {}. Current emitter count: {}", userId, emitters.size());
+        log.info("Emitter added for User ID: {}. Current emitter count: {}", userId, emitters.size());
+
+        emitter.onCompletion(() -> {
+            log.info("SSE connection completed (onCompletion) for User ID: {}", userId);
+            removeEmitterInternal(userId, emitter, "completion");
+        });
+        emitter.onTimeout(() -> {
+            log.warn("SSE connection timed out (onTimeout) for User ID: {}", userId);
+        });
+        emitter.onError(throwable -> {
+            log.error("SSE connection error (onError) for User ID: {}. Error: {}", userId, throwable.getMessage());
+            removeEmitterInternal(userId, emitter, "error");
+        });
+
+        sendConnectionEstablishedEvent(userId, emitter);
+
+        return emitter;
     }
 
-    /**
-     * 지정된 사용자 ID에 해당하는 SseEmitter를 제거합니다.
-     *
-     * @param userId 사용자 ID
-     */
-    public void removeEmitter(Long userId) {
-        SseEmitter removedEmitter = this.emitters.remove(userId);
-        if (removedEmitter != null) {
-            log.info("Emitter removed successfully for user ID: {}. Current emitter count: {}", userId, emitters.size());
+    private void removeEmitterInternal(Long userId, SseEmitter emitterToRemove, String reason) {
+        SseEmitter currentEmitter = this.emitters.get(userId);
+        if (currentEmitter != null && currentEmitter == emitterToRemove) {
+            this.emitters.remove(userId);
+            log.info("Emitter removed successfully for User ID: {} due to {}. Current emitter count: {}", userId, reason, emitters.size());
         } else {
-            log.warn("Emitter not found for removal for user ID: {}", userId);
+            log.warn("Emitter not removed for User ID: {}. Reason: {}. (Instance mismatch or already removed)", userId, reason);
         }
     }
 
-    /**
-     * 지정된 사용자 ID에 해당하는 SseEmitter를 조회합니다.
-     *
-     * @param userId 사용자 ID
-     * @return 해당 사용자의 SseEmitter Optional 객체 (없으면 Optional.empty())
-     */
+    private void sendConnectionEstablishedEvent(Long userId, SseEmitter emitter) {
+        try {
+            emitter.send(SseEmitter.event()
+                    .id(userId + "_connect_" + System.currentTimeMillis())
+                    .name("connect")
+                    .data("SSE connection established successfully. UserID: " + userId)
+            );
+            log.info("Sent initial connection event for User ID: {}", userId);
+        } catch (IOException e) {
+            log.error("Failed to send initial connection event for User ID: {}. Removing emitter.", userId, e);
+            removeEmitterInternal(userId, emitter, "initial_send_failure");
+        }
+    }
+
+    public void sendNotification(Long userId, String eventName, Object data) {
+        Optional<SseEmitter> emitterOptional = getEmitter(userId);
+        if (emitterOptional.isPresent()) {
+            SseEmitter emitter = emitterOptional.get();
+            try {
+                emitter.send(SseEmitter.event()
+                        .id(userId + "_" + eventName + "_" + System.currentTimeMillis())
+                        .name(eventName)
+                        .data(data)
+                );
+                log.info("Sent notification event '{}' to User ID: {}", eventName, userId);
+            } catch (IOException e) {
+                log.error("Failed to send notification event '{}' to User ID: {}. Removing emitter.", eventName, userId, e);
+                removeEmitterInternal(userId, emitter, "send_failure");
+            } catch (IllegalStateException e) {
+                log.error("Failed to send notification event '{}' to User ID: {} (emitter completed). Removing emitter.", eventName, userId, e);
+                removeEmitterInternal(userId, emitter, "emitter_completed");
+            }
+        } else {
+            log.warn("No active emitter for User ID: {} to send event '{}'. Notification skipped.", userId, eventName);
+        }
+    }
+
     public Optional<SseEmitter> getEmitter(Long userId) {
         return Optional.ofNullable(this.emitters.get(userId));
     }
 
-    /**
-     * (Optional) 현재 활성화된 모든 Emitter 맵의 불변 뷰를 반환합니다.
-     * Heartbeat 등 전체 Emitter에 대한 작업 시 사용될 수 있습니다.
-     * 주의: 반환된 맵은 수정할 수 없습니다.
-     *
-     * @return 사용자 ID를 키로, SseEmitter를 값으로 가지는 불변 맵
-     */
     public Map<Long, SseEmitter> getAllEmitters() {
         return Collections.unmodifiableMap(this.emitters);
     }
-
 }

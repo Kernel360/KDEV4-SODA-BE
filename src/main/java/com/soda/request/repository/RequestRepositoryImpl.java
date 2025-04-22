@@ -22,6 +22,8 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.soda.member.entity.QMember.member;
+
 @Slf4j
 @Repository
 public class RequestRepositoryImpl implements RequestRepositoryCustom {
@@ -43,11 +45,18 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
         if (condition.getStatus() != null) {
             builder.and(request.status.eq(condition.getStatus()));
         }
+        if (condition.getKeyword() != null && !condition.getKeyword().isBlank()) {
+            builder.and(
+                    request.title.containsIgnoreCase(condition.getKeyword())
+                            .or(request.member.name.containsIgnoreCase(condition.getKeyword()))
+            );
+        }
 
         List<OrderSpecifier<?>> orderSpecifiers = getOrderSpecifiers(pageable.getSort(), request);
 
         JPQLQuery<Request> query = queryFactory
                 .selectFrom(request)
+                .join(request.member, member).fetchJoin()
                 .where(builder.and(request.isDeleted.eq(false)))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
@@ -62,7 +71,8 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
 
         long total = queryFactory
                 .selectFrom(request)
-                .where(builder)
+                .join(request.member, member)
+                .where(builder.and(request.isDeleted.eq(false)))
                 .fetchCount();
 
         return new PageImpl<>(content, pageable, total);

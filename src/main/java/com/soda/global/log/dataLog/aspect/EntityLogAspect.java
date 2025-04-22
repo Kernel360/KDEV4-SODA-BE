@@ -127,7 +127,9 @@ public class EntityLogAspect {
                 .operator(operator)
                 .timestamp(LocalDateTime.now())
                 .beforeData(beforeData)
+                .beforeDataText(objectMapper.writeValueAsString(beforeData))
                 .afterData(afterData)
+                .afterDataText(objectMapper.writeValueAsString(afterData))
                 .diff(diff)
                 .build();
 

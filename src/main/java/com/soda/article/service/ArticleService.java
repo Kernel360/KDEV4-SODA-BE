@@ -11,15 +11,20 @@ import com.soda.article.repository.ArticleRepository;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
+import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
+import com.soda.member.enums.CompanyProjectRole;
 import com.soda.member.enums.MemberRole;
+import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
 import com.soda.project.error.ProjectErrorCode;
+import com.soda.project.service.CompanyProjectService;
 import com.soda.project.service.MemberProjectService;
 import com.soda.project.service.ProjectService;
 import com.soda.project.service.StageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,6 +47,7 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
     private final MemberProjectService memberProjectService;
+    private final CompanyProjectService companyProjectService;
     private final StageService stageService;
     private final ProjectService projectService;
     private final ArticleFileService articleFileService;
@@ -259,8 +265,11 @@ public class ArticleService {
      * @return 검증된 게시글
      */
     public Article validateArticle(Long articleId) {
-        return articleRepository.findByIdAndIsDeletedFalse(articleId)
-                .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
+        return articleRepository.findByIdAndIsDeletedFalseWithMemberAndCompanyUsingQuerydsl(articleId)
+                .orElseThrow(() -> {
+                    log.warn("유효하지 않은 게시물입니다");
+                    return new GeneralException(ArticleErrorCode.INVALID_ARTICLE);
+                });
     }
 
     /**
@@ -388,5 +397,75 @@ public class ArticleService {
 
         log.info("[ArticleService] 게시글 ID {} 투표 정보 조회 완료.", articleId);
         return VoteViewResponse.from(vote);
+    }
+
+    @Transactional
+    public VoteSubmitResponse submitVoteForArticle(Long articleId, Long userId, String userRole, VoteSubmitRequest request) {
+        log.info("[투표 제출 시작] 게시글 ID: {}, 사용자 ID: {}, 역할(문자열): {}", articleId, userId, userRole);
+        Article article = validateArticle(articleId);
+
+        Vote vote = article.getVote();
+        Long voteId = vote.getId();
+        log.debug("[투표 제출] 게시글 ID {} 에 연결된 투표 ID: {}", articleId, voteId);
+
+        Stage stage = article.getStage();
+        Project project = stage.getProject();
+
+        Member currentUser = memberService.findMemberByIdAndCompany(userId); // 로그인한 사용자 확인
+        Member author = article.getMember(); // 게시글 작성자 확인
+
+        // 작성자 본인 투표 금지
+        if (userId.equals(author.getId())) {
+            log.warn("작성자(ID:{})가 자신의 게시글(ID:{}) 투표에 참여하려고 시도했습니다.", userId, articleId);
+            throw new GeneralException(VoteErrorCode.CANNOT_VOTE_ON_OWN_ARTICLE);
+        }
+
+        // 투표 가능한지 유효성 검사
+        Company authorMemberCompany = author.getCompany();
+
+        CompanyProjectRole currentUserProjectRole =null;
+        CompanyProjectRole authorCompanyProjectRole = null;
+
+        if (currentUser.getRole() != MemberRole.ADMIN) {
+            Company currentMemberCompany = currentUser.getCompany();
+            currentUserProjectRole = companyProjectService.getCompanyRoleInProject(currentMemberCompany, project);
+        } else {
+            log.info("투표자가 관리자이므로 회사 검증을 하지 않습니다.");
+        }
+
+        if (author.getRole() != MemberRole.ADMIN) {
+            authorCompanyProjectRole = companyProjectService.getCompanyRoleInProject(authorMemberCompany, project);
+        } else {
+            log.info("작성자가 관리자 이므로 회사 역할 검증을 하지 않습니다.");
+        }
+        
+        checkVotingPermission(author.getRole(), currentUser.getRole(), currentUserProjectRole, authorCompanyProjectRole);
+
+        log.info("[투표 제출] VoteService 호출 시작 - voteId: {}, userId: {}", voteId, userId);
+        VoteSubmitResponse response = voteService.processVoteSubmit(voteId, userId, request);
+
+        return VoteSubmitResponse.from(response);
+    }
+
+    private void checkVotingPermission(MemberRole authorRole, MemberRole currentUserRole, CompanyProjectRole currentUserProjectRole, CompanyProjectRole authorCompanyProjectRole) {
+        boolean permitted = false;
+
+        // 작성자가 ADMIN > 고객사/개발사 둘 다 투표 가능
+        if (authorRole == MemberRole.ADMIN || currentUserRole == MemberRole.ADMIN) {
+            permitted = true;
+            log.debug("[투표 권한 확인] 작성자가 ADMIN이므로 투표 허용됨.");
+        } else {
+            if (authorCompanyProjectRole == CompanyProjectRole.DEV_COMPANY && currentUserProjectRole == CompanyProjectRole.CLIENT_COMPANY) {
+                permitted = true;
+            } else if (authorCompanyProjectRole == CompanyProjectRole.CLIENT_COMPANY && currentUserProjectRole == CompanyProjectRole.DEV_COMPANY) {
+                permitted = true;
+            }
+        }
+
+        if (!permitted) {
+            log.warn("[투표 권한 없음] 작성자 회사 역할: {}, 투표자 회사 역할: {}", authorCompanyProjectRole, currentUserProjectRole);
+            throw new GeneralException(VoteErrorCode.VOTE_PERMISSION_DENIED);
+        }
+        log.debug("[투표 권한 확인 완료] 허용됨: 작성자 회사 역할({}), 투표자 회사 역할({})", authorCompanyProjectRole, currentUserProjectRole);
     }
 }

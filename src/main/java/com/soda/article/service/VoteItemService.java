@@ -2,13 +2,16 @@ package com.soda.article.service;
 
 import com.soda.article.entity.Vote;
 import com.soda.article.entity.VoteItem;
+import com.soda.article.error.VoteErrorCode;
 import com.soda.article.repository.VoteItemRepository;
+import com.soda.global.response.GeneralException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,6 +51,22 @@ public class VoteItemService {
 
         log.info("VoteItem 생성 및 저장 완료: voteId={}, savedCount={}", vote.getId(), savedVoteItems.size());
         return savedVoteItems;
+    }
+
+    public List<VoteItem> findVoteItemsByIds(List<Long> itemIds) {
+        if (CollectionUtils.isEmpty(itemIds)) {
+            return new ArrayList<>();
+        }
+        List<VoteItem> foundItems = voteItemRepository.findAllById(itemIds);
+
+        if (foundItems.size() != itemIds.size()) {
+            log.warn("요청된 VoteItem ID 목록에 존재하지 않는 ID가 포함되어 있습니다. Requested: {}, Found count: {}",
+                    itemIds, foundItems.size());
+            throw new GeneralException(VoteErrorCode.INVALID_VOTE_ITEM);
+        }
+        log.debug("VoteItem {}개 조회 완료 (VoteItemService). IDs: {}", foundItems.size(), itemIds);
+
+        return foundItems;
     }
 
 }

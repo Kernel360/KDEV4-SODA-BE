@@ -131,4 +131,13 @@ public class ArticleController {
         VoteViewResponse response = articleService.getVoteInfoForArticle(articleId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
+
+    @PostMapping("/articles/{articleId}/vote/submit")
+    public ResponseEntity<ApiResponseForm<VoteSubmitResponse>> submitVote(@PathVariable Long articleId, HttpServletRequest request,
+                                                                          @Valid @RequestBody VoteSubmitRequest voteSubmitRequest) {
+        Long userId = (Long) request.getAttribute("memberId");
+        String userRole = (String) request.getAttribute("userRole").toString();
+        VoteSubmitResponse response = articleService.submitVoteForArticle(articleId, userId, userRole, voteSubmitRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "투표하기 성공"));
+    }
 }

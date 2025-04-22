@@ -4,6 +4,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.soda.article.entity.Article;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,8 +12,11 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.soda.article.entity.QArticle.article;
+import static com.soda.member.entity.QCompany.company;
+import static com.soda.member.entity.QMember.member;
 import static com.soda.project.entity.QProject.project;
 import static com.soda.project.entity.QStage.stage;
 
@@ -71,9 +75,27 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
+    @Override
+    public Optional<Article> findByIdAndIsDeletedFalseWithMemberAndCompanyUsingQuerydsl(Long articleId) {
+        Article foundArticle = queryFactory
+                .selectFrom(article)
+                .leftJoin(article.member, member).fetchJoin()
+                .leftJoin(member.company, company).fetchJoin()
+                .where(
+                        article.id.eq(articleId),
+                        article.isDeleted.isFalse()
+                )
+                .fetchOne(); // 단 건 조회
+
+        // 조회 결과가 null일 수 있으므로 Optional 로 감싸서 반환
+        return Optional.ofNullable(foundArticle);
+    }
+
     // 프로젝트 ID 필터링 조건 (project 별칭 사용)
     private BooleanExpression projectIdEq(Long projectId) {
         // projectId가 null이 아니고 유효한 값일 때만 project.id 와 비교
         return (projectId != null && projectId > 0) ? project.id.eq(projectId) : null;
     }
+
+
 }

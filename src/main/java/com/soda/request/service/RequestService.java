@@ -87,8 +87,8 @@ public class RequestService {
         }
     }
 
-    public Page<RequestDTO> findRequests(GetRequestCondition condition, Pageable pageable) {
-        return requestRepository.searchByCondition(condition, pageable)
+    public Page<RequestDTO> findRequests(Long projectId, GetRequestCondition condition, Pageable pageable) {
+        return requestRepository.searchByCondition(projectId, condition, pageable)
                 .map(RequestDTO::fromEntity);
     }
 

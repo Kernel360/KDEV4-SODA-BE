@@ -8,7 +8,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class GetMemberRequestCondition {
-    private Long requesterId;
-    private Long approverId;
     private Long projectId;
 }

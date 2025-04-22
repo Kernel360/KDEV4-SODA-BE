@@ -2,10 +2,13 @@ package com.soda.request.repository;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.soda.request.dto.GetRequestCondition;
+import com.soda.request.dto.request.GetMemberRequestCondition;
+import com.soda.request.entity.QApproverDesignation;
 import com.soda.request.entity.QRequest;
 import com.soda.request.entity.Request;
 import jakarta.persistence.EntityManager;
@@ -52,7 +55,7 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
         if (!orderSpecifiers.isEmpty()) {
             query.orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]));
         } else {
-            query.orderBy(request.createdAt.desc()); // 기본 정렬
+            query.orderBy(request.createdAt.desc());
         }
 
         List<Request> content = query.fetch();
@@ -64,6 +67,49 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
 
         return new PageImpl<>(content, pageable, total);
     }
+
+    @Override
+    public Page<Request> searchByMemberCondition(Long memberId, GetMemberRequestCondition condition, Pageable pageable) {
+        QRequest request = QRequest.request;
+        QApproverDesignation approverDesignation = QApproverDesignation.approverDesignation;
+
+        BooleanBuilder baseCondition = new BooleanBuilder();
+
+        if (condition.getProjectId() != null) {
+            baseCondition.and(request.stage.project.id.eq(condition.getProjectId()));
+        }
+
+        BooleanExpression requesterCondition = request.member.id.eq(memberId);
+
+        JPQLQuery<Request> query = queryFactory
+                .selectFrom(request)
+                .leftJoin(request.approvers, approverDesignation).fetchJoin()
+                .where(baseCondition.and(
+                        requesterCondition.or(approverDesignation.member.id.eq(memberId))
+                ))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        List<OrderSpecifier<?>> orderSpecifiers = getOrderSpecifiers(pageable.getSort(), request);
+        if (!orderSpecifiers.isEmpty()) {
+            query.orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]));
+        } else {
+            query.orderBy(request.createdAt.desc());
+        }
+
+        List<Request> content = query.fetch();
+
+        long total = queryFactory
+                .selectFrom(request)
+                .leftJoin(request.approvers, approverDesignation)
+                .where(baseCondition.and(
+                        requesterCondition.or(approverDesignation.member.id.eq(memberId))
+                ))
+                .fetchCount();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
 
     private List<OrderSpecifier<?>> getOrderSpecifiers(Sort sort, QRequest request) {
         List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();

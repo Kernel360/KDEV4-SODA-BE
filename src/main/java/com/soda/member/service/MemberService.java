@@ -250,4 +250,13 @@ public class MemberService {
 
         memberRepository.save(member);
     }
+
+    public Member findMemberByIdAndCompany(Long userId) {
+        log.debug("Fetching Member with Company using Fetch Join. User ID: {}", userId);
+        return memberRepository.findByIdWithCompany(userId)
+                .orElseThrow(() -> {
+                    log.warn("Member not found with ID: {}", userId);
+                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+                });
+    }
 }

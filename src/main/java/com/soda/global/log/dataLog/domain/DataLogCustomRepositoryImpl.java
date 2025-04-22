@@ -56,6 +56,17 @@ public class DataLogCustomRepositoryImpl implements DataLogCustomRepository {
         if (condition.getFrom() != null && condition.getTo() != null) {
             query.addCriteria(Criteria.where("timestamp").gte(condition.getFrom()).lte(condition.getTo()));
         }
+
+        if (condition.getKeyword() != null && !condition.getKeyword().isBlank()) {
+            String keyword = condition.getKeyword();
+
+            Criteria operatorCriteria = Criteria.where("operator").regex(keyword, "i");
+            Criteria beforeCriteria = Criteria.where("beforeDataText").regex(keyword, "i");
+            Criteria afterCriteria = Criteria.where("afterDataText").regex(keyword, "i");
+
+            query.addCriteria(new Criteria().orOperator(operatorCriteria, beforeCriteria, afterCriteria));
+        }
+
     }
 }
 

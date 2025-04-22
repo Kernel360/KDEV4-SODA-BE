@@ -19,4 +19,6 @@ public class DataLogSearchRequest {
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime to;
+
+    private String keyword;
 }

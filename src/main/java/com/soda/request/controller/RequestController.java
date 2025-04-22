@@ -53,7 +53,7 @@ public class RequestController {
     public ResponseEntity<ApiResponseForm<?>> getRequests(@PathVariable Long projectId,
                                                                  @ModelAttribute GetRequestCondition condition,
                                                                  Pageable pageable) {
-        Page<RequestDTO> requests = requestService.findRequests(condition, pageable);
+        Page<RequestDTO> requests = requestService.findRequests(projectId, condition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(requests));
     }
 

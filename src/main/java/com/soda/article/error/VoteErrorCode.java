@@ -16,7 +16,8 @@ public enum VoteErrorCode implements ErrorCode {
     INVALID_VOTE_ITEM("1310",  "선택한 항목 중 존재하지 않는 항목이 있습니다.", HttpStatus.BAD_REQUEST),
     ALREADY_VOTED("1311", "이미 투표를 했습니다.", HttpStatus.BAD_REQUEST),
     INVALID_VOTE_INPUT("1312", "유효하지 않는 입력입니다." , HttpStatus.BAD_REQUEST),
-    VOTE_ITEM_NOT_FOUND("1313", "유효하지 않은 투표 항목입니다", HttpStatus.BAD_REQUEST);
+    VOTE_ITEM_NOT_FOUND("1313", "유효하지 않은 투표 항목입니다", HttpStatus.BAD_REQUEST),
+    CANNOT_VOTE_ON_OWN_ARTICLE("1314", "작성자는 투표를 할 수 없습니다", HttpStatus.FORBIDDEN);
 
     private final String code;
     private final String message;

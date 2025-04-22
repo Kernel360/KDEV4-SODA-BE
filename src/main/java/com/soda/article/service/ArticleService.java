@@ -414,6 +414,12 @@ public class ArticleService {
         Member currentUser = memberService.findMemberByIdAndCompany(userId); // 로그인한 사용자 확인
         Member author = article.getMember(); // 게시글 작성자 확인
 
+        // 작성자 본인 투표 금지
+        if (userId.equals(author.getId())) {
+            log.warn("작성자(ID:{})가 자신의 게시글(ID:{}) 투표에 참여하려고 시도했습니다.", userId, articleId);
+            throw new GeneralException(VoteErrorCode.CANNOT_VOTE_ON_OWN_ARTICLE);
+        }
+
         Company currentMemberCompany = currentUser.getCompany();
         Company authorMemberCompany = author.getCompany();
 

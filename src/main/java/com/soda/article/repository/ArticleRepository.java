@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ArticleRepository extends JpaRepository<Article, Long> {
+public interface ArticleRepository extends JpaRepository<Article, Long>, ArticleRepositoryCustom{
     // isDeleted가 false인 게시글만 조회하고, 특정 Project에 속한 게시글만 조회
     List<Article> findByIsDeletedFalseAndStage_Project(Project project);
 

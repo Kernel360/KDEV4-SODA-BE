@@ -420,20 +420,26 @@ public class ArticleService {
             throw new GeneralException(VoteErrorCode.CANNOT_VOTE_ON_OWN_ARTICLE);
         }
 
-        Company currentMemberCompany = currentUser.getCompany();
+        // 투표 가능한지 유효성 검사
         Company authorMemberCompany = author.getCompany();
 
-        // 투표 가능한지 유효성 검사
-        CompanyProjectRole currentUserProjectRole = companyProjectService.getCompanyRoleInProject(currentMemberCompany, project);
+        CompanyProjectRole currentUserProjectRole =null;
         CompanyProjectRole authorCompanyProjectRole = null;
 
-        if (author.getRole() != null) {
+        if (currentUser.getRole() != MemberRole.ADMIN) {
+            Company currentMemberCompany = currentUser.getCompany();
+            currentUserProjectRole = companyProjectService.getCompanyRoleInProject(currentMemberCompany, project);
+        } else {
+            log.info("투표자가 관리자이므로 회사 검증을 하지 않습니다.");
+        }
+
+        if (author.getRole() != MemberRole.ADMIN) {
             authorCompanyProjectRole = companyProjectService.getCompanyRoleInProject(authorMemberCompany, project);
         } else {
             log.info("작성자가 관리자 이므로 회사 역할 검증을 하지 않습니다.");
         }
         
-        checkVotingPermission(author.getRole(), currentUserProjectRole, authorCompanyProjectRole);
+        checkVotingPermission(author.getRole(), currentUser.getRole(), currentUserProjectRole, authorCompanyProjectRole);
 
         log.info("[투표 제출] VoteService 호출 시작 - voteId: {}, userId: {}", voteId, userId);
         VoteSubmitResponse response = voteService.processVoteSubmit(voteId, userId, request);
@@ -441,11 +447,11 @@ public class ArticleService {
         return VoteSubmitResponse.from(response);
     }
 
-    private void checkVotingPermission(MemberRole authorRole, CompanyProjectRole currentUserProjectRole, CompanyProjectRole authorCompanyProjectRole) {
+    private void checkVotingPermission(MemberRole authorRole, MemberRole currentUserRole, CompanyProjectRole currentUserProjectRole, CompanyProjectRole authorCompanyProjectRole) {
         boolean permitted = false;
 
         // 작성자가 ADMIN > 고객사/개발사 둘 다 투표 가능
-        if (authorRole == MemberRole.ADMIN) {
+        if (authorRole == MemberRole.ADMIN || currentUserRole == MemberRole.ADMIN) {
             permitted = true;
             log.debug("[투표 권한 확인] 작성자가 ADMIN이므로 투표 허용됨.");
         } else {

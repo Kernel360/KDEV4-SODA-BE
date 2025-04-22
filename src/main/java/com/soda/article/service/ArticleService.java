@@ -4,6 +4,7 @@ import com.querydsl.core.Tuple;
 import com.soda.article.dto.article.*;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.ArticleLink;
+import com.soda.article.entity.Vote;
 import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.error.VoteErrorCode;
 import com.soda.article.repository.ArticleRepository;
@@ -375,4 +376,17 @@ public class ArticleService {
         return MyArticleListResponse.from(articleId, title, projId, projName, stgId, stgName, createdAt);
     }
 
+    public VoteViewResponse getVoteInfoForArticle(Long articleId) {
+        Article article = validateArticle(articleId);
+        Vote vote = article.getVote();
+
+        if (vote == null || vote.getIsDeleted()) {
+            log.warn("[ArticleService] 게시글 ID {} 에 연결된 활성 투표가 없습니다.", articleId);
+            // vote 없으면 null
+            return null;
+        }
+
+        log.info("[ArticleService] 게시글 ID {} 투표 정보 조회 완료.", articleId);
+        return VoteViewResponse.from(vote);
+    }
 }

@@ -61,7 +61,7 @@ public class RequestController {
     public ResponseEntity<ApiResponseForm<?>> getMemberRequests(@PathVariable Long memberId,
                                                                 @ModelAttribute GetMemberRequestCondition condition,
                                                                 Pageable pageable) {
-        Page<RequestDTO> requests = requestService.findMemberRequests(condition, pageable);
+        Page<RequestDTO> requests = requestService.findMemberRequests(memberId, condition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(requests));
     }
 

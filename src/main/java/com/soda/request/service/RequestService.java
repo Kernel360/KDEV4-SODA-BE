@@ -92,6 +92,11 @@ public class RequestService {
                 .map(RequestDTO::fromEntity);
     }
 
+    public Page<RequestDTO> findMemberRequests(Long memberId, GetMemberRequestCondition condition, Pageable pageable) {
+        return requestRepository.searchByMemberCondition(memberId, condition, pageable)
+                .map(RequestDTO::fromEntity);
+    }
+
 
     public List<RequestDTO> findAllByStageId(Long stageId) {
         return requestRepository.findAllByStage_IdAndIsDeletedFalse(stageId).stream()

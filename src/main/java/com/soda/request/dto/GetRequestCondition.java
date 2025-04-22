@@ -11,4 +11,5 @@ import lombok.Setter;
 public class GetRequestCondition {
     private Long stageId;
     private RequestStatus status;
+    private String keyword;
 }

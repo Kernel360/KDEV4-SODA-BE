@@ -2,6 +2,7 @@ package com.soda.article.controller;
 
 import com.soda.article.dto.article.*;
 import com.soda.article.service.ArticleService;
+import com.soda.article.service.VoteService;
 import com.soda.common.file.dto.FileDeleteResponse;
 import com.soda.common.file.dto.FileUploadResponse;
 import com.soda.common.file.service.FileService;
@@ -26,6 +27,7 @@ public class ArticleController {
     private final ArticleService articleService;
     private final FileService fileService;
     private final LinkService linkService;
+    private final VoteService voteService;
 
     @PostMapping("/articles")
     public ResponseEntity<ApiResponseForm<ArticleCreateResponse>> createArticle(@RequestBody ArticleCreateRequest request, HttpServletRequest user) {
@@ -122,5 +124,11 @@ public class ArticleController {
         String userRole = (String) request.getAttribute("userRole").toString();
         VoteCreateResponse response = articleService.createVoteForArticle(articleId, userId, userRole, voteRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "투표 생성 성공"));
+    }
+
+    @GetMapping("/articles/{articleId}/vote")
+    public ResponseEntity<ApiResponseForm<VoteViewResponse>> getVoteInfo(@PathVariable Long articleId) {
+        VoteViewResponse response = articleService.getVoteInfoForArticle(articleId);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 }

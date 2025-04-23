@@ -15,6 +15,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -56,4 +57,12 @@ public class VoteAnswerItemService {
         log.info("VoteAnswerItem {}개 저장 완료 (VoteAnswerItemService). Answer ID: {}, Item IDs: {}",
                 answerItemsToSave.size(), voteAnswer.getId(), selectedItems.stream().map(VoteItem::getId).collect(Collectors.toList()));
     }
+
+    // 특정 투표의 특정 항목별 득표 수
+    public Map<Long, Long> countItemsByVote(Long voteId) {
+        Map<Long, Long> counts = voteAnswerItemRepository.countItemGroupByVoteItemId(voteId);
+        log.debug("Vote ID {} 항목별 활성 답변 집계 (VoteAnswerItemService): {}", voteId, counts);
+        return counts;
+    }
+
 }

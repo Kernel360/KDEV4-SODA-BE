@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EmitterService {
 
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
-    private static final Long DEFAULT_TIMEOUT = 5000L; //60L * 1000 * 60; // 1시간 (필요시 조정)
+    private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60; // 1시간 (필요시 조정)
 
     /**
      * 지정된 사용자 ID에 대한 SseEmitter를 생성하고 저장합니다.

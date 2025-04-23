@@ -10,7 +10,6 @@ import com.soda.request.repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -42,9 +41,9 @@ public class RequestFileStrategy implements FileStrategy<Request, RequestFile> {
     }
 
     @Override
-    public RequestFile toEntity(MultipartFile file, String url, Request request) {
+    public RequestFile toEntity(String fileName, String url, Request request) {
         return RequestFile.builder()
-                .name(file.getOriginalFilename())
+                .name(fileName)
                 .url(url)
                 .request(request)
                 .build();

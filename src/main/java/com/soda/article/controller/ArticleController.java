@@ -2,7 +2,6 @@ package com.soda.article.controller;
 
 import com.soda.article.dto.article.*;
 import com.soda.article.service.ArticleService;
-import com.soda.article.service.VoteService;
 import com.soda.common.file.dto.FileDeleteResponse;
 import com.soda.common.file.dto.FileUploadResponse;
 import com.soda.common.file.service.FileService;
@@ -27,7 +26,6 @@ public class ArticleController {
     private final ArticleService articleService;
     private final FileService fileService;
     private final LinkService linkService;
-    private final VoteService voteService;
 
     @PostMapping("/articles")
     public ResponseEntity<ApiResponseForm<ArticleCreateResponse>> createArticle(@RequestBody ArticleCreateRequest request, HttpServletRequest user) {
@@ -132,7 +130,7 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
-    @PostMapping("/articles/{articleId}/vote/submit")
+    @PostMapping("/articles/{articleId}/vote/submission")
     public ResponseEntity<ApiResponseForm<VoteSubmitResponse>> submitVote(@PathVariable Long articleId, HttpServletRequest request,
                                                                           @Valid @RequestBody VoteSubmitRequest voteSubmitRequest) {
         Long userId = (Long) request.getAttribute("memberId");
@@ -147,5 +145,12 @@ public class ArticleController {
         Long userId = (Long) request.getAttribute("memberId");
         VoteItemAddResponse response = articleService.addVoteItem(articleId, userId, voteItemAddRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "투표 항목 추가 성공"));
+    }
+
+    @GetMapping("/articles/{articleId}/vote-results")
+    public ResponseEntity<ApiResponseForm<VoteResultResponse>> getVoteResults(@PathVariable Long articleId, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("memberId");
+        VoteResultResponse response = articleService.getVoteResults(articleId, userId);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 }

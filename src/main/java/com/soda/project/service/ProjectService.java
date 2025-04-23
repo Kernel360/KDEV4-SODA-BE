@@ -140,7 +140,7 @@ public class ProjectService {
      * @param pageable 페이지네이션
      * @return ProjectListResponse 형식으로 참여 중 프로젝트 목록 반환
      */
-    public Page<MyProjectListResponse> getMyProjects(Long userId, String userRole, Pageable pageable) {
+    public Page<MyProjectListResponse> getMyProjects(ProjectSearchCondition projectSearchCondition, Long userId, String userRole, Pageable pageable) {
         log.info("사용자 프로젝트 조회 시작: 사용자 ID = {}, 사용자 역할 = {}", userId, userRole);
 
         if (!USER_ROLE.equals(userRole)) {
@@ -148,7 +148,7 @@ public class ProjectService {
             return Page.empty(pageable);
         }
 
-        Page<Tuple> tuplePage = projectRepository.findMyProjectsData(userId, pageable);
+        Page<Tuple> tuplePage = projectRepository.findMyProjectsData(projectSearchCondition, userId, pageable);
         if (tuplePage.isEmpty()) {
             log.info("사용자 ID {}가 참여한 프로젝트가 없습니다. 빈 페이지 반환.", userId);
         } else {

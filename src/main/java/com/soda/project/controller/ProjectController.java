@@ -48,11 +48,11 @@ public class ProjectController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<ApiResponseForm<Page<MyProjectListResponse>>> getMyProjects(HttpServletRequest request,
+    public ResponseEntity<ApiResponseForm<Page<MyProjectListResponse>>> getMyProjects(@ModelAttribute ProjectSearchCondition projectSearchCondition,  HttpServletRequest request,
                                                                                     @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) request.getAttribute("memberId");
         String userRole = (String) request.getAttribute("userRole").toString();
-        Page<MyProjectListResponse> response = projectService.getMyProjects(userId, userRole, pageable);
+        Page<MyProjectListResponse> response = projectService.getMyProjects(projectSearchCondition, userId, userRole, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

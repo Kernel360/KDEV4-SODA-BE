@@ -41,9 +41,9 @@ public class ProjectController {
     }
 
     @GetMapping("")
-    public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getAllProjects(@RequestParam(required = false) ProjectStatus status,
+    public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getAllProjects(@ModelAttribute ProjectSearchCondition projectSearchCondition,
                                                                                      @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<ProjectListResponse> projectList = projectService.getAllProjects(status, pageable);
+        Page<ProjectListResponse> projectList = projectService.getAllProjects(projectSearchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(projectList));
     }
 

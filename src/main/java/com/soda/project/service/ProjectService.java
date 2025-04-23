@@ -119,24 +119,13 @@ public class ProjectService {
     /**
      * 전체 프로젝트 목록 조회하는 메서드
      * 프로젝트 상태에 따라 필터링해서 반환할 수 있음
-     * @param status 필터링할 프로젝트 상태 (만약 null일 경우 전체 프로젝트 반환)
      * @return ProjectListResponse 형식으로 프로젝트 목록 반환
      */
-    public Page<ProjectListResponse> getAllProjects(ProjectStatus status, Pageable pageable) {
-        log.info("전체 프로젝트 조회 시작: 상태 = {}, 페이지 번호 = {}, 페이지 크기 = {}",
-                status != null ? status : "전체",
-                pageable.getPageNumber(),
-                pageable.getPageSize());
+    public Page<ProjectListResponse> getAllProjects(ProjectSearchCondition projectSearchCondition, Pageable pageable) {
 
-        Page<Project> projectList;
+        Page<Project> projectList = projectRepository.searchProjects(projectSearchCondition, pageable);
 
-        if (status != null) {
-            projectList = projectRepository.findByStatusAndIsDeletedFalse(status, pageable);
-        } else {
-            projectList = projectRepository.findByIsDeletedFalse(pageable);
-        }
-
-        log.info("프로젝트 조회 완료: 조회된 페이지 크기 = {}, 총 프로젝트 수 = {}",
+        log.info("프로젝트 검색/조회 완료: 조회된 페이지 크기 = {}, 총 프로젝트 수 = {}",
                 projectList.getSize(),
                 projectList.getTotalElements());
 

@@ -5,7 +5,6 @@ import com.soda.article.dto.article.*;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.ArticleLink;
 import com.soda.article.entity.Vote;
-import com.soda.article.entity.VoteItem;
 import com.soda.article.error.ArticleErrorCode;
 import com.soda.article.error.VoteErrorCode;
 import com.soda.article.repository.ArticleRepository;
@@ -16,7 +15,6 @@ import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.CompanyProjectRole;
 import com.soda.member.enums.MemberRole;
-import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.entity.Project;
 import com.soda.project.entity.Stage;
@@ -25,7 +23,6 @@ import com.soda.project.service.CompanyProjectService;
 import com.soda.project.service.MemberProjectService;
 import com.soda.project.service.ProjectService;
 import com.soda.project.service.StageService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -531,5 +528,18 @@ public class ArticleService {
         }
 
         log.debug("항목 추가 권한 확인 완료 (교차 회사 역할): Author Role({}), Requester Role({})", authorRole, requesterRole);
+    }
+
+    public VoteResultResponse getVoteResults(Long articleId, Long userId) {
+        log.info("[결과 조회 시작(ArticleService) - 조건 없음/빌더 사용] Article ID: {}, User ID: {}", articleId, userId);
+
+        Article article = validateArticle(articleId);
+        Vote vote = article.getVote();
+        log.debug("게시글 및 투표 정보 확인 완료. Vote ID: {}", vote.getId());
+
+        VoteResultResponse response = voteService.getVoteResultData(vote);
+
+        log.info("[결과 조회 성공(ArticleService)] Article ID: {}, Vote ID: {}", articleId, response.getVoteId());
+        return response;
     }
 }

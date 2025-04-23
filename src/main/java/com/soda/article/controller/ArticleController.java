@@ -148,4 +148,11 @@ public class ArticleController {
         VoteItemAddResponse response = articleService.addVoteItem(articleId, userId, voteItemAddRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "투표 항목 추가 성공"));
     }
+
+    @GetMapping("/articles/{articleId}/vote/results")
+    public ResponseEntity<ApiResponseForm<VoteResultResponse>> getVoteResults(@PathVariable Long articleId, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("memberId");
+        VoteResultResponse response = articleService.getVoteResults(articleId, userId);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
+    }
 }

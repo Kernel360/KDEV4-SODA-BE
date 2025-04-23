@@ -4,6 +4,7 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.dto.FindAuthIdRequest;
 import com.soda.member.dto.FindAuthIdResponse;
 import com.soda.member.dto.InitialUserInfoRequestDto;
+import com.soda.member.dto.member.ChangePasswordRequest;
 import com.soda.member.dto.member.MemberStatusResponse;
 import com.soda.member.dto.member.admin.MemberDetailDto;
 import com.soda.member.entity.Member;
@@ -292,5 +293,32 @@ public class MemberService {
 
         memberRepository.save(member);
         return MemberStatusResponse.fromEntity(member);
+    }
+
+    @Transactional
+    public void changeUserPassword(Long memberId, ChangePasswordRequest requestDto) {
+
+        log.info("사용자 비밀번호 변경 시도: memberId={}", memberId);
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> {
+                    log.error("비밀번호 변경 실패: 사용자를 찾을 수 없음 - memberId={}", memberId);
+                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+                });
+
+        if (!passwordEncoder.matches(requestDto.getCurrentPassword(), member.getPassword())) {
+            log.warn("비밀번호 변경 실패: 현재 비밀번호 불일치 - memberId={}", memberId);
+            throw new GeneralException(MemberErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
+        if (passwordEncoder.matches(requestDto.getNewPassword(), member.getPassword())) {
+            log.warn("비밀번호 변경 실패: 새 비밀번호가 현재 비밀번호와 동일 - memberId={}", memberId);
+            throw new GeneralException(MemberErrorCode.NEW_PASSWORD_SAME_AS_OLD);
+        }
+
+        member.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));
+         memberRepository.save(member);
+        log.debug("사용자 비밀번호 업데이트 완료: memberId={}", memberId);
+
     }
 }

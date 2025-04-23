@@ -58,7 +58,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponseForm.success(verificationConfirmResponse, "인증번호 확인 결과"));
     }
 
-    @PostMapping("/password/change")
+    @PostMapping("/password/reset")
     public ResponseEntity<ApiResponseForm<Void>> resetPassword(@RequestBody ResetPasswordRequest requestDto) {
         authService.resetPassword(requestDto);
         return ResponseEntity.ok(ApiResponseForm.success(null, "비밀번호 재설정 성공"));

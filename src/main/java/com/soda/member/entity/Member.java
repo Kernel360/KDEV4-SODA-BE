@@ -78,6 +78,13 @@ public class Member extends BaseEntity {
         this.position = position;
     }
 
+    public void myProfileUpdate(String name, String email, String phoneNumber, String position) {
+        this.name = name;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.position = position;
+    }
+
     public void Deleted() {
         this.markAsDeleted();
     }

@@ -4,6 +4,7 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.dto.FindAuthIdRequest;
 import com.soda.member.dto.FindAuthIdResponse;
 import com.soda.member.dto.InitialUserInfoRequestDto;
+import com.soda.member.dto.MemberUpdateRequest;
 import com.soda.member.dto.member.ChangePasswordRequest;
 import com.soda.member.dto.member.MemberStatusResponse;
 import com.soda.member.dto.member.admin.MemberDetailDto;
@@ -295,6 +296,19 @@ public class MemberService {
         return MemberStatusResponse.fromEntity(member);
     }
 
+    public void updateMyProfile(Long memberId, MemberUpdateRequest requestDto) {
+
+        Member member = findByIdAndIsDeletedFalse(memberId);
+
+        member.myProfileUpdate(requestDto.getName(),
+                requestDto.getEmail(),
+                requestDto.getPhoneNumber(),
+                requestDto.getPosition()
+        );
+
+        memberRepository.save(member);
+    }
+
     @Transactional
     public void changeUserPassword(Long memberId, ChangePasswordRequest requestDto) {
 
@@ -317,7 +331,7 @@ public class MemberService {
         }
 
         member.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));
-         memberRepository.save(member);
+        memberRepository.save(member);
         log.debug("사용자 비밀번호 업데이트 완료: memberId={}", memberId);
 
     }

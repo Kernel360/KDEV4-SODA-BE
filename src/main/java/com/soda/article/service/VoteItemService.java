@@ -69,4 +69,17 @@ public class VoteItemService {
         return foundItems;
     }
 
+    @Transactional
+    public VoteItem createAndSaveVoteItem (Vote vote, String itemText) {
+        VoteItem voteItem = VoteItem.builder()
+                .vote(vote)
+                .text(itemText)
+                .build();
+        VoteItem savedItem = voteItemRepository.save(voteItem);
+
+        log.info("단일 VoteItem 생성 및 저장 완료 (VoteItemService). Vote ID: {}, Item ID: {}, Text: {}",
+                vote.getId(), savedItem.getId(), itemText);
+        return savedItem;
+    }
+
 }

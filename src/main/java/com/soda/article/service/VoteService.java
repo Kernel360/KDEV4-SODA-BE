@@ -1,9 +1,6 @@
 package com.soda.article.service;
 
-import com.soda.article.dto.article.VoteCreateRequest;
-import com.soda.article.dto.article.VoteCreateResponse;
-import com.soda.article.dto.article.VoteSubmitRequest;
-import com.soda.article.dto.article.VoteSubmitResponse;
+import com.soda.article.dto.article.*;
 import com.soda.article.entity.*;
 import com.soda.article.error.VoteErrorCode;
 import com.soda.article.repository.VoteRepository;
@@ -66,7 +63,7 @@ public class VoteService {
 
     private void validateVoteRequest(VoteCreateRequest request) {
         boolean hasItems = !CollectionUtils.isEmpty(request.getVoteItems());
-        boolean textAllowed = request.getAllowTextAnswer(); // DTO에서 @NotNull 보장
+        boolean textAllowed = request.getAllowTextAnswer();
 
         // 1. 항목 선택 투표 시 항목 필수 검증
         if (!textAllowed && !hasItems) {
@@ -83,11 +80,13 @@ public class VoteService {
         // 3. 항목 중복 검사 (항목이 있는 경우에만)
         if (hasItems) {
             List<String> itemTexts = request.getVoteItems();
+            // Set을 이용하여 중복 제거 후 크기 비교
             Set<String> distinctItems = new HashSet<>(itemTexts);
             if (distinctItems.size() != itemTexts.size()) {
-                log.warn("유효성 검증 실패: 투표 항목에 중복된 내용이 있습니다.");
+                log.warn("유효성 검증 실패: 투표 항목 요청에 중복된 내용이 있습니다. Items: {}", itemTexts);
                 throw new GeneralException(VoteErrorCode.VOTE_DUPLICATE_ITEM_TEXT);
             }
+            log.debug("투표 항목 중복 검증 통과. {}개 항목 유효.", distinctItems.size());
         }
 
         log.debug("투표 생성 요청 데이터 유효성 검증 통과");
@@ -203,5 +202,51 @@ public class VoteService {
             }
         }
         log.debug("Vote ID {} 선택 항목 ID {} 유효성 검증 통과", vote.getId(), selectedItemIds);
+    }
+
+    @Transactional
+    public VoteItemAddResponse addVoteItemToVote(Vote vote, String itemText) {
+        log.info("[항목 추가 시작(VoteService)] Vote ID: {}, Item Text: '{}'", vote.getId(), itemText);
+
+        // 1. 투표 상태 검증
+        validateVoteForAddingItem(vote);
+
+        // 2. 중복 항목 검증
+        checkDuplicateVoteItem(vote, itemText);
+
+        // 3. VoteItemService 에 생성 및 저장 위임
+        VoteItem savedItem = voteItemService.createAndSaveVoteItem(vote, itemText);
+
+        // 4. Vote 엔티티의 컬렉션에도 추가
+        vote.addVoteItem(savedItem);
+
+        log.info("[항목 추가 완료(VoteService)] Vote ID: {}, New Item ID: {}", vote.getId(), savedItem.getId());
+
+        // 5. 응답 DTO 생성 및 반환
+        return VoteItemAddResponse.from(savedItem);
+    }
+
+    private void checkDuplicateVoteItem(Vote vote, String itemText) {
+        boolean isDuplicate = vote.getVoteItems().stream()
+            .anyMatch(item -> !item.getIsDeleted() && item.getText().equals(itemText));
+        if (isDuplicate) {
+            log.warn("항목 추가 실패: Vote ID {} 에 이미 '{}' 항목이 존재합니다.", vote.getId(), itemText);
+            throw new GeneralException(VoteErrorCode.VOTE_DUPLICATE_ITEM_TEXT);
+        }
+        log.debug("Vote ID {} 에 항목 '{}' 중복 없음 확인", vote.getId(), itemText);
+    }
+
+    private void validateVoteForAddingItem(Vote vote) {
+        // 1. 마감 여부 확인
+        if (vote.isClosed()) {
+            log.warn("항목 추가 실패: Vote ID {} 는 이미 마감되었습니다.", vote.getId());
+            throw new GeneralException(VoteErrorCode.VOTE_ALREADY_CLOSED);
+        }
+        // 2. 텍스트 전용 투표인지 확인 (항목 추가 불가)
+        if (vote.isAllowTextAnswer()) {
+            log.warn("항목 추가 실패: Vote ID {} 는 텍스트 답변 전용 투표입니다.", vote.getId());
+            throw new GeneralException(VoteErrorCode.CANNOT_ADD_ITEM_TO_TEXT_VOTE);
+        }
+        log.debug("항목 추가를 위한 Vote ID {} 상태 검증 통과", vote.getId());
     }
 }

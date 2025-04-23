@@ -140,4 +140,12 @@ public class ArticleController {
         VoteSubmitResponse response = articleService.submitVoteForArticle(articleId, userId, userRole, voteSubmitRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "투표하기 성공"));
     }
+
+    @PostMapping("/articles/{articleId}/vote/items")
+    public ResponseEntity<ApiResponseForm<VoteItemAddResponse>> addVoteItem(@PathVariable Long articleId, HttpServletRequest request,
+                                                                            @Valid @RequestBody VoteItemAddRequest voteItemAddRequest) {
+        Long userId = (Long) request.getAttribute("memberId");
+        VoteItemAddResponse response = articleService.addVoteItem(articleId, userId, voteItemAddRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "투표 항목 추가 성공"));
+    }
 }

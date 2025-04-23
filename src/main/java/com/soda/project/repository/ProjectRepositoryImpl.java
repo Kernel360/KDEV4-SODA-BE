@@ -31,7 +31,7 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
     private static final QCompanyProject companyProject = QCompanyProject.companyProject;
 
     @Override
-    public Page<Tuple> findMyProjectsData(Long memberId, Pageable pageable) {
+    public Page<Tuple> findMyProjectsData(ProjectSearchCondition projectSearchCondition, Long memberId, Pageable pageable) {
         List<Tuple> content = queryFactory
                 .select(
                         project,
@@ -49,7 +49,9 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
                         memberProject.member.id.eq(memberId),
                         project.isDeleted.isFalse(),
                         memberProject.isDeleted.isFalse(),
-                        companyProject.isDeleted.isFalse() // 회사 연결도 활성 상태
+                        companyProject.isDeleted.isFalse(), // 회사 연결도 활성 상태
+                        statusEq(projectSearchCondition.getStatus()),
+                        titleContains(projectSearchCondition.getKeyword())
                 )
                 .orderBy(project.createdAt.desc())
                 .offset(pageable.getOffset())
@@ -67,7 +69,9 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
                         memberProject.member.id.eq(memberId),
                         project.isDeleted.isFalse(),
                         memberProject.isDeleted.isFalse(),
-                        companyProject.isDeleted.isFalse()
+                        companyProject.isDeleted.isFalse(),
+                        statusEq(projectSearchCondition.getStatus()),
+                        titleContains(projectSearchCondition.getKeyword())
                 );
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);

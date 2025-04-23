@@ -1,7 +1,9 @@
 package com.soda.request.controller;
 
-import com.soda.common.file.dto.FileDeleteResponse;
-import com.soda.common.file.dto.FileUploadResponse;
+import com.soda.common.file.dto.ConfirmedFile;
+import com.soda.common.file.dto.FileConfirmResponse;
+import com.soda.common.file.dto.FileUploadRequest;
+import com.soda.common.file.dto.PresignedUploadResponse;
 import com.soda.common.file.service.FileService;
 import com.soda.common.link.dto.LinkDeleteResponse;
 import com.soda.common.link.service.LinkService;
@@ -10,10 +12,8 @@ import com.soda.request.dto.response.*;
 import com.soda.request.service.ResponseService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -71,21 +71,22 @@ public class ResponseController {
         return ResponseEntity.ok(ApiResponseForm.success(responseDeleteResponse));
     }
 
-    @PostMapping(path = "/responses/{responseId}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponseForm<?>> uploadFiles(@PathVariable Long responseId,
-                                                          @RequestPart("file") List<MultipartFile> files,
-                                                          HttpServletRequest request) {
+    @PostMapping("responses/{responseId}/files/presigned-urls")
+    public ResponseEntity<ApiResponseForm<?>> getPresingedUrl(@PathVariable Long responseId,
+                                                              @RequestBody List<FileUploadRequest> fileUploadRequests,
+                                                              HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        FileUploadResponse fileUploadResponse = fileService.upload("response", responseId, memberId, files);
-        return ResponseEntity.ok(ApiResponseForm.success(fileUploadResponse));
+        PresignedUploadResponse presignedUploadResponse = fileService.getPresignedUrls("response", responseId, memberId, fileUploadRequests);
+        return ResponseEntity.ok(ApiResponseForm.success(presignedUploadResponse));
     }
 
-    @DeleteMapping("responses/{responseId}/files/{fileId}")
-    public ResponseEntity<ApiResponseForm<?>> deleteFile(@PathVariable Long fileId,
-                                                         HttpServletRequest request) {
+    @PostMapping("responses/{responseId}/files/confirm-upload")
+    public ResponseEntity<ApiResponseForm<?>> createFileMeta(@PathVariable Long responseId,
+                                                             @RequestBody List<ConfirmedFile> confirmedFiles,
+                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        FileDeleteResponse fileDeleteResponse = fileService.delete("response", fileId, memberId);
-        return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
+        FileConfirmResponse fileConfirmResponse = fileService.confirmUpload("response", responseId, memberId, confirmedFiles);
+        return ResponseEntity.ok(ApiResponseForm.success(fileConfirmResponse));
     }
 
     @DeleteMapping("responses/{responseId}/links/{linkId}")

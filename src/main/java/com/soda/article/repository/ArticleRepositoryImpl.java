@@ -4,12 +4,15 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.soda.article.dto.article.ArticleSearchCondition;
 import com.soda.article.entity.Article;
+import com.soda.member.entity.QCompany;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -91,11 +94,60 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
         return Optional.ofNullable(foundArticle);
     }
 
+    @Override
+    public Page<Article> searchArticles(Long projectId, ArticleSearchCondition request, Pageable pageable) {
+        List<Article> content = queryFactory
+                .selectFrom(article)
+                .leftJoin(article.stage, stage).fetchJoin()    // Fetch Join 유지 또는 필요시 제거/변경
+                .leftJoin(article.member, member).fetchJoin()    // Fetch Join 유지 또는 필요시 제거/변경
+                .leftJoin(member.company, QCompany.company).fetchJoin() // Company 정보도 필요하면 Fetch Join
+                .where(
+                        stage.project.id.eq(projectId),
+                        article.isDeleted.isFalse(),
+                        stageIdEq(request.getStageId()),
+                        searchCondition(request.getSearchType(), request.getKeyword())
+                )
+                .orderBy(article.createdAt.desc()) // 기본 정렬, Pageable 정렬 처리 필요시 추가
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // Count 쿼리
+        JPAQuery<Long> countQuery = queryFactory
+                .select(article.count())
+                .from(article)
+                .join(article.stage, stage) // where 조건에서 stage 사용하므로 필요
+                .join(article.member, member) // where 조건에서 member 사용하면 필요 (searchCondition 확인)
+                .where(
+                        stage.project.id.eq(projectId),
+                        article.isDeleted.isFalse(),
+                        stageIdEq(request.getStageId()),
+                        searchCondition(request.getSearchType(), request.getKeyword())
+                );
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
     // 프로젝트 ID 필터링 조건 (project 별칭 사용)
     private BooleanExpression projectIdEq(Long projectId) {
         // projectId가 null이 아니고 유효한 값일 때만 project.id 와 비교
         return (projectId != null && projectId > 0) ? project.id.eq(projectId) : null;
     }
 
+    private BooleanExpression stageIdEq(Long stageId) {
+        return stageId != null ? stage.id.eq(stageId) : null;
+    }
+
+    private BooleanExpression searchCondition(ArticleSearchCondition.SearchType searchType, String keyword) {
+        if (!StringUtils.hasText(keyword) || searchType == null) {
+            return null; // 키워드나 타입 없으면 조건 없음
+        }
+
+        return switch (searchType) {
+            case TITLE_CONTENT -> article.title.containsIgnoreCase(keyword)
+                    .or(article.content.containsIgnoreCase(keyword)); // 제목 또는 내용
+            case AUTHOR -> member.name.containsIgnoreCase(keyword); // 작성자 이름 (member 조인 필요)
+        };
+    }
 
 }

@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,12 +39,13 @@ public class ArticleController {
 
     // 전체 article 조회 & stage 별 article 조회
     @GetMapping("/projects/{projectId}/articles")
-    public ResponseEntity<ApiResponseForm<List<ArticleListViewResponse>>> getAllArticles(HttpServletRequest user,
-                                                                                     @PathVariable Long projectId,
-                                                                                     @RequestParam(required = false) Long stageId) {
+    public ResponseEntity<ApiResponseForm<Page<ArticleListViewResponse>>> getAllArticles(HttpServletRequest user,
+                                                                                         @PathVariable Long projectId,
+                                                                                         @ModelAttribute ArticleSearchCondition articleSearchCondition,
+                                                                                         @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        List<ArticleListViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, stageId);
+        Page<ArticleListViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, articleSearchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

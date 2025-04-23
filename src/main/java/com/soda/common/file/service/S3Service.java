@@ -13,6 +13,8 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class S3Service {
 
+    public static final String S3_URL_PREFIX = "uploads/";
+
     private final AWSS3Config awsS3Config;
 
     public String generatePresignedPutUrl(String fileName, String contentType) {
@@ -20,7 +22,7 @@ public class S3Service {
 
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(awsS3Config.getBucket())
-                .key("uploads/" + fileName)
+                .key(S3_URL_PREFIX + fileName)
                 .contentType(contentType)
                 .build();
 
@@ -33,6 +35,6 @@ public class S3Service {
     }
 
     public String buildCloudFrontUrl(String fileName) {
-        return awsS3Config.getCloudFrontDomain() + "/uploads/" + fileName;
+        return awsS3Config.getCloudFrontDomain() + "/" + S3_URL_PREFIX + fileName;
     }
 }

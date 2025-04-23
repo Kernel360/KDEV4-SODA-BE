@@ -39,10 +39,10 @@ public class ArticleController {
     @GetMapping("/projects/{projectId}/articles")
     public ResponseEntity<ApiResponseForm<List<ArticleListViewResponse>>> getAllArticles(HttpServletRequest user,
                                                                                      @PathVariable Long projectId,
-                                                                                     @RequestParam(required = false) Long stageId) {
+                                                                                     @ModelAttribute ArticleSearchCondition articleSearchCondition) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        List<ArticleListViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, stageId);
+        List<ArticleListViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, articleSearchCondition);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

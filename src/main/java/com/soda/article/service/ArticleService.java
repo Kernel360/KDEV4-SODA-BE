@@ -162,13 +162,14 @@ public class ArticleService {
      * @param stageId 단계 ID
      * @return 해당 조건에 맞는 게시글 리스트
      */
-    public List<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, Long stageId) {
+    public List<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, ArticleSearchCondition articleSearchCondition) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(projectId);
 
         checkIfMemberIsAdminOrProjectMember(userRole, member, project);
 
-        List<Article> articles = getArticlesByStageAndProject(stageId, project);
+        List<Article> articles = articleRepository.searchArticles(projectId, articleSearchCondition);
+        log.info("조건에 맞는 게시글 {}건 조회 완료.", articles.size());
 
         List<ArticleListViewResponse> articleDTOList = articles.stream()
                 .map(ArticleListViewResponse::fromEntity)

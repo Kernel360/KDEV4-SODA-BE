@@ -10,7 +10,6 @@ import com.soda.request.repository.ResponseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -42,9 +41,9 @@ public class ResponseFileStrategy implements FileStrategy<Response, ResponseFile
     }
 
     @Override
-    public ResponseFile toEntity(MultipartFile file, String url, Response Response) {
+    public ResponseFile toEntity(String fileName, String url, Response Response) {
         return ResponseFile.builder()
-                .name(file.getOriginalFilename())
+                .name(fileName)
                 .url(url)
                 .response(Response)
                 .build();

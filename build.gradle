@@ -55,8 +55,9 @@ dependencies {
 	// smtp
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
-	// AWS S3
-	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+	// AWS S3 v2
+	implementation platform("software.amazon.awssdk:bom:2.25.16")
+	implementation 'software.amazon.awssdk:s3'
 
 	// MongoDB
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'

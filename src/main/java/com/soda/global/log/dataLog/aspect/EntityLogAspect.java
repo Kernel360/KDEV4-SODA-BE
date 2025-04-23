@@ -148,6 +148,7 @@ public class EntityLogAspect {
         for (String key : after.keySet()) {
             Object beforeVal = before.getOrDefault(key, "N/A"); // 디폴트 값 설정
             Object afterVal = after.getOrDefault(key, "N/A");
+            if (beforeVal == null) beforeVal = "N/A";
             if (!Objects.equals(beforeVal, afterVal)) {
                 diff.put(key, Map.of("before", beforeVal, "after", afterVal));
             }

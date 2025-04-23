@@ -1,19 +1,18 @@
 package com.soda.notice.controller;
 
-import com.soda.global.security.auth.UserDetailsImpl; // UserDetailsImpl import 확인
-import com.soda.notice.service.NoticeService; // NoticeService 사용
+import com.soda.global.security.auth.UserDetailsImpl;
+import com.soda.notice.service.NoticeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-// import java.io.IOException; // 더 이상 필요 없음
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/notices")
@@ -21,9 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Slf4j
 public class NoticeController {
 
-    // EmitterService 대신 NoticeService 주입
     private final NoticeService noticeService;
-    // DEFAULT_TIMEOUT 도 Controller 에서는 더 이상 필요 없음
 
     /**
      * 클라이언트가 실시간 알림을 구독하는 엔드포인트
@@ -35,35 +32,51 @@ public class NoticeController {
 
         Long userId;
         try {
-            // 사용자 ID 추출 및 유효성 검증
             if (userDetails == null || userDetails.getMember() == null) {
                 log.warn("SSE 구독 요청 - 인증 정보 또는 사용자 정보 없음");
-                // 인증 안됐거나 사용자 정보 없으면 401 Unauthorized 반환
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            // UserDetailsImpl에서 사용자 ID 가져오기 (getMember().getId() 또는 직접 getId())
-            userId = userDetails.getId(); // UserDetailsImpl에 getId()가 있다고 가정
+            userId = userDetails.getId();
             if (userId == null) {
                 log.warn("SSE 구독 요청 - User ID가 null입니다.");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // ID 없으면 400 Bad Request
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
             log.info("새로운 SSE 연결 요청 for User ID: {}", userId);
         } catch (Exception e) {
-            // 사용자 정보 추출 중 예외 발생 시 (예: 캐스팅 실패 등)
             log.error("SSE 구독 요청 - 사용자 ID 추출 실패", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
         try {
-            // NoticeService의 구독 메서드 호출
             SseEmitter emitter = noticeService.subscribe(userId);
             log.info("Controller: SSE 구독 요청 처리 완료 for User ID: {}", userId);
-            // 성공 시 200 OK 와 함께 SseEmitter 반환
             return ResponseEntity.ok(emitter);
         } catch (Exception e) {
-            // 서비스 레이어에서 발생한 예외 처리
             log.error("SSE 구독 처리 중 컨트롤러에서 오류 발생 for User ID: {}", userId, e);
-            // 서버 내부 오류로 500 Internal Server Error 반환
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // --- 테스트용 임시 알림 발송 엔드포인트 ---
+    @PostMapping("/send-test/{userId}")
+    public ResponseEntity<Void> sendTestNotification(
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> payload) {
+
+        String message = payload.get("message");
+        if (message == null) {
+            log.warn("테스트 알림 전송 요청 - 'message' 내용 없음. User ID: {}", userId);
+            return ResponseEntity.badRequest().build();
+        }
+
+        log.info("테스트 알림 전송 요청 수신 - User ID: {}, Message: {}", userId, message);
+
+        try {
+            noticeService.sendNotification(userId, "test_notification", payload);
+            log.info("테스트 알림 전송 요청 완료 - User ID: {}", userId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.error("테스트 알림 전송 중 오류 발생 - User ID: {}", userId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

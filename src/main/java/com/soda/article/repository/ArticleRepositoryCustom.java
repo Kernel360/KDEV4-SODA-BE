@@ -15,5 +15,5 @@ public interface ArticleRepositoryCustom {
 
     Optional<Article> findByIdAndIsDeletedFalseWithMemberAndCompanyUsingQuerydsl(Long articleId);
 
-    List<Article> searchArticles(Long projectId, ArticleSearchCondition articleSearchCondition);
+    Page<Article> searchArticles(Long projectId, ArticleSearchCondition articleSearchCondition, Pageable pageable);
 }

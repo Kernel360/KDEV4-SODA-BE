@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.soda.article.dto.article.ArticleSearchCondition;
 import com.soda.article.entity.Article;
+import com.soda.member.entity.QCompany;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -94,19 +95,37 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
     }
 
     @Override
-    public List<Article> searchArticles(Long projectId, ArticleSearchCondition request) {
-        return queryFactory
+    public Page<Article> searchArticles(Long projectId, ArticleSearchCondition request, Pageable pageable) {
+        List<Article> content = queryFactory
                 .selectFrom(article)
-                .join(article.stage, stage).fetchJoin()
-                .join(article.member, member).fetchJoin()
+                .leftJoin(article.stage, stage).fetchJoin()    // Fetch Join 유지 또는 필요시 제거/변경
+                .leftJoin(article.member, member).fetchJoin()    // Fetch Join 유지 또는 필요시 제거/변경
+                .leftJoin(member.company, QCompany.company).fetchJoin() // Company 정보도 필요하면 Fetch Join
                 .where(
                         stage.project.id.eq(projectId),
                         article.isDeleted.isFalse(),
                         stageIdEq(request.getStageId()),
                         searchCondition(request.getSearchType(), request.getKeyword())
                 )
-                .orderBy(article.createdAt.desc()) // 기본 정렬 (최신순)
+                .orderBy(article.createdAt.desc()) // 기본 정렬, Pageable 정렬 처리 필요시 추가
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
+
+        // Count 쿼리
+        JPAQuery<Long> countQuery = queryFactory
+                .select(article.count())
+                .from(article)
+                .join(article.stage, stage) // where 조건에서 stage 사용하므로 필요
+                .join(article.member, member) // where 조건에서 member 사용하면 필요 (searchCondition 확인)
+                .where(
+                        stage.project.id.eq(projectId),
+                        article.isDeleted.isFalse(),
+                        stageIdEq(request.getStageId()),
+                        searchCondition(request.getSearchType(), request.getKeyword())
+                );
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     // 프로젝트 ID 필터링 조건 (project 별칭 사용)

@@ -2,7 +2,7 @@ package com.soda.request.dto.response;
 
 import com.soda.common.link.dto.LinkDTO;
 import com.soda.request.entity.Response;
-import com.soda.request.enums.RequestStatus;
+import com.soda.request.enums.ResponseStatus;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,7 +17,7 @@ public class RequestRejectResponse {
     private Long requestId;
     private Long memberId;
     private String memberName;
-    private RequestStatus status;
+    private ResponseStatus status;
     private String comment;
     private List<LinkDTO> links;
     private LocalDateTime createdAt;
@@ -29,7 +29,7 @@ public class RequestRejectResponse {
                 .requestId(response.getRequest().getId())
                 .memberId(response.getMember().getId())
                 .memberName(response.getMember().getName())
-                .status(response.getRequest().getStatus())
+                .status(response.getStatus())
                 .comment(response.getComment())
                 .links(
                         response.getLinks().stream()

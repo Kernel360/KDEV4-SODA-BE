@@ -13,6 +13,7 @@ public class RequestCreateRequest {
     private String content;
     private Long projectId;
     private Long stageId;
+    private Long parentId;
     private List<LinkUploadRequest.LinkUploadDTO> links;
     private List<MemberAssignDTO> members;
 

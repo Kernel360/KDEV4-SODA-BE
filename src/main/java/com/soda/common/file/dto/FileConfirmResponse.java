@@ -11,11 +11,11 @@ import java.util.stream.Collectors;
 
 @Getter
 @Builder
-public class FileUploadResponse {
+public class FileConfirmResponse {
     private Long domainId;
     private List<String> fileUrl;
 
-    public static <T extends FileBase> FileUploadResponse fromEntity(List<T> files) {
+    public static <T extends FileBase> FileConfirmResponse fromEntity(List<T> files) {
         if (files == null || files.isEmpty()) {
             throw new GeneralException(FileErrorCode.FILE_LIST_EMPTY);
         }
@@ -25,7 +25,7 @@ public class FileUploadResponse {
                 .map(FileBase::getUrl)
                 .collect(Collectors.toList());
 
-        return FileUploadResponse.builder()
+        return FileConfirmResponse.builder()
                 .domainId(domainId)
                 .fileUrl(fileUrls)
                 .build();

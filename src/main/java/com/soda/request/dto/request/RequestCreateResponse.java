@@ -18,6 +18,7 @@ public class RequestCreateResponse {
     private Long stageId;
     private Long memberId;
     private String memberName;
+    private Long parentId;
     private String title;
     private String content;
     private List<LinkDTO> links;
@@ -31,10 +32,12 @@ public class RequestCreateResponse {
                 .stageId(request.getStage().getId())
                 .memberId(request.getMember().getId())
                 .memberName(request.getMember().getName())
+                .parentId(request.getParentId() == null ? -1 : request.getParentId())
                 .title(request.getTitle())
                 .content(request.getContent())
                 .links(
                         request.getLinks().stream()
+                                .filter(link -> !link.getIsDeleted())
                                 .map(LinkDTO::fromEntity)
                                 .collect(Collectors.toList())
                 )

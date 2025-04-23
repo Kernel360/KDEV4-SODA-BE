@@ -14,6 +14,7 @@ public class RequestDeleteResponse {
     private Long stageId;
     private Long memberId;
     private String memberName;
+    private Long parentId;
     private String title;
     private String content;
     private RequestStatus status;
@@ -26,6 +27,7 @@ public class RequestDeleteResponse {
                 .stageId(request.getStage().getId())
                 .memberId(request.getMember().getId())
                 .memberName(request.getMember().getName())
+                .parentId(request.getParentId() == null ? -1 : request.getParentId())
                 .title(request.getTitle())
                 .content(request.getContent())
                 .status(request.getStatus())

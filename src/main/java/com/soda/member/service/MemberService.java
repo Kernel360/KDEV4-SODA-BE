@@ -335,4 +335,13 @@ public class MemberService {
         log.debug("사용자 비밀번호 업데이트 완료: memberId={}", memberId);
 
     }
+
+    public Member findMemberByIdAndCompany(Long userId) {
+        log.debug("Fetching Member with Company using Fetch Join. User ID: {}", userId);
+        return memberRepository.findByIdWithCompany(userId)
+                .orElseThrow(() -> {
+                    log.warn("Member not found with ID: {}", userId);
+                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+                });
+    }
 }

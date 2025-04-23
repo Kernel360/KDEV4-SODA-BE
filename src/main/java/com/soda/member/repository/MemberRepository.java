@@ -46,4 +46,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             "OR (c.name IS NOT NULL AND LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Member> findByKeywordIncludingDeleted(@Param("keyword") String keyword, Pageable pageable);
 
+    @Query("SELECT m FROM Member m LEFT JOIN FETCH m.company WHERE m.id = :memberId")
+    Optional<Member> findByIdWithCompany(@Param("memberId") Long memberId);
 }

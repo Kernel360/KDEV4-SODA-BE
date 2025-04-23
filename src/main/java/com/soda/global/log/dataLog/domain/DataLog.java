@@ -23,4 +23,7 @@ public class DataLog {
     private Map<String, Object> beforeData; // UPDATE/DELETE 시 이전 값
     private Map<String, Object> afterData;  // CREATE/UPDATE 시 이후 값
     private Map<String, Object> diff;       // UPDATE 시 변경된 필드 정보
+
+    private String beforeDataText;
+    private String afterDataText;
 }

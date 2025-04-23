@@ -49,6 +49,9 @@ public class Article extends BaseEntity {
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private List<ArticleLink> articleLinkList = new ArrayList<>();
 
+    @OneToOne(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true, optional = true)
+    private Vote vote;
+
     // 부모 게시글을 위한 필드 (답글이 부모 게시글을 참조)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_article_id")  // 부모 댓글을 참조하는 외래키
@@ -80,6 +83,10 @@ public class Article extends BaseEntity {
 
     public void delete() {
         this.markAsDeleted();
+        this.commentList.forEach(Comment::delete);
+        this.articleFileList.forEach(ArticleFile::delete);
+        this.articleLinkList.forEach(ArticleLink::delete);
+        this.vote.delete();
     }
 
     public void updateArticle(String title, String content, PriorityType priority, LocalDateTime deadline) {
@@ -96,6 +103,19 @@ public class Article extends BaseEntity {
         for (ArticleLink link : links) {
             link.updateResponse(this);
             this.articleLinkList.add(link);
+        }
+    }
+
+    public void associateVote(Vote vote) {
+        if (vote == null) {
+            // 만약 기존 vote가 있었다면 연결 해제 (orphanRemoval=true로 인해 DB에서 삭제될 수 있음)
+            if (this.vote != null) {
+                this.vote.disassociateArticle();
+            }
+            this.vote = null;
+        } else {
+            this.vote = vote;
+            vote.associateArticle(this);
         }
     }
 }

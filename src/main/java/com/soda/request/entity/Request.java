@@ -20,6 +20,7 @@ import java.util.List;
 public class Request extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private RequestStatus status;
 
     @TrackUpdate
@@ -37,6 +38,8 @@ public class Request extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    private Long parentId;
+
     @TrackUpdate
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
     private List<RequestFile> files;
@@ -49,10 +52,14 @@ public class Request extends BaseEntity {
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
     private List<ApproverDesignation> approvers;
 
+    @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
+    private List<Response> responses;
+
     @Builder
-    public Request(Member member, Stage stage, String title, String content, RequestStatus status, List<RequestFile> files, List<RequestLink> links) {
+    public Request(Member member, Stage stage, Long parentId, String title, String content, RequestStatus status, List<RequestFile> files, List<RequestLink> links) {
         this.member = member;
         this.stage = stage;
+        this.parentId = parentId;
         this.title = title;
         this.status = status;
         this.content = content;
@@ -100,5 +107,9 @@ public class Request extends BaseEntity {
             this.approvers = new ArrayList<>();
         }
         this.approvers.addAll(approverDesignations);
+    }
+
+    public void approving() {
+        this.status = RequestStatus.APPROVING;
     }
 }

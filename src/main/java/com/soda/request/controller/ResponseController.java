@@ -1,9 +1,6 @@
 package com.soda.request.controller;
 
-import com.soda.common.file.dto.ConfirmedFile;
-import com.soda.common.file.dto.FileConfirmResponse;
-import com.soda.common.file.dto.FileUploadRequest;
-import com.soda.common.file.dto.PresignedUploadResponse;
+import com.soda.common.file.dto.*;
 import com.soda.common.file.service.FileService;
 import com.soda.common.link.dto.LinkDeleteResponse;
 import com.soda.common.link.service.LinkService;
@@ -87,6 +84,14 @@ public class ResponseController {
         Long memberId = (Long) request.getAttribute("memberId");
         FileConfirmResponse fileConfirmResponse = fileService.confirmUpload("response", responseId, memberId, confirmedFiles);
         return ResponseEntity.ok(ApiResponseForm.success(fileConfirmResponse));
+    }
+
+    @DeleteMapping("responses/{responseId}/files/{fileId}")
+    public ResponseEntity<ApiResponseForm<?>> deleteFile(@PathVariable Long fileId,
+                                                         HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        FileDeleteResponse fileDeleteResponse = fileService.delete("response", fileId, memberId);
+        return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
     }
 
     @DeleteMapping("responses/{responseId}/links/{linkId}")

@@ -2,11 +2,7 @@ package com.soda.article.controller;
 
 import com.soda.article.dto.article.*;
 import com.soda.article.service.ArticleService;
-import com.soda.article.service.VoteService;
-import com.soda.common.file.dto.ConfirmedFile;
-import com.soda.common.file.dto.FileConfirmResponse;
-import com.soda.common.file.dto.FileUploadRequest;
-import com.soda.common.file.dto.PresignedUploadResponse;
+import com.soda.common.file.dto.*;
 import com.soda.common.file.service.FileService;
 import com.soda.common.link.dto.LinkDeleteResponse;
 import com.soda.common.link.service.LinkService;
@@ -94,6 +90,14 @@ public class ArticleController {
         Long memberId = (Long) request.getAttribute("memberId");
         FileConfirmResponse fileConfirmResponse = fileService.confirmUpload("article", articleId, memberId, confirmedFiles);
         return ResponseEntity.ok(ApiResponseForm.success(fileConfirmResponse));
+    }
+
+    @DeleteMapping("articles/{articleId}/files/{fileId}")
+    public ResponseEntity<ApiResponseForm<?>> deleteFile(@PathVariable Long fileId,
+                                                         HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        FileDeleteResponse fileDeleteResponse = fileService.delete("article", fileId, memberId);
+        return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
     }
 
     @DeleteMapping("articles/{articleId}/links/{linkId}")

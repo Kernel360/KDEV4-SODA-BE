@@ -1,9 +1,6 @@
 package com.soda.common.file.service;
 
-import com.soda.common.file.dto.ConfirmedFile;
-import com.soda.common.file.dto.FileConfirmResponse;
-import com.soda.common.file.dto.FileUploadRequest;
-import com.soda.common.file.dto.PresignedUploadResponse;
+import com.soda.common.file.dto.*;
 import com.soda.common.file.error.FileErrorCode;
 import com.soda.common.file.model.FileBase;
 import com.soda.common.file.strategy.FileStrategy;
@@ -55,6 +52,17 @@ public class FileService {
 
         strategy.saveAll(entities);
         return FileConfirmResponse.fromEntity(entities);
+    }
+
+    @Transactional
+    public FileDeleteResponse delete(String domainType, Long fileId, Long memberId) {
+        FileStrategy strategy = getStrategy(domainType);
+        FileBase file = strategy.getFileOrThrow(fileId);
+        strategy.validateFileUploader(memberId, file);
+
+        file.delete();
+
+        return FileDeleteResponse.fromEntity(file);
     }
 
     private FileStrategy getStrategy(String domainType) {

@@ -26,6 +26,7 @@ import com.soda.project.service.StageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -159,17 +160,18 @@ public class ArticleService {
      * @param userId 게시글을 조회하는 사용자 ID
      * @param userRole 게시글을 조회하는 사용자의 역할
      * @param projectId 프로젝트 ID
-     * @param stageId 단계 ID
      * @return 해당 조건에 맞는 게시글 리스트
      */
-    public List<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, ArticleSearchCondition articleSearchCondition) {
+    public Page<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, ArticleSearchCondition articleSearchCondition, Pageable pageable) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(projectId);
 
         checkIfMemberIsAdminOrProjectMember(userRole, member, project);
 
-        List<Article> articles = articleRepository.searchArticles(projectId, articleSearchCondition);
-        log.info("조건에 맞는 게시글 {}건 조회 완료.", articles.size());
+        Page<Article> articles = articleRepository.searchArticles(projectId, articleSearchCondition, pageable);
+        log.info("조건에 맞는 게시글 페이지 조회 완료. PageNumber={}, PageSize={}, TotalElements={}",
+                articles.getNumber(), articles.getSize(), articles.getTotalElements());
+
 
         List<ArticleListViewResponse> articleDTOList = articles.stream()
                 .map(ArticleListViewResponse::fromEntity)
@@ -183,9 +185,7 @@ public class ArticleService {
                 .map(articleDTO -> addChildArticleToParent(articleDTO, parentToChildMap))
                 .toList();
 
-        return finalArticleDTOList.stream()
-                .filter(articleDTO -> articleDTO.getParentArticleId() == null)
-                .collect(Collectors.toList());
+        return new PageImpl<>(finalArticleDTOList, pageable, articles.getTotalElements());
     }
 
     /**

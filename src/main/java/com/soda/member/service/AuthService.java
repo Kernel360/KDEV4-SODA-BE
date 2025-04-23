@@ -216,7 +216,7 @@ public class AuthService {
      * @throws GeneralException 해당 이메일의 회원을 찾을 수 없는 경우 발생
      */
     @Transactional
-    public void changePassword(ChangePasswordRequest requestDto) {
+    public void resetPassword(ResetPasswordRequest requestDto) {
         log.info("비밀번호 변경 시도: 이메일={}", requestDto.getEmail());
         Member member = memberService.findMemberByEmail(requestDto.getEmail());
         member.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));

@@ -2,7 +2,9 @@ package com.soda.member.controller;
 
 import com.soda.common.mail.dto.EmailRequest;
 import com.soda.global.response.ApiResponseForm;
-import com.soda.member.dto.*;
+import com.soda.member.dto.EmailVerificationRequest;
+import com.soda.member.dto.ResetPasswordRequest;
+import com.soda.member.dto.VerificationConfirmResponse;
 import com.soda.member.dto.member.LoginRequest;
 import com.soda.member.dto.member.LoginResponse;
 import com.soda.member.dto.member.admin.CreateMemberRequest;
@@ -57,9 +59,9 @@ public class AuthController {
     }
 
     @PostMapping("/password/change")
-    public ResponseEntity<ApiResponseForm<Void>> changePassword(@RequestBody ChangePasswordRequest requestDto) {
-        authService.changePassword(requestDto);
-        return ResponseEntity.ok(ApiResponseForm.success(null, "비밀번호 변경 성공"));
+    public ResponseEntity<ApiResponseForm<Void>> resetPassword(@RequestBody ResetPasswordRequest requestDto) {
+        authService.resetPassword(requestDto);
+        return ResponseEntity.ok(ApiResponseForm.success(null, "비밀번호 재설정 성공"));
     }
 
     @PostMapping("/logout")

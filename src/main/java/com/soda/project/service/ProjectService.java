@@ -112,6 +112,17 @@ public class ProjectService {
 
         log.info("개발사 지정 완료: 프로젝트 ID = {}", projectId);
 
+        // CONTRACT > IN_PROGRESS 로 상태 변경
+        if (project.getStatus() == ProjectStatus.CONTRACT) {
+            log.info("프로젝트 상태 변경 시도: ID={}, 현재 상태={}, 변경 상태={}",
+                    projectId, project.getStatus(), ProjectStatus.IN_PROGRESS);
+            project.changeStatus(ProjectStatus.IN_PROGRESS);
+        } else {
+            log.info("프로젝트 상태 변경 건너뜀: ID={}, 현재 상태={}", projectId, project.getStatus());
+        }
+
+        log.info("개발사 지정 전체 프로세스 완료: 프로젝트 ID = {}", projectId);
+
         // response 생성
         return createDevCompanyAssignmentResponse(project);
     }

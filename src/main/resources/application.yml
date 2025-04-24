@@ -20,7 +20,6 @@ spring:
       - /members/find-id
       - /password/change
       - /refresh
-      - /notices/**
 
   mail:
     host: smtp.gmail.com

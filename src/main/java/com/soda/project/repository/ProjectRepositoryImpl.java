@@ -1,22 +1,34 @@
 package com.soda.project.repository;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimeExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.soda.article.entity.QArticle;
+import com.soda.project.dto.ProjectListWithStatsResponse;
 import com.soda.project.dto.ProjectSearchCondition;
-import com.soda.project.entity.Project;
 import com.soda.project.entity.QCompanyProject;
 import com.soda.project.entity.QMemberProject;
 import com.soda.project.entity.QProject;
+import com.soda.project.entity.QStage;
 import com.soda.project.enums.ProjectStatus;
+import com.soda.request.entity.QRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -117,33 +129,89 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
     }
 
     @Override
-    public Page<Project> searchProjects(ProjectSearchCondition request, Pageable pageable) {
-        // 데이터 조회 쿼리
-        List<Project> content = queryFactory
-                .selectFrom(project)
-                .where(
-                        project.isDeleted.isFalse(),
-                        statusEq(request.getStatus()),
-                        titleContains(request.getKeyword())
-                )
-                .orderBy(project.createdAt.desc())
+    public Page<ProjectListWithStatsResponse> searchProjects(ProjectSearchCondition condition, Pageable pageable) {
+        QProject project = QProject.project;
+        QStage stage = QStage.stage;
+        QRequest requestEntity = QRequest.request;
+        QArticle article = QArticle.article;
+
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusDays(7);
+
+        BooleanBuilder where = new BooleanBuilder()
+                .and(project.isDeleted.isFalse())
+                .and(statusEq(condition.getStatus()))
+                .and(titleContains(condition.getKeyword()));
+
+        boolean sortByWeeklyActivity = pageable.getSort().stream()
+                .anyMatch(order -> order.getProperty().equals("weeklyActivity"));
+
+        NumberExpression<Long> weeklyRequestCount = Expressions.numberTemplate(Long.class, "({0})",
+                JPAExpressions.select(requestEntity.count())
+                        .from(requestEntity)
+                        .join(requestEntity.stage, stage)
+                        .where(stage.project.eq(project), requestEntity.createdAt.goe(oneWeekAgo))
+        );
+
+        NumberExpression<Long> weeklyArticleCount = Expressions.numberTemplate(Long.class, "({0})",
+                JPAExpressions.select(article.count())
+                        .from(article)
+                        .join(article.stage, stage)
+                        .where(stage.project.eq(project), article.createdAt.goe(oneWeekAgo))
+        );
+
+        NumberExpression<Long> weeklyActivity = weeklyRequestCount.add(weeklyArticleCount);
+
+        DateTimeExpression<LocalDateTime> recentRequestDate = Expressions.dateTimeTemplate(
+                LocalDateTime.class, "({0})",
+                JPAExpressions.select(requestEntity.createdAt.max())
+                        .from(requestEntity)
+                        .join(requestEntity.stage, stage)
+                        .where(stage.project.eq(project))
+        );
+
+        DateTimeExpression<LocalDateTime> recentArticleDate = Expressions.dateTimeTemplate(
+                LocalDateTime.class, "({0})",
+                JPAExpressions.select(article.createdAt.max())
+                        .from(article)
+                        .join(article.stage, stage)
+                        .where(stage.project.eq(project))
+        );
+
+        JPQLQuery<ProjectListWithStatsResponse> query = queryFactory
+                .select(Projections.constructor(ProjectListWithStatsResponse.class,
+                        project.id,
+                        project.title,
+                        weeklyRequestCount,
+                        weeklyArticleCount,
+                        weeklyActivity,
+                        recentRequestDate,
+                        recentArticleDate
+                ))
+                .from(project)
+                .where(where);
+
+        if (sortByWeeklyActivity) {
+            query.orderBy(weeklyActivity.desc());
+        } else {
+            query.orderBy(project.createdAt.desc());
+        }
+
+        List<ProjectListWithStatsResponse> content = query
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // Count 쿼리 (동일한 조건 사용)
-        JPAQuery<Long> countQuery = queryFactory
+        long count = queryFactory
                 .select(project.count())
                 .from(project)
-                .where(
-                        project.isDeleted.isFalse(),
-                        statusEq(request.getStatus()),
-                        titleContains(request.getKeyword())
-                );
+                .where(where)
+                .fetchOne();
 
-        // Page 객체 생성 및 반환
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        return new PageImpl<>(content, pageable, count);
     }
+
+
+
 
     private BooleanExpression statusEq(ProjectStatus status) {
         return status != null ? project.status.eq(status) : null;

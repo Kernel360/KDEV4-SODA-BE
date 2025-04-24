@@ -89,6 +89,9 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
         if (condition.getProjectId() != null) {
             baseCondition.and(request.stage.project.id.eq(condition.getProjectId()));
         }
+        if (condition.getKeyword() != null && !condition.getKeyword().isBlank()) {
+            baseCondition.and(request.title.containsIgnoreCase(condition.getKeyword()));
+        }
 
         BooleanExpression requesterCondition = request.member.id.eq(memberId);
 

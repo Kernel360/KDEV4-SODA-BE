@@ -123,13 +123,13 @@ public class ProjectService {
      */
     public Page<ProjectListResponse> getAllProjects(ProjectSearchCondition projectSearchCondition, Pageable pageable) {
 
-        Page<Project> projectList = projectRepository.searchProjects(projectSearchCondition, pageable);
+        Page<ProjectListResponse> projectList = projectRepository.searchProjects(projectSearchCondition, pageable);
 
         log.info("프로젝트 검색/조회 완료: 조회된 페이지 크기 = {}, 총 프로젝트 수 = {}",
                 projectList.getSize(),
                 projectList.getTotalElements());
 
-        return projectList.map(this::mapToProjectListResponse);
+        return projectList;
     }
 
     /**
@@ -782,10 +782,6 @@ public class ProjectService {
 
         log.warn("알 수 없는 사용자 역할({}) 감지됨: memberId={}, projectId={}", userRole, member.getId(), project.getId());
         return "Unknown Role";
-    }
-
-    private ProjectListResponse mapToProjectListResponse(Project project) {
-        return ProjectListResponse.from(project);
     }
 
     // ADMIN 또는 해당 프로젝트에 참여 중인 USER 경우 허용하는 메소드

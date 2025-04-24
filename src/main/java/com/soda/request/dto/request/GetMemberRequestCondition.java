@@ -9,4 +9,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class GetMemberRequestCondition {
     private Long projectId;
+    private String keyword;
 }

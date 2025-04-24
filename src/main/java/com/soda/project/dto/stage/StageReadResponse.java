@@ -8,6 +8,7 @@ public class StageReadResponse {
     private Long id;
     private String name;
     private Float stageOrder;
+    private int requestCount;
 
     private StageReadResponse() {
     }
@@ -23,6 +24,7 @@ public class StageReadResponse {
         dto.id = stage.getId();
         dto.name = stage.getName();
         dto.stageOrder = stage.getStageOrder();
+        dto.requestCount = stage.getRequestList().size();
         return dto;
     }
 }

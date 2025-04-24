@@ -2,9 +2,7 @@ package com.soda.article.controller;
 
 import com.soda.article.dto.article.*;
 import com.soda.article.service.ArticleService;
-import com.soda.article.service.VoteService;
-import com.soda.common.file.dto.FileDeleteResponse;
-import com.soda.common.file.dto.FileUploadResponse;
+import com.soda.common.file.dto.*;
 import com.soda.common.file.service.FileService;
 import com.soda.common.link.dto.LinkDeleteResponse;
 import com.soda.common.link.service.LinkService;
@@ -14,9 +12,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -27,7 +26,6 @@ public class ArticleController {
     private final ArticleService articleService;
     private final FileService fileService;
     private final LinkService linkService;
-    private final VoteService voteService;
 
     @PostMapping("/articles")
     public ResponseEntity<ApiResponseForm<ArticleCreateResponse>> createArticle(@RequestBody ArticleCreateRequest request, HttpServletRequest user) {
@@ -39,12 +37,13 @@ public class ArticleController {
 
     // 전체 article 조회 & stage 별 article 조회
     @GetMapping("/projects/{projectId}/articles")
-    public ResponseEntity<ApiResponseForm<List<ArticleListViewResponse>>> getAllArticles(HttpServletRequest user,
-                                                                                     @PathVariable Long projectId,
-                                                                                     @RequestParam(required = false) Long stageId) {
+    public ResponseEntity<ApiResponseForm<Page<ArticleListViewResponse>>> getAllArticles(HttpServletRequest user,
+                                                                                         @PathVariable Long projectId,
+                                                                                         @ModelAttribute ArticleSearchCondition articleSearchCondition,
+                                                                                         @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        List<ArticleListViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, stageId);
+        Page<ArticleListViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, articleSearchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -75,13 +74,22 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponseForm.success(response, "Article 수정 성공"));
     }
 
-    @PostMapping("/articles/{articleId}/files")
-    public ResponseEntity<ApiResponseForm<?>> uploadFiles(@PathVariable Long articleId,
-                                                          @RequestPart("file") List<MultipartFile> files,
-                                                          HttpServletRequest request) {
+    @PostMapping("articles/{articleId}/files/presigned-urls")
+    public ResponseEntity<ApiResponseForm<?>> getPresingedUrl(@PathVariable Long articleId,
+                                                              @RequestBody List<FileUploadRequest> fileUploadRequests,
+                                                              HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        FileUploadResponse fileUploadResponse = fileService.upload("article", articleId, memberId, files);
-        return ResponseEntity.ok(ApiResponseForm.success(fileUploadResponse));
+        PresignedUploadResponse presignedUploadResponse = fileService.getPresignedUrls("article", articleId, memberId, fileUploadRequests);
+        return ResponseEntity.ok(ApiResponseForm.success(presignedUploadResponse));
+    }
+
+    @PostMapping("articles/{articleId}/files/confirm-upload")
+    public ResponseEntity<ApiResponseForm<?>> createFileMeta(@PathVariable Long articleId,
+                                                             @RequestBody List<ConfirmedFile> confirmedFiles,
+                                                             HttpServletRequest request) {
+        Long memberId = (Long) request.getAttribute("memberId");
+        FileConfirmResponse fileConfirmResponse = fileService.confirmUpload("article", articleId, memberId, confirmedFiles);
+        return ResponseEntity.ok(ApiResponseForm.success(fileConfirmResponse));
     }
 
     @DeleteMapping("articles/{articleId}/files/{fileId}")
@@ -129,6 +137,30 @@ public class ArticleController {
     @GetMapping("/articles/{articleId}/vote")
     public ResponseEntity<ApiResponseForm<VoteViewResponse>> getVoteInfo(@PathVariable Long articleId) {
         VoteViewResponse response = articleService.getVoteInfoForArticle(articleId);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
+    }
+
+    @PostMapping("/articles/{articleId}/vote/submission")
+    public ResponseEntity<ApiResponseForm<VoteSubmitResponse>> submitVote(@PathVariable Long articleId, HttpServletRequest request,
+                                                                          @Valid @RequestBody VoteSubmitRequest voteSubmitRequest) {
+        Long userId = (Long) request.getAttribute("memberId");
+        String userRole = (String) request.getAttribute("userRole").toString();
+        VoteSubmitResponse response = articleService.submitVoteForArticle(articleId, userId, userRole, voteSubmitRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "투표하기 성공"));
+    }
+
+    @PostMapping("/articles/{articleId}/vote/items")
+    public ResponseEntity<ApiResponseForm<VoteItemAddResponse>> addVoteItem(@PathVariable Long articleId, HttpServletRequest request,
+                                                                            @Valid @RequestBody VoteItemAddRequest voteItemAddRequest) {
+        Long userId = (Long) request.getAttribute("memberId");
+        VoteItemAddResponse response = articleService.addVoteItem(articleId, userId, voteItemAddRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "투표 항목 추가 성공"));
+    }
+
+    @GetMapping("/articles/{articleId}/vote-results")
+    public ResponseEntity<ApiResponseForm<VoteResultResponse>> getVoteResults(@PathVariable Long articleId, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("memberId");
+        VoteResultResponse response = articleService.getVoteResults(articleId, userId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 }

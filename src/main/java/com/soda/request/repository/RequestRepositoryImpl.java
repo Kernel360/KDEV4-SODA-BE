@@ -35,10 +35,11 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
     }
 
     @Override
-    public Page<Request> searchByCondition(GetRequestCondition condition, Pageable pageable) {
+    public Page<Request> searchByCondition(Long projectId, GetRequestCondition condition, Pageable pageable) {
         QRequest request = QRequest.request;
         BooleanBuilder builder = new BooleanBuilder();
 
+        builder.and(request.stage.project.id.eq(projectId));
         if (condition.getStageId() != null) {
             builder.and(request.stage.id.eq(condition.getStageId()));
         }
@@ -87,6 +88,9 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
 
         if (condition.getProjectId() != null) {
             baseCondition.and(request.stage.project.id.eq(condition.getProjectId()));
+        }
+        if (condition.getKeyword() != null && !condition.getKeyword().isBlank()) {
+            baseCondition.and(request.title.containsIgnoreCase(condition.getKeyword()));
         }
 
         BooleanExpression requesterCondition = request.member.id.eq(memberId);

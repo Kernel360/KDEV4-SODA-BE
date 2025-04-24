@@ -10,7 +10,6 @@ import com.soda.global.response.GeneralException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -42,9 +41,9 @@ public class ArticleFileStrategy implements FileStrategy<Article, ArticleFile> {
     }
 
     @Override
-    public ArticleFile toEntity(MultipartFile file, String url, Article article) {
+    public ArticleFile toEntity(String fileName, String url, Article article) {
         return ArticleFile.builder()
-                .name(file.getOriginalFilename())
+                .name(fileName)
                 .url(url)
                 .article(article)
                 .build();

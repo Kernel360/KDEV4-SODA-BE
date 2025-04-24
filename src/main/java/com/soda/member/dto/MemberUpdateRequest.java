@@ -1,6 +1,5 @@
 package com.soda.member.dto;
 
-import com.soda.member.enums.MemberRole;
 import lombok.Builder;
 import lombok.Getter;
 

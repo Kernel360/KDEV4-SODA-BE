@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 @Getter
 public class RequestDTO {
     private Long requestId;
+    private Long projectId;
     private Long stageId;
     private Long memberId;
     private String memberName;
@@ -32,6 +33,7 @@ public class RequestDTO {
     public static RequestDTO fromEntity(Request request) {
         return RequestDTO.builder()
                 .requestId(request.getId())
+                .projectId(request.getStage().getProject().getId())
                 .stageId(request.getStage().getId())
                 .memberId(request.getMember().getId())
                 .memberName(request.getMember().getName())

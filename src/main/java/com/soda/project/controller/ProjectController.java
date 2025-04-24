@@ -1,10 +1,7 @@
 package com.soda.project.controller;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.member.enums.CompanyProjectRole;
-import com.soda.member.enums.MemberProjectRole;
 import com.soda.project.dto.*;
-import com.soda.project.enums.ProjectStatus;
 import com.soda.project.service.ProjectService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -41,18 +38,18 @@ public class ProjectController {
     }
 
     @GetMapping("")
-    public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getAllProjects(@RequestParam(required = false) ProjectStatus status,
+    public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getAllProjects(@ModelAttribute ProjectSearchCondition projectSearchCondition,
                                                                                      @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<ProjectListResponse> projectList = projectService.getAllProjects(status, pageable);
+        Page<ProjectListResponse> projectList = projectService.getAllProjects(projectSearchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(projectList));
     }
 
     @GetMapping("/my")
-    public ResponseEntity<ApiResponseForm<Page<MyProjectListResponse>>> getMyProjects(HttpServletRequest request,
+    public ResponseEntity<ApiResponseForm<Page<MyProjectListResponse>>> getMyProjects(@ModelAttribute ProjectSearchCondition projectSearchCondition,  HttpServletRequest request,
                                                                                     @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) request.getAttribute("memberId");
         String userRole = (String) request.getAttribute("userRole").toString();
-        Page<MyProjectListResponse> response = projectService.getMyProjects(userId, userRole, pageable);
+        Page<MyProjectListResponse> response = projectService.getMyProjects(projectSearchCondition, userId, userRole, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

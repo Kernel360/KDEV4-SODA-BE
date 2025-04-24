@@ -4,10 +4,16 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.dto.FindAuthIdRequest;
 import com.soda.member.dto.FindAuthIdResponse;
 import com.soda.member.dto.InitialUserInfoRequestDto;
+import com.soda.member.dto.MemberUpdateRequest;
+import com.soda.member.dto.member.ChangePasswordRequest;
+import com.soda.member.dto.member.MemberStatusResponse;
+import com.soda.member.dto.member.admin.MemberDetailDto;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
+import com.soda.member.enums.MemberStatus;
 import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -246,8 +252,96 @@ public class MemberService {
                 requestDto.getAuthId(),
                 passwordEncoder.encode(requestDto.getPassword()),
                 requestDto.getPosition()
-                );
+        );
 
         memberRepository.save(member);
+    }
+
+    public MemberDetailDto getMemberDetail(Long currentMemberId) {
+        Member member = findByIdAndIsDeletedFalse(currentMemberId);
+        return MemberDetailDto.fromEntity(member);
+    }
+
+    /**
+     * 특정 멤버의 현재 상태를 조회합니다.
+     *
+     * @param memberId 조회할 멤버의 ID
+     * @return 멤버 상태 정보 DTO
+     * @throws EntityNotFoundException 해당 ID의 멤버가 없을 경우
+     */
+    @Transactional(readOnly = true)
+    public MemberStatusResponse getMemberStatus(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("ID " + memberId + " 에 해당하는 멤버를 찾을 수 없습니다."));
+
+        return MemberStatusResponse.fromEntity(member);
+    }
+
+    /**
+     * 특정 멤버의 상태를 업데이트합니다.
+     *
+     * @param memberId    업데이트할 멤버의 ID
+     * @param newStatus   새로운 멤버 상태
+     * @return 업데이트된 멤버 상태 정보 DTO
+     * @throws EntityNotFoundException 해당 ID의 멤버가 없을 경우
+     */
+    @Transactional
+    public MemberStatusResponse updateMemberStatus(Long memberId, MemberStatus newStatus) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("ID " + memberId + " 에 해당하는 멤버를 찾을 수 없습니다."));
+
+        member.updateMemberStatus(newStatus);
+
+        memberRepository.save(member);
+        return MemberStatusResponse.fromEntity(member);
+    }
+
+    public void updateMyProfile(Long memberId, MemberUpdateRequest requestDto) {
+
+        Member member = findByIdAndIsDeletedFalse(memberId);
+
+        member.myProfileUpdate(requestDto.getName(),
+                requestDto.getEmail(),
+                requestDto.getPhoneNumber(),
+                requestDto.getPosition()
+        );
+
+        memberRepository.save(member);
+    }
+
+    @Transactional
+    public void changeUserPassword(Long memberId, ChangePasswordRequest requestDto) {
+
+        log.info("사용자 비밀번호 변경 시도: memberId={}", memberId);
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> {
+                    log.error("비밀번호 변경 실패: 사용자를 찾을 수 없음 - memberId={}", memberId);
+                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+                });
+
+        if (!passwordEncoder.matches(requestDto.getCurrentPassword(), member.getPassword())) {
+            log.warn("비밀번호 변경 실패: 현재 비밀번호 불일치 - memberId={}", memberId);
+            throw new GeneralException(MemberErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
+        if (passwordEncoder.matches(requestDto.getNewPassword(), member.getPassword())) {
+            log.warn("비밀번호 변경 실패: 새 비밀번호가 현재 비밀번호와 동일 - memberId={}", memberId);
+            throw new GeneralException(MemberErrorCode.NEW_PASSWORD_SAME_AS_OLD);
+        }
+
+        member.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));
+        memberRepository.save(member);
+        log.debug("사용자 비밀번호 업데이트 완료: memberId={}", memberId);
+
+    }
+
+    public Member findMemberByIdAndCompany(Long userId) {
+        log.debug("Fetching Member with Company using Fetch Join. User ID: {}", userId);
+        return memberRepository.findByIdWithCompany(userId)
+                .orElseThrow(() -> {
+                    log.warn("Member not found with ID: {}", userId);
+                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+                });
     }
 }

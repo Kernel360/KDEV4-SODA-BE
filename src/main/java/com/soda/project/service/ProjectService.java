@@ -112,6 +112,17 @@ public class ProjectService {
 
         log.info("개발사 지정 완료: 프로젝트 ID = {}", projectId);
 
+        // CONTRACT > IN_PROGRESS 로 상태 변경
+        if (project.getStatus() == ProjectStatus.CONTRACT) {
+            log.info("프로젝트 상태 변경 시도: ID={}, 현재 상태={}, 변경 상태={}",
+                    projectId, project.getStatus(), ProjectStatus.IN_PROGRESS);
+            project.changeStatus(ProjectStatus.IN_PROGRESS);
+        } else {
+            log.info("프로젝트 상태 변경 건너뜀: ID={}, 현재 상태={}", projectId, project.getStatus());
+        }
+
+        log.info("개발사 지정 전체 프로세스 완료: 프로젝트 ID = {}", projectId);
+
         // response 생성
         return createDevCompanyAssignmentResponse(project);
     }
@@ -119,28 +130,17 @@ public class ProjectService {
     /**
      * 전체 프로젝트 목록 조회하는 메서드
      * 프로젝트 상태에 따라 필터링해서 반환할 수 있음
-     * @param status 필터링할 프로젝트 상태 (만약 null일 경우 전체 프로젝트 반환)
      * @return ProjectListResponse 형식으로 프로젝트 목록 반환
      */
-    public Page<ProjectListResponse> getAllProjects(ProjectStatus status, Pageable pageable) {
-        log.info("전체 프로젝트 조회 시작: 상태 = {}, 페이지 번호 = {}, 페이지 크기 = {}",
-                status != null ? status : "전체",
-                pageable.getPageNumber(),
-                pageable.getPageSize());
+    public Page<ProjectListResponse> getAllProjects(ProjectSearchCondition projectSearchCondition, Pageable pageable) {
 
-        Page<Project> projectList;
+        Page<ProjectListResponse> projectList = projectRepository.searchProjects(projectSearchCondition, pageable);
 
-        if (status != null) {
-            projectList = projectRepository.findByStatusAndIsDeletedFalse(status, pageable);
-        } else {
-            projectList = projectRepository.findByIsDeletedFalse(pageable);
-        }
-
-        log.info("프로젝트 조회 완료: 조회된 페이지 크기 = {}, 총 프로젝트 수 = {}",
+        log.info("프로젝트 검색/조회 완료: 조회된 페이지 크기 = {}, 총 프로젝트 수 = {}",
                 projectList.getSize(),
                 projectList.getTotalElements());
 
-        return projectList.map(this::mapToProjectListResponse);
+        return projectList;
     }
 
     /**
@@ -151,7 +151,7 @@ public class ProjectService {
      * @param pageable 페이지네이션
      * @return ProjectListResponse 형식으로 참여 중 프로젝트 목록 반환
      */
-    public Page<MyProjectListResponse> getMyProjects(Long userId, String userRole, Pageable pageable) {
+    public Page<MyProjectListResponse> getMyProjects(ProjectSearchCondition projectSearchCondition, Long userId, String userRole, Pageable pageable) {
         log.info("사용자 프로젝트 조회 시작: 사용자 ID = {}, 사용자 역할 = {}", userId, userRole);
 
         if (!USER_ROLE.equals(userRole)) {
@@ -159,7 +159,7 @@ public class ProjectService {
             return Page.empty(pageable);
         }
 
-        Page<Tuple> tuplePage = projectRepository.findMyProjectsData(userId, pageable);
+        Page<Tuple> tuplePage = projectRepository.findMyProjectsData(projectSearchCondition, userId, pageable);
         if (tuplePage.isEmpty()) {
             log.info("사용자 ID {}가 참여한 프로젝트가 없습니다. 빈 페이지 반환.", userId);
         } else {
@@ -793,10 +793,6 @@ public class ProjectService {
 
         log.warn("알 수 없는 사용자 역할({}) 감지됨: memberId={}, projectId={}", userRole, member.getId(), project.getId());
         return "Unknown Role";
-    }
-
-    private ProjectListResponse mapToProjectListResponse(Project project) {
-        return ProjectListResponse.from(project);
     }
 
     // ADMIN 또는 해당 프로젝트에 참여 중인 USER 경우 허용하는 메소드

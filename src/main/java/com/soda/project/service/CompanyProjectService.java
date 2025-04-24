@@ -25,19 +25,25 @@ public class CompanyProjectService {
     private final CompanyProjectRepository companyProjectRepository;
 
     public void assignCompanyToProject(Company company, Project project, CompanyProjectRole role) {
-        if (!company.getIsDeleted() && !companyProjectRepository.existsByCompanyAndProject(company, project)) {
-            CompanyProjectDTO companyProjectDTO = CompanyProjectDTO.builder()
-                    .companyId(company.getId())
-                    .projectId(project.getId())
-                    .companyProjectRole(role)
-                    .build();
-
-            // DTO -> Entity
-            CompanyProject companyProject = companyProjectDTO.toEntity(company, project, role);
-
-            // 데이터베이스에 회사-프로젝트 관계 저장
-            companyProjectRepository.save(companyProject);
+        // 입력 값 Null 체크 (최소한의 방어)
+        if (company == null || project == null || role == null) {
+            log.error("assignCompanyToProject 호출 오류: company, project, role 중 null 값 존재");
+            throw new GeneralException(ProjectErrorCode.NOT_NULL);
         }
+
+        log.info(">>> 회사-프로젝트 연결 생성 시작: Company ID={}, Project ID={}, Target Role={}",
+                company.getId(), project.getId(), role);
+
+        CompanyProject companyProject = CompanyProject.builder()
+                .company(company)
+                .project(project)
+                .companyProjectRole(role)
+                .build();
+
+        CompanyProject savedEntry = companyProjectRepository.save(companyProject);
+
+        log.info("회사-프로젝트 연결 생성 완료: Company ID={}, Project ID={}", company.getId(), project.getId());
+        log.info("회사-프로젝트 연결/업데이트 완료: Company ID={}, Project ID={}", company.getId(), project.getId());
     }
 
     public List<Company> getCompaniesByRole(Project project, CompanyProjectRole role) {

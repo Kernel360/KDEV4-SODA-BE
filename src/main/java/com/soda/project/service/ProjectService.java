@@ -121,15 +121,15 @@ public class ProjectService {
      * 프로젝트 상태에 따라 필터링해서 반환할 수 있음
      * @return ProjectListResponse 형식으로 프로젝트 목록 반환
      */
-    public Page<ProjectListResponse> getAllProjects(ProjectSearchCondition projectSearchCondition, Pageable pageable) {
+    public Page<ProjectListWithStatsResponse> getAllProjects(ProjectSearchCondition projectSearchCondition, Pageable pageable) {
 
-        Page<Project> projectList = projectRepository.searchProjects(projectSearchCondition, pageable);
+        Page<ProjectListWithStatsResponse> projectList = projectRepository.searchProjects(projectSearchCondition, pageable);
 
         log.info("프로젝트 검색/조회 완료: 조회된 페이지 크기 = {}, 총 프로젝트 수 = {}",
                 projectList.getSize(),
                 projectList.getTotalElements());
 
-        return projectList.map(this::mapToProjectListResponse);
+        return projectList;
     }
 
     /**

@@ -12,7 +12,7 @@ import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.soda.article.entity.QArticle;
-import com.soda.project.dto.ProjectListWithStatsResponse;
+import com.soda.project.dto.ProjectListResponse;
 import com.soda.project.dto.ProjectSearchCondition;
 import com.soda.project.entity.QCompanyProject;
 import com.soda.project.entity.QMemberProject;
@@ -129,7 +129,7 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
     }
 
     @Override
-    public Page<ProjectListWithStatsResponse> searchProjects(ProjectSearchCondition condition, Pageable pageable) {
+    public Page<ProjectListResponse> searchProjects(ProjectSearchCondition condition, Pageable pageable) {
         QProject project = QProject.project;
         QStage stage = QStage.stage;
         QRequest requestEntity = QRequest.request;
@@ -177,10 +177,13 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
                         .where(stage.project.eq(project))
         );
 
-        JPQLQuery<ProjectListWithStatsResponse> query = queryFactory
-                .select(Projections.constructor(ProjectListWithStatsResponse.class,
+        JPQLQuery<ProjectListResponse> query = queryFactory
+                .select(Projections.constructor(ProjectListResponse.class,
                         project.id,
                         project.title,
+                        project.status,
+                        project.startDate,
+                        project.endDate,
                         weeklyRequestCount,
                         weeklyArticleCount,
                         weeklyActivity,
@@ -196,7 +199,7 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
             query.orderBy(project.createdAt.desc());
         }
 
-        List<ProjectListWithStatsResponse> content = query
+        List<ProjectListResponse> content = query
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();

@@ -163,4 +163,12 @@ public class ArticleController {
         VoteResultResponse response = articleService.getVoteResults(articleId, userId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
+
+    @PatchMapping("/articles/{articleId}/status")
+    public ResponseEntity<ApiResponseForm<ArticleStatusUpdateResponse>> updateArticleStatus(HttpServletRequest request, @PathVariable Long articleId,
+                                                                                            @Valid @RequestBody ArticleStatusUpdateRequest updateRequest) {
+        Long userId = (Long) request.getAttribute("memberId");
+        ArticleStatusUpdateResponse response = articleService.updateArticleStatus(userId, articleId, updateRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response, "게시글 상태 변경 성공"));
+    }
 }

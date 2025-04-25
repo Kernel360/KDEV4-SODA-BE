@@ -23,6 +23,7 @@ import com.soda.project.service.CompanyProjectService;
 import com.soda.project.service.MemberProjectService;
 import com.soda.project.service.ProjectService;
 import com.soda.project.service.StageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -542,5 +543,27 @@ public class ArticleService {
 
         log.info("[결과 조회 성공(ArticleService)] Article ID: {}, Vote ID: {}", articleId, response.getVoteId());
         return response;
+    }
+
+    @Transactional
+    public ArticleStatusUpdateResponse updateArticleStatus(Long userId, Long articleId, ArticleStatusUpdateRequest request) {
+        log.info("게시글 상태 변경 시작: articleId={}, userId={}, newStatus={}",
+                articleId, userId, request.getStatus());
+
+        Article article = validateArticle(articleId);
+        Member member = memberService.findMemberById(userId);
+
+        if (member == null || !member.getId().equals(userId)) {
+            log.warn("게시글 상태 변경 권한 없음: 요청자(ID:{})가 작성자(ID:{})가 아닙니다. Article ID: {}",
+                    userId, (member != null ? member.getId() : "null"), articleId);
+            throw new GeneralException(ArticleErrorCode.NO_PERMISSION_TO_MODIFY_ARTICLE);
+        }
+        log.debug("게시글 작성자 본인 확인 완료. User ID: {}", userId);
+
+        article.changeStatus(request.getStatus());
+        articleRepository.save(article);
+        log.info("게시글 상태 변경 완료: articleID={}, newStatus={}", article.getId(), article.getStatus());
+
+        return ArticleStatusUpdateResponse.from(article);
     }
 }

@@ -118,4 +118,10 @@ public class Article extends BaseEntity {
             vote.associateArticle(this);
         }
     }
+
+    public void changeStatus(ArticleStatus newStatus) {
+        if (newStatus != null) {
+            this.status = newStatus;
+        }
+    }
 }

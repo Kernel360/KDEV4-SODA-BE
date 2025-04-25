@@ -83,10 +83,18 @@ public class Article extends BaseEntity {
 
     public void delete() {
         this.markAsDeleted();
-        this.commentList.forEach(Comment::delete);
-        this.articleFileList.forEach(ArticleFile::delete);
-        this.articleLinkList.forEach(ArticleLink::delete);
-        this.vote.delete();
+        if (this.commentList != null) {
+            this.commentList.forEach(Comment::delete);
+        }
+        if (this.articleFileList != null) {
+            this.articleFileList.forEach(ArticleFile::delete);
+        }
+        if (this.articleLinkList != null) {
+            this.articleLinkList.forEach(ArticleLink::delete);
+        }
+        if (this.vote != null) {
+            this.vote.delete();
+        }
     }
 
     public void updateArticle(String title, String content, PriorityType priority, LocalDateTime deadline) {

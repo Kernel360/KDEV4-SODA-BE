@@ -2,6 +2,7 @@ package com.soda.article.dto.article;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.article.entity.Article;
+import com.soda.article.enums.ArticleStatus;
 import com.soda.article.enums.PriorityType;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 public class ArticleViewResponse {
     private String title;
     private String content;
+    private ArticleStatus status;
     private PriorityType priority;
     private LocalDateTime deadLine;
     private String memberName;
@@ -28,6 +30,7 @@ public class ArticleViewResponse {
         return ArticleViewResponse.builder()
                 .title(article.getTitle())
                 .content(article.getContent())
+                .status(article.getStatus())
                 .priority(article.getPriority())
                 .deadLine(article.getDeadline())
                 .memberName(article.getMember().getName())

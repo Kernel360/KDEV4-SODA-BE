@@ -1,5 +1,7 @@
-package com.soda.notice.service;
+package com.soda.notification.service;
 
+import com.soda.notification.entity.Notification;
+import com.soda.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -8,9 +10,10 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class NoticeService {
+public class NotificationService {
 
     private final EmitterService emitterService;
+    private final NotificationRepository notificationRepository;
 
     /**
      * 사용자의 알림 구독 요청을 처리합니다.
@@ -42,5 +45,9 @@ public class NoticeService {
     public void sendNotification(Long userId, String eventName, Object noticeData) {
         log.info("알림 전송 요청 to User ID: {}, Event: {}", userId, eventName);
         emitterService.sendNotification(userId, eventName, noticeData);
+    }
+
+    public void saveNotification(Notification notification) {
+        notificationRepository.save(notification);
     }
 }

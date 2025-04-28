@@ -31,7 +31,7 @@ public class Notification extends BaseEntity {
     @Column(nullable = false)
     private boolean isRead = false;
 
-    private Long postId;
+    private Long articleId;
     private Long commentId;
     private Long replyId;
     private Long taskId;
@@ -39,12 +39,12 @@ public class Notification extends BaseEntity {
 
     @Builder
     public Notification(Member receiver, NotificationType notificationType, String message, String link,
-                        Long postId, Long commentId, Long replyId, Long taskId, Long approvalId) {
+                        Long articleId, Long commentId, Long replyId, Long taskId, Long approvalId) {
         this.receiver = receiver;
         this.notificationType = notificationType;
         this.message = message;
         this.link = link;
-        this.postId = postId;
+        this.articleId = articleId;
         this.commentId = commentId;
         this.replyId = replyId;
         this.taskId = taskId;

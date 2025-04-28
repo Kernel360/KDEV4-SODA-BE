@@ -1,4 +1,4 @@
-package com.soda.notice.entity;
+package com.soda.notification.entity;
 
 import com.soda.member.entity.Member;
 import jakarta.persistence.*;
@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Entity
-public class MemberNotice {
+public class MemberNotification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -19,5 +19,5 @@ public class MemberNotice {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notice_id", nullable = false)
-    private Notice notice;
+    private Notification notification;
 }

@@ -133,4 +133,14 @@ public class ProjectController {
         Page<MyProjectListResponse> response = projectService.getMyCompanyProjects(userId, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
-}
+
+    @GetMapping("/creation-trend")
+    public ResponseEntity<ApiResponseForm<ProjectStatsResponse>> getProjectCreationTrend(
+            HttpServletRequest request, // ADMIN 검증 등에 사용 가능
+            @Valid @ModelAttribute ProjectStatsCondition statsRequest) {
+        Long userId = (Long) request.getAttribute("memberId");
+        String userRole = (String) request.getAttribute("userRole").toString();
+        ProjectStatsResponse response = projectService.getProjectCreationTrend(userId, userRole, statsRequest);
+        return ResponseEntity.ok(ApiResponseForm.success(response));
+    }
+    }

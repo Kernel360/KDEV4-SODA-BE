@@ -2,9 +2,11 @@ package com.soda.notification.listener;
 
 import com.soda.member.entity.Member;
 import com.soda.notification.dto.NotificationData;
+import com.soda.notification.entity.MemberNotification;
 import com.soda.notification.entity.Notification;
 import com.soda.notification.event.CommentCreatedEvent;
 import com.soda.notification.event.ReplyCreatedEvent;
+import com.soda.notification.service.MemberNotificationService;
 import com.soda.notification.service.NotificationService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import java.util.Set;
 public class CommentNotificationListener {
 
     private final NotificationService notificationService;
+    private final MemberNotificationService memberNotificationService;
     private final EntityManager entityManager;
 
     @Async
@@ -43,7 +46,7 @@ public class CommentNotificationListener {
 
                 // NotificationData의 정적 팩토리 메서드 사용
                 NotificationData notificationData = NotificationData.forNewComment(
-                        message, link, event.articleId(), event.commentId()
+                        message, link, event.projectId(), event.articleId(), event.commentId()
                 );
 
                 // 알림 전송
@@ -81,18 +84,18 @@ public class CommentNotificationListener {
                 NotificationData notificationData;
                 String eventName;
 
-                String link = String.format("/user/projects/%d/article/%d", event.projectId(),event.articleId(), event.replyId());
+                String link = String.format("/user/projects/%d/article/%d", event.projectId(), event.articleId(), event.replyId());
                 String truncatedContent = truncateContent(event.replyContent());
 
                 if (Objects.equals(targetUserId, articleAuthorId)) {
                     String message = String.format("'%s'님이 '%s' 게시글의 댓글에 답글을 남겼습니다:\n%s",
                             event.replierNickname(), event.articleTitle(), truncatedContent);
-                    notificationData = NotificationData.forNewReplyOnPost(message, link, event.articleId(), event.parentCommentId(), event.replyId());
+                    notificationData = NotificationData.forNewReplyOnPost(message, link, event.projectId(), event.articleId(), event.parentCommentId(), event.replyId());
                     eventName = "new_reply_on_article";
                 } else {
                     String message = String.format("'%s'님이 회원님의 댓글에 답글을 남겼습니다:\n%s",
                             event.replierNickname(), truncatedContent);
-                    notificationData = NotificationData.forNewReplyToMyComment(message, link, event.articleId(), event.parentCommentId(), event.replyId());
+                    notificationData = NotificationData.forNewReplyToMyComment(message, link, event.projectId(), event.articleId(), event.parentCommentId(), event.replyId());
                     eventName = "new_reply";
                 }
 
@@ -109,8 +112,9 @@ public class CommentNotificationListener {
     /**
      * Notification 엔티티를 생성하고 DB에 저장합니다.
      * Member 엔티티는 ID를 이용해 프록시 객체로 참조합니다.
+     *
      * @param receiverId 알림 수신자 ID
-     * @param data 알림 데이터 DTO
+     * @param data       알림 데이터 DTO
      */
     private void saveNotification(Long receiverId, NotificationData data) {
         try {
@@ -118,7 +122,6 @@ public class CommentNotificationListener {
             Member receiverProxy = entityManager.getReference(Member.class, receiverId);
 
             Notification notification = Notification.builder()
-                    .receiver(receiverProxy)
                     .notificationType(data.type())
                     .message(data.message())
                     .link(data.link())
@@ -129,7 +132,14 @@ public class CommentNotificationListener {
                     .approvalId(data.responseId())
                     .build();
 
-            notificationService.saveNotification(notification);
+            MemberNotification memberNotification = MemberNotification.builder()
+                    .member(receiverProxy)
+                    .notification(notification)
+                    .build();
+
+            memberNotificationService.save(memberNotification);
+            notificationService.save(notification);
+
             log.info("알림 저장 완료 for User ID: {}", receiverId);
 
         } catch (jakarta.persistence.EntityNotFoundException enfe) {

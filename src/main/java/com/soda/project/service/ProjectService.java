@@ -18,6 +18,7 @@ import com.soda.project.event.ProjectCreatedEvent;
 import com.soda.project.stats.repository.ProjectDailyStatsRepository;
 import com.soda.project.repository.ProjectRepository;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,9 +30,10 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.WeekFields;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -893,19 +895,76 @@ public class ProjectService {
         List<Tuple> statsData = projectDailyStatsRepository.findProjectCreationStats(startDate, endDate, statsRequest.getTimeUnit());
         log.debug("프로젝트 생성 통계 데이터 조회 완료: {}개의 데이터", statsData.size());
 
-        // DTO 변환
-        List<ProjectStatsResponse.DataPoint> trendData = statsData.stream()
-                .map(tuple -> {
-                    String dateGroupString = tuple.get(0, String.class); // 그룹핑된 날짜 문자열
-                    Long count = tuple.get(1, Long.class); // 생성 건수 합계
-
-                    return ProjectStatsResponse.DataPoint.builder()
-                            .date(dateGroupString)
-                            .count(count != null ? count : 0L)
-                            .build();
-                })
-                .toList();
+        // 조회 결과를 Map 변환
+        Map<String, Long> statsMap = statsData.stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(0, String.class),
+                        tuple -> tuple.get(1, Long.class) != null ? tuple.get(1, Long.class) : 0L
+                ));
+        
+        // 조회 기간 내 모든 날짜 생성 및 0으로 채우기
+        List<ProjectStatsResponse.DataPoint> trendData = generateFullTrendData(startDate, endDate, statsRequest.getTimeUnit(), statsMap);
+        log.debug("누락 기간 0 처리 및 최종 DataPoint 리스트 생성 완료. Size: {}", trendData.size());
 
         return ProjectStatsResponse.from(statsRequest, trendData);
+    }
+
+    private List<ProjectStatsResponse.DataPoint> generateFullTrendData(LocalDate startDate, LocalDate endDate,
+                                                                       ProjectStatsCondition.TimeUnit timeUnit, Map<String, Long> statsMap) {
+        List<ProjectStatsResponse.DataPoint> fullTrend = new ArrayList<>();
+
+        // 시간 단위에 따라 DataPoint 생성
+        switch (timeUnit) {
+            case DAY:
+                LocalDate currentDate = startDate;
+                while (!currentDate.isAfter(endDate)) {
+                    String dateKey = currentDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
+                    long count = statsMap.getOrDefault(dateKey, 0L);
+
+                    fullTrend.add(ProjectStatsResponse.DataPoint.builder()
+                                    .date(dateKey)
+                                    .count(count)
+                            .build());
+
+                    currentDate = currentDate.plusDays(1);
+                }
+                break;
+
+            case WEEK:
+                WeekFields weekFields = WeekFields.of(Locale.KOREA);
+                LocalDate currentWeekStart = startDate.with(weekFields.dayOfWeek(), 1); // 시작일이 속한 주의 시작일 (월요일)
+                LocalDate endWeekStart = endDate.with(weekFields.dayOfWeek(), 1); // 종료일이 속한 주의 시작일 (월요일)
+
+                while (!currentWeekStart.isAfter(endWeekStart)) {
+                    String dateKey = currentWeekStart.format(DateTimeFormatter.ofPattern("yyyy-ww", Locale.KOREA));
+                    long count = statsMap.getOrDefault(dateKey, 0L);
+
+                    fullTrend.add(ProjectStatsResponse.DataPoint.builder()
+                            .date(dateKey)
+                            .count(count)
+                            .build());
+                    currentWeekStart = currentWeekStart.plusWeeks(1);
+                }
+                break;
+
+            case MONTH:
+                YearMonth currentMonth = YearMonth.from(startDate);
+                YearMonth endMonth = YearMonth.from(endDate);
+                DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("yyyy-MM");
+
+                while (!currentMonth.isAfter(endMonth)) {
+                    String dateKey = currentMonth.format(monthFormatter);
+                    long count = statsMap.getOrDefault(dateKey, 0L);
+
+                    fullTrend.add(ProjectStatsResponse.DataPoint.builder()
+                            .date(dateKey)
+                            .count(count)
+                            .build());
+                    currentMonth = currentMonth.plusMonths(1);
+                }
+                break;
+        }
+
+        return fullTrend;
     }
 }

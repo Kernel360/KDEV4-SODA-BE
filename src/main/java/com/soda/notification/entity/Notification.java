@@ -14,10 +14,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member receiver;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private NotificationType notificationType;
@@ -28,8 +24,6 @@ public class Notification extends BaseEntity {
     @Column(length = 1000)
     private String link;
 
-    @Column(nullable = false)
-    private boolean isRead = false;
 
     private Long articleId;
     private Long commentId;
@@ -38,9 +32,8 @@ public class Notification extends BaseEntity {
     private Long approvalId;
 
     @Builder
-    public Notification(Member receiver, NotificationType notificationType, String message, String link,
+    public Notification(NotificationType notificationType, String message, String link,
                         Long articleId, Long commentId, Long replyId, Long taskId, Long approvalId) {
-        this.receiver = receiver;
         this.notificationType = notificationType;
         this.message = message;
         this.link = link;
@@ -49,10 +42,6 @@ public class Notification extends BaseEntity {
         this.replyId = replyId;
         this.taskId = taskId;
         this.approvalId = approvalId;
-        this.isRead = false;
     }
 
-    public void markAsRead() {
-        this.isRead = true;
-    }
 }

@@ -1,6 +1,7 @@
 package com.soda.notice.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -72,26 +73,28 @@ public class EmitterService {
         }
     }
 
+    @Async
     public void sendNotification(Long userId, String eventName, Object data) {
-        Optional<SseEmitter> emitterOptional = getEmitter(userId);
+        Optional<SseEmitter> emitterOptional = this.getEmitter(userId);
         if (emitterOptional.isPresent()) {
             SseEmitter emitter = emitterOptional.get();
             try {
+                log.info("[{}] Sending notification event '{}' to User ID: {}", Thread.currentThread().getName(), eventName, userId); 
                 emitter.send(SseEmitter.event()
                         .id(userId + "_" + eventName + "_" + System.currentTimeMillis())
                         .name(eventName)
                         .data(data)
                 );
-                log.info("Sent notification event '{}' to User ID: {}", eventName, userId);
+                log.info("[{}] Sent notification event '{}' to User ID: {}", Thread.currentThread().getName(), eventName, userId);
             } catch (IOException e) {
-                log.error("Failed to send notification event '{}' to User ID: {}. Removing emitter.", eventName, userId, e);
+                log.error("[{}] Failed to send notification event '{}' to User ID: {}. Removing emitter.", Thread.currentThread().getName(), eventName, userId, e);
                 removeEmitterInternal(userId, emitter, "send_failure");
             } catch (IllegalStateException e) {
-                log.error("Failed to send notification event '{}' to User ID: {} (emitter completed). Removing emitter.", eventName, userId, e);
+                log.error("[{}] Failed to send notification event '{}' to User ID: {} (emitter completed). Removing emitter.", Thread.currentThread().getName(), eventName, userId, e);
                 removeEmitterInternal(userId, emitter, "emitter_completed");
             }
         } else {
-            log.warn("No active emitter for User ID: {} to send event '{}'. Notification skipped.", userId, eventName);
+            log.warn("[{}] No active emitter found for User ID: {} to send event '{}'. Notification skipped.", Thread.currentThread().getName(), userId, eventName);
         }
     }
 

@@ -14,16 +14,20 @@ import com.soda.project.entity.MemberProject;
 import com.soda.project.entity.Project;
 import com.soda.project.enums.ProjectStatus;
 import com.soda.project.error.ProjectErrorCode;
+import com.soda.project.event.ProjectCreatedEvent;
+import com.soda.project.stats.repository.ProjectDailyStatsRepository;
 import com.soda.project.repository.ProjectRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +48,8 @@ public class ProjectService {
     private final CompanyProjectService companyProjectService;
     private final MemberProjectService memberProjectService;
     private final StageService stageService;
+    private final ProjectDailyStatsRepository projectDailyStatsRepository;
+    private final ApplicationEventPublisher eventPublisher; // 이벤트 발행기
 
     /**
      * 프로젝트를 생성하는 메서드입니다.
@@ -75,6 +81,15 @@ public class ProjectService {
 
         // 초기 stage 생성
         stageService.createInitialStages(project, request.getStageNames());
+
+        // 이벤트 발행
+        try {
+            LocalDate creationDate = project.getCreatedAt().toLocalDate();
+            eventPublisher.publishEvent(new ProjectCreatedEvent(creationDate));
+            log.info("ProjectCreatedEvent 발행: Date={}", creationDate);
+        } catch (Exception e) {
+            log.error("ProjectCreatedEvent 발행 실패: Project ID={}, Error={}", project.getId(), e.getMessage(), e);
+        }
 
         log.info("프로젝트 생성 완료: 프로젝트 ID = {}", project.getId());
 
@@ -862,4 +877,35 @@ public class ProjectService {
         }
     }
 
+    public ProjectStatsResponse getProjectCreationTrend(Long userId, String userRole, ProjectStatsCondition statsRequest) {
+        // ADMIN 유효성 검사
+        validateAdminRole(userRole);
+
+        // 날짜 유효성 검사
+        LocalDate startDate = statsRequest.getStartDate();
+        LocalDate endDate = statsRequest.getEndDate();
+        if (startDate == null || endDate == null || startDate.isAfter(endDate)) {
+            log.warn("잘못된 조회 기간: StartDate={}, EndDate={}", startDate, endDate);
+            throw new GeneralException(ProjectErrorCode.INVALID_DATE_RANGE);
+        }
+
+        // 집계 데이터 조회
+        List<Tuple> statsData = projectDailyStatsRepository.findProjectCreationStats(startDate, endDate, statsRequest.getTimeUnit());
+        log.debug("프로젝트 생성 통계 데이터 조회 완료: {}개의 데이터", statsData.size());
+
+        // DTO 변환
+        List<ProjectStatsResponse.DataPoint> trendData = statsData.stream()
+                .map(tuple -> {
+                    String dateGroupString = tuple.get(0, String.class); // 그룹핑된 날짜 문자열
+                    Long count = tuple.get(1, Long.class); // 생성 건수 합계
+
+                    return ProjectStatsResponse.DataPoint.builder()
+                            .date(dateGroupString)
+                            .count(count != null ? count : 0L)
+                            .build();
+                })
+                .toList();
+
+        return ProjectStatsResponse.from(statsRequest, trendData);
+    }
 }

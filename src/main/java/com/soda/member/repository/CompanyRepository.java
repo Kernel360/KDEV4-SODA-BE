@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CompanyRepository extends JpaRepository<Company, Long> {
+public interface CompanyRepository extends JpaRepository<Company, Long>, CompanyRepositoryCustom {
     Optional<Company> findByIdAndIsDeletedFalse(Long companyId);
 
     List<Company> findByIsDeletedFalse();

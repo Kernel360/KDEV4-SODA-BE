@@ -2,7 +2,6 @@ package com.soda.notification.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.notification.enums.NotificationType;
-import lombok.Getter;
 
 /**
  * @param type       알림 종류
@@ -15,18 +14,19 @@ import lombok.Getter;
  * @param responseId 관련 승인요청 ID
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record NotificationData(NotificationType type, String message, String link, Long articleId, Long commentId,
+public record NotificationData(NotificationType type, String message, String link, Long projectId, Long articleId,
+                               Long commentId,
                                Long replyId, Long requestId, Long responseId) {
 
-    public static NotificationData forNewComment(String message, String link, Long articleId, Long commentId) {
-        return new NotificationData(NotificationType.NEW_COMMENT_ON_POST, message, link, articleId, commentId, null, null, null);
+    public static NotificationData forNewComment(String message, String link, Long projectId, Long articleId, Long commentId) {
+        return new NotificationData(NotificationType.NEW_COMMENT_ON_POST, message, link, projectId, articleId, commentId, null, null, null);
     }
 
-    public static NotificationData forNewReplyOnPost(String message, String link, Long articleId, Long parentCommentId, Long replyId) {
-        return new NotificationData(NotificationType.NEW_REPLY_ON_POST, message, link, articleId, parentCommentId, replyId, null, null);
+    public static NotificationData forNewReplyOnPost(String message, String link, Long projectId, Long articleId, Long parentCommentId, Long replyId) {
+        return new NotificationData(NotificationType.NEW_REPLY_ON_POST, message, link, projectId, articleId, parentCommentId, replyId, null, null);
     }
 
-    public static NotificationData forNewReplyToMyComment(String message, String link, Long articleId, Long parentCommentId, Long replyId) {
-        return new NotificationData(NotificationType.NEW_REPLY_TO_MY_COMMENT, message, link, articleId, parentCommentId, replyId, null, null);
+    public static NotificationData forNewReplyToMyComment(String message, String link, Long projectId, Long articleId, Long parentCommentId, Long replyId) {
+        return new NotificationData(NotificationType.NEW_REPLY_TO_MY_COMMENT, message, link, projectId, articleId, parentCommentId, replyId, null, null);
     }
 }

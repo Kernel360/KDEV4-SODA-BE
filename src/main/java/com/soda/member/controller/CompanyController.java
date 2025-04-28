@@ -1,10 +1,8 @@
 package com.soda.member.controller;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.member.dto.company.CompanyCreateRequest;
-import com.soda.member.dto.company.CompanyUpdateRequest;
-import com.soda.member.dto.company.CompanyResponse;
-import com.soda.member.dto.company.MemberResponse;
+import com.soda.member.dto.CompanyCreationTrend;
+import com.soda.member.dto.company.*;
 import com.soda.member.service.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -65,5 +63,18 @@ public class CompanyController {
     public ResponseEntity<ApiResponseForm<List<MemberResponse>>> getCompanyMembers(@PathVariable Long id) {
         List<MemberResponse> members = companyService.getCompanyMembers(id);
         return ResponseEntity.ok(ApiResponseForm.success(members, "회사 멤버 정보 조회 성공"));
+    }
+
+    /**
+     * 지정된 기간 및 단위로 회사 생성 추이 조회 API
+     * @param searchCondition 검색 조건 DTO (unit, startDate, endDate 포함)
+     * @return 기간별 생성 건수 리스트 응답
+     */
+    @GetMapping("/company-creation-trend")
+    public ResponseEntity<ApiResponseForm<List<CompanyCreationTrend>>> getCompanyCreationTrend(
+            @ModelAttribute CompanyTrendSearchCondition searchCondition
+    ) {
+        List<CompanyCreationTrend> trendData = companyService.getCompanyCreationTrend(searchCondition);
+        return ResponseEntity.ok(ApiResponseForm.success(trendData, "회사 생성 추이 조회 성공"));
     }
 }

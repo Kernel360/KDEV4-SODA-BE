@@ -47,7 +47,7 @@ public class NotificationService {
         emitterService.sendNotification(userId, eventName, noticeData);
     }
 
-    public void saveNotification(Notification notification) {
+    public void save(Notification notification) {
         notificationRepository.save(notification);
     }
 }

@@ -28,8 +28,8 @@ public class ProjectDailyStats {
         this.creationCount = creationCount;
     }
 
-    // 생성 건수를 업데이트하는 메서드 (배치 Writer 에서 사용)
-    public void updateCount(Long newCount) {
-        this.creationCount = newCount;
+    // 생성 건수를 업데이트하는 메서드
+    public void incrementCount() {
+        this.creationCount++;
     }
 }

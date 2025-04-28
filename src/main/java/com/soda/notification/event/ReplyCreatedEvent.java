@@ -6,14 +6,14 @@ public record ReplyCreatedEvent(
         Long projectId,
         Long replyId,
         Long parentCommentId,
-        Long postId,
+        Long articleId,
         Long replierId,
 
         String replierNickname,
         String replyContent,
 
-        Long postAuthorId,
-        String postTitle,
+        Long articleAuthorId,
+        String articleTitle,
 
         Long parentCommentAuthorId
 ) {

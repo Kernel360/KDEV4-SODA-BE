@@ -6,13 +6,13 @@ public record CommentCreatedEvent(
 
         Long projectId,
         Long commentId,
-        Long postId,
+        Long articleId,
         Long commenterId,
 
         String commenterNickname,
         String commentContent,
-        String postTitle,
-        Long postAuthorId
+        String articleTitle,
+        Long articleAuthorId
 
 ) {
 }

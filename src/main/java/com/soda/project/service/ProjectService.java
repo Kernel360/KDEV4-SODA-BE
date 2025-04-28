@@ -15,7 +15,7 @@ import com.soda.project.entity.Project;
 import com.soda.project.enums.ProjectStatus;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.event.ProjectCreatedEvent;
-import com.soda.project.repository.ProjectDailyStatsRepository;
+import com.soda.project.stats.repository.ProjectDailyStatsRepository;
 import com.soda.project.repository.ProjectRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

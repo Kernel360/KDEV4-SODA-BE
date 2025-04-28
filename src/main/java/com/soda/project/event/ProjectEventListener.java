@@ -1,7 +1,6 @@
-package com.soda.project;
+package com.soda.project.event;
 
-import com.soda.project.event.ProjectCreatedEvent;
-import com.soda.project.service.ProjectStatsUpdateService;
+import com.soda.project.stats.service.ProjectStatsUpdateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;

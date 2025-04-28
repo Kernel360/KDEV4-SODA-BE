@@ -1,4 +1,4 @@
-package com.soda.project.entity;
+package com.soda.project.stats.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,11 +1,11 @@
-package com.soda.project.repository;
+package com.soda.project.stats.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.soda.project.dto.ProjectStatsCondition.TimeUnit;
-import com.soda.project.entity.QProjectDailyStats;
+import com.soda.project.stats.entity.QProjectDailyStats;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

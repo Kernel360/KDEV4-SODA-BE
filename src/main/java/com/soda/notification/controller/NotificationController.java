@@ -1,0 +1,59 @@
+package com.soda.notification.controller;
+
+import com.soda.global.response.GeneralException;
+import com.soda.global.security.auth.UserDetailsImpl;
+import com.soda.notification.error.NotificationErrorCode;
+import com.soda.notification.service.NotificationService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+
+@RestController
+@RequestMapping("/notices")
+@RequiredArgsConstructor
+@Slf4j
+public class NotificationController {
+
+    private final NotificationService notificationService;
+
+    /**
+     * 클라이언트가 실시간 알림을 구독하는 엔드포인트
+     *
+     * @param userDetails 인증된 사용자 정보 (@AuthenticationPrincipal 사용)
+     * @return SseEmitter 객체 또는 에러 응답
+     */
+    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<SseEmitter> subscribe(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        Long userId;
+        try {
+            if (userDetails == null || userDetails.getMember() == null) {
+                throw new GeneralException(NotificationErrorCode.USER_INFO_NOT_FOUND);
+            }
+            userId = userDetails.getId();
+            if (userId == null) {
+                throw new GeneralException(NotificationErrorCode.USER_ID_NULL);
+            }
+            log.info("새로운 SSE 연결 요청 for User ID: {}", userId);
+        } catch (Exception e) {
+            log.error("SSE 구독 요청 - 사용자 ID 추출 실패", e);
+            throw new GeneralException(NotificationErrorCode.USER_ID_PARSE_FAILED);
+        }
+
+        try {
+            SseEmitter emitter = notificationService.subscribe(userId);
+            log.info("Controller: SSE 구독 요청 처리 완료 for User ID: {}", userId);
+            return ResponseEntity.ok(emitter);
+        } catch (Exception e) {
+            log.error("SSE 구독 처리 중 컨트롤러에서 오류 발생 for User ID: {}", userId, e);
+            throw new GeneralException(NotificationErrorCode.SSE_CONNECTION_ERROR);
+        }
+    }
+}

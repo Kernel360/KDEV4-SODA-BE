@@ -936,11 +936,16 @@ public class ProjectService {
                 LocalDate endWeekStart = endDate.with(weekFields.dayOfWeek(), 1); // 종료일이 속한 주의 시작일 (월요일)
 
                 while (!currentWeekStart.isAfter(endWeekStart)) {
-                    String dateKey = currentWeekStart.format(DateTimeFormatter.ofPattern("yyyy-ww", Locale.KOREA));
-                    long count = statsMap.getOrDefault(dateKey, 0L);
+
+                    String repositoryDateKey = currentWeekStart.format(DateTimeFormatter.ofPattern("yyyy-ww", Locale.KOREA));
+                    int year = currentWeekStart.getYear();
+                    int month = currentWeekStart.getMonthValue();
+                    int weekOfMonth = currentWeekStart.get(weekFields.weekOfMonth());
+                    String displayDateString = String.format("%d년 %d월 %d주차", year, month, weekOfMonth);
+                    long count = statsMap.getOrDefault(repositoryDateKey, 0L);
 
                     fullTrend.add(ProjectStatsResponse.DataPoint.builder()
-                            .date(dateKey)
+                            .date(displayDateString)
                             .count(count)
                             .build());
                     currentWeekStart = currentWeekStart.plusWeeks(1);

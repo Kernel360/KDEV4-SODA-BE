@@ -496,24 +496,36 @@ public class ProjectService {
         MemberProjectRole targetManagerRole = determineTargetManagerRole(companyRole);
         MemberProjectRole targetMemberRole = determineTargetMemberRole(companyRole);
 
-        List<Member> managers = managerIds.isEmpty() ? Collections.emptyList() : memberService.findByIds(managerIds);
-        List<Member> members = memberIds.isEmpty() ? Collections.emptyList() : memberService.findByIds(memberIds);
+        if (!managerIds.isEmpty()) {
+            List<Member> managers = memberService.findByIds(managerIds);
+            validateMembersBelongToCompany(managers, company); // 회사 소속 검증
+            memberProjectService.assignMembersToProject(company, managers, project, targetManagerRole);
+            log.info("매니저 역할 처리 완료 (추가 또는 업데이트): {}명", managers.size());
+        } else {
+            log.info("요청에 매니저 ID 목록이 없습니다.");
+        }
 
-        memberProjectService.assignMembersToProject(company, managers, project, targetManagerRole);
-        memberProjectService.assignMembersToProject(company, members, project, targetMemberRole);
+        if (!memberIds.isEmpty()) {
+            List<Member> members = memberService.findByIds(memberIds);
+            validateMembersBelongToCompany(members, company); // 회사 소속 검증
+            memberProjectService.assignMembersToProject(company, members, project, targetMemberRole);
+            log.info("일반 참여자 역할 처리 완료 (추가 또는 업데이트): {}명", members.size());
+        } else {
+            log.info("요청에 일반 참여자 ID 목록이 없습니다.");
+        }
 
-        log.info("프로젝트에 멤버 추가/업데이트 완료: projectId={}, companyId={}, managers={}, members={}",
-                projectId, request.getCompanyId(), managers.size(), members.size());
+        log.info("프로젝트 멤버 추가/역할 업데이트 완료: projectId={}, companyId={}", projectId, request.getCompanyId());
 
-        List<Member> addedManagers = memberProjectService.getMembersByRole(project, targetManagerRole);
-        List<Member> addedMembers = memberProjectService.getMembersByRole(project, targetMemberRole);
+        List<Member> finalManagers = memberProjectService.getMembersByCompanyAndRole(project, company, targetManagerRole);
+        List<Member> finalMembers = memberProjectService.getMembersByCompanyAndRole(project, company, targetMemberRole);
+        log.debug("최종 멤버 목록 조회 완료: Managers={}, Members={}", finalManagers.size(), finalMembers.size());
 
         // response 생성
         return ProjectMemberAddResponse.from(
                 project.getId(),
                 company.getName(),
-                addedManagers,
-                addedMembers
+                finalManagers,
+                finalMembers
         );
 
     }

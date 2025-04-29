@@ -20,7 +20,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.soda.member.entity.QMember.member;
 
@@ -53,30 +56,34 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
             );
         }
 
-        List<OrderSpecifier<?>> orderSpecifiers = getOrderSpecifiers(pageable.getSort(), request);
-
-        JPQLQuery<Request> query = queryFactory
+        List<Request> allRequests = queryFactory
                 .selectFrom(request)
                 .join(request.member, member).fetchJoin()
                 .where(builder.and(request.isDeleted.eq(false)))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize());
+                .orderBy(request.createdAt.desc())
+                .fetch();
 
-        if (!orderSpecifiers.isEmpty()) {
-            query.orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]));
-        } else {
-            query.orderBy(request.createdAt.desc());
+        List<Request> rootRequests = allRequests.stream()
+                .filter(r -> r.getParentId() == null)
+                .collect(Collectors.toList());
+
+        Map<Long, List<Request>> childRequestMap = allRequests.stream()
+                .filter(r -> r.getParentId() != null)
+                .collect(Collectors.groupingBy(Request::getParentId));
+
+        List<Request> sortedRequests = new ArrayList<>();
+        for (Request root : rootRequests) {
+            sortedRequests.add(root);
+            List<Request> children = childRequestMap.getOrDefault(root.getId(), new ArrayList<>());
+            children.sort(Comparator.comparing(Request::getCreatedAt).reversed()); // 자식도 최신순
+            sortedRequests.addAll(children);
         }
 
-        List<Request> content = query.fetch();
+        int fromIndex = (int) pageable.getOffset();
+        int toIndex = Math.min(fromIndex + pageable.getPageSize(), sortedRequests.size());
+        List<Request> pagedRequests = sortedRequests.subList(fromIndex, toIndex);
 
-        long total = queryFactory
-                .selectFrom(request)
-                .join(request.member, member)
-                .where(builder.and(request.isDeleted.eq(false)))
-                .fetchCount();
-
-        return new PageImpl<>(content, pageable, total);
+        return new PageImpl<>(pagedRequests, pageable, sortedRequests.size());
     }
 
     @Override

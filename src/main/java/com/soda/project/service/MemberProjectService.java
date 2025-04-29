@@ -40,10 +40,46 @@ public class MemberProjectService {
             }
 
             // 2. 생성 및 저장
-            log.info(">>> 신규 MemberProject 생성 및 저장 시도: Member ID={}, Project ID={}", member.getId(), project.getId());
-            createAndSaveMemberProject(member, project, role);
+            Optional<MemberProject> existingEntryOpt = memberProjectRepository.findByMemberAndProject(member, project);
+            if (existingEntryOpt.isPresent()) {
+                // 3. 기존 참여 정보가 있는 경우 (삭제되었거나 활성 상태)
+                MemberProject existingEntry = existingEntryOpt.get();
+                log.debug("기존 MemberProject 찾음: ID={}, currentRole={}, isDeleted={}",
+                        existingEntry.getId(), existingEntry.getRole(), existingEntry.getIsDeleted());
+
+                boolean changed = false;
+
+                // 3-1. 삭제된 상태였다면 활성화
+                if (existingEntry.getIsDeleted()) {
+                    log.info(">>> 삭제된 MemberProject 활성화 시도: ID={}", existingEntry.getId());
+                    existingEntry.reActive();
+                    changed = true;
+                }
+
+                // 3-2. 역할이 다르면 변경
+                if (!existingEntry.getRole().equals(role)) {
+                    log.info(">>> MemberProject 역할 변경 시도: ID={}, OldRole={}, NewRole={}",
+                            existingEntry.getId(), existingEntry.getRole(), role);
+                    existingEntry.changeRole(role);
+                    changed = true;
+                }
+
+                // 3-3. 변경 사항이 있으면 저장
+                if (changed) {
+                    log.info(">>> save 호출 전 (기존 레코드 업데이트)");
+                    memberProjectRepository.save(existingEntry);
+                    log.info(">>> save 호출 후 (기존 레코드 업데이트)");
+                } else {
+                    log.debug(">>> 변경사항 없음 (활성 상태, 역할 동일): ID={}", existingEntry.getId());
+                }
+
+            } else {
+                // 4. 기존 참여 정보가 없으면 새로 생성
+                log.info(">>> 신규 MemberProject 생성 및 저장 시도: Member ID={}, Project ID={}", member.getId(), project.getId());
+                createAndSaveMemberProject(member, project, role);
+            }
         });
-        log.info("멤버 할당 완료: projectId={}, companyId={}", project.getId(), company.getId());
+        log.info("멤버 할당/업데이트 완료: projectId={}, companyId={}", project.getId(), company.getId());
     }
 
     private void createAndSaveMemberProject(Member member, Project project, MemberProjectRole role) {

@@ -26,9 +26,9 @@ public class ControllerLoggingAspect {
             String requestUri = request.getRequestURI();
             String httpMethod = request.getMethod();
             if(end - start > 1000) {
-                log.warn("[API Response Time] {} {} {} executed in {} ms", httpMethod, requestUri, (end - start));
+                log.warn("[API Response Time] {} {} executed in {} ms", httpMethod, requestUri, (end - start));
             } else {
-                log.info("[API Response Time] {} {} {} executed in {} ms", httpMethod, requestUri, (end - start));
+                log.info("[API Response Time] {} {} executed in {} ms", httpMethod, requestUri, (end - start));
             }
         }
     }

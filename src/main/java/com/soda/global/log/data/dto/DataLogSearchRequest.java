@@ -1,4 +1,4 @@
-package com.soda.global.log.dataLog.dto;
+package com.soda.global.log.data.dto;
 
 import lombok.Getter;
 import lombok.Setter;

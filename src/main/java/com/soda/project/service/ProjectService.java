@@ -1,7 +1,7 @@
 package com.soda.project.service;
 
 import com.querydsl.core.Tuple;
-import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
+import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
@@ -18,7 +18,6 @@ import com.soda.project.event.ProjectCreatedEvent;
 import com.soda.project.stats.repository.ProjectDailyStatsRepository;
 import com.soda.project.repository.ProjectRepository;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;

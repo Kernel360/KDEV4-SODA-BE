@@ -1,9 +1,9 @@
-package com.soda.global.log.dataLog.controller;
+package com.soda.global.log.data.controller;
 
-import com.soda.global.log.dataLog.domain.DataLog;
-import com.soda.global.log.dataLog.dto.DataLogSearchRequest;
-import com.soda.global.log.dataLog.dto.DataLogSearchResponse;
-import com.soda.global.log.dataLog.service.DataLogService;
+import com.soda.global.log.data.domain.DataLog;
+import com.soda.global.log.data.dto.DataLogSearchRequest;
+import com.soda.global.log.data.dto.DataLogSearchResponse;
+import com.soda.global.log.data.service.DataLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;

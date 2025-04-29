@@ -1,4 +1,4 @@
-package com.soda.global.log.dataLog.aspect;
+package com.soda.global.log.data.aspect;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,9 +8,9 @@ import com.soda.article.dto.article.ArticleViewResponse;
 import com.soda.article.dto.comment.CommentDTO;
 import com.soda.article.entity.Article;
 import com.soda.article.entity.Comment;
-import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
-import com.soda.global.log.dataLog.domain.DataLog;
-import com.soda.global.log.dataLog.domain.DataLogRepository;
+import com.soda.global.log.data.annotation.LoggableEntityAction;
+import com.soda.global.log.data.domain.DataLog;
+import com.soda.global.log.data.domain.DataLogRepository;
 import com.soda.member.dto.company.CompanyResponse;
 import com.soda.member.dto.company.MemberResponse;
 import com.soda.member.entity.Company;

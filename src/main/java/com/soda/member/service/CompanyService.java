@@ -1,7 +1,7 @@
 package com.soda.member.service;
 
 
-import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
+import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.dto.CompanyCreationStatRaw;
 import com.soda.member.dto.CompanyCreationTrend;

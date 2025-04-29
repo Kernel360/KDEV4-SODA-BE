@@ -1,11 +1,14 @@
 package com.soda.article.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.soda.article.dto.article.ArticleSearchCondition;
 import com.soda.article.entity.Article;
+import com.soda.article.enums.ArticleStatus;
+import com.soda.article.enums.PriorityType;
 import com.soda.member.entity.QCompany;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -105,7 +108,9 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
                         stage.project.id.eq(projectId),
                         article.isDeleted.isFalse(),
                         stageIdEq(request.getStageId()),
-                        searchCondition(request.getSearchType(), request.getKeyword())
+                        searchCondition(request.getSearchType(), request.getKeyword()),
+                        articleStatusEq(request.getStatus()),
+                        priorityTypeEq(request.getPriorityType())
                 )
                 .orderBy(article.createdAt.desc()) // 기본 정렬, Pageable 정렬 처리 필요시 추가
                 .offset(pageable.getOffset())
@@ -126,6 +131,14 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
                 );
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression priorityTypeEq(PriorityType priorityType) {
+        return priorityType != null ? article.priority.eq(priorityType) : null;
+    }
+
+    private BooleanExpression articleStatusEq(ArticleStatus status) {
+        return status != null ? article.status.eq(status) : null;
     }
 
     // 프로젝트 ID 필터링 조건 (project 별칭 사용)

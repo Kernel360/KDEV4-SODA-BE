@@ -82,7 +82,7 @@ public class NotificationController {
      *
      * @return 성공 시 ApiResponseForm 형태의 200 OK 응답
      */
-    @PostMapping("/read-all")
+    @PatchMapping("/read-all")
     public ResponseEntity<ApiResponseForm<Void>> markAllNotificationsAsRead(
             HttpServletRequest request) {
         Long currentMemberId = (Long) request.getAttribute("memberId");

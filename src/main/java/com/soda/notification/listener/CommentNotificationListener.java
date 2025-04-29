@@ -42,7 +42,7 @@ public class CommentNotificationListener {
                 // 이벤트 정보로 알림 데이터 생성
                 String message = String.format("'%s'님이 '%s' 게시글에 댓글을 남겼습니다:\n%s",
                         event.commenterNickname(), event.articleTitle(), truncateContent(event.commentContent()));
-                String link = String.format("/user/projects/%d/article/%d", event.articleId(), event.commentId());
+                String link = String.format("/user/projects/%d/articles/%d", event.articleId(), event.commentId());
 
                 // NotificationData의 정적 팩토리 메서드 사용
                 NotificationData notificationData = NotificationData.forNewComment(
@@ -84,7 +84,7 @@ public class CommentNotificationListener {
                 NotificationData notificationData;
                 String eventName;
 
-                String link = String.format("/user/projects/%d/article/%d", event.projectId(), event.articleId(), event.replyId());
+                String link = String.format("/user/projects/%d/articles/%d", event.projectId(), event.articleId());
                 String truncatedContent = truncateContent(event.replyContent());
 
                 if (Objects.equals(targetUserId, articleAuthorId)) {
@@ -131,14 +131,14 @@ public class CommentNotificationListener {
                     .taskId(data.requestId())
                     .approvalId(data.responseId())
                     .build();
+            Notification savedNotification = notificationService.save(notification);
 
             MemberNotification memberNotification = MemberNotification.builder()
                     .member(receiverProxy)
-                    .notification(notification)
+                    .notification(savedNotification)
                     .build();
 
             memberNotificationService.save(memberNotification);
-            notificationService.save(notification);
 
             log.info("알림 저장 완료 for User ID: {}", receiverId);
 

@@ -1,9 +1,13 @@
 package com.soda.notification.service;
 
+import com.soda.notification.dto.NotificationResponse;
+import com.soda.notification.entity.MemberNotification;
 import com.soda.notification.entity.Notification;
 import com.soda.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -14,6 +18,7 @@ public class NotificationService {
 
     private final EmitterService emitterService;
     private final NotificationRepository notificationRepository;
+    private final MemberNotificationService memberNotificationService;
 
     /**
      * 사용자의 알림 구독 요청을 처리합니다.
@@ -47,7 +52,19 @@ public class NotificationService {
         emitterService.sendNotification(userId, eventName, noticeData);
     }
 
-    public void save(Notification notification) {
+    public Notification save(Notification notification) {
         notificationRepository.save(notification);
+        return notification;
+    }
+
+    public Page<NotificationResponse> getNotifications(Long userId, Pageable pageable) {
+        log.info("사용자 알림 목록 조회 서비스 시작 - User ID: {}, Pageable: {}", userId, pageable);
+
+        Page<MemberNotification> memberNoticePage = memberNotificationService.findByMemberIdAndIsDeletedFalse(userId, pageable);
+
+        Page<NotificationResponse> responseDtoPage = memberNoticePage.map(NotificationResponse::fromEntity);
+
+        log.info("사용자 알림 목록 조회 완료 - User ID: {}, Found: {} items", userId, responseDtoPage.getTotalElements());
+        return responseDtoPage;
     }
 }

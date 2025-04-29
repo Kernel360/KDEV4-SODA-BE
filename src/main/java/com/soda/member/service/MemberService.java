@@ -242,6 +242,7 @@ public class MemberService {
         return memberRepository.findByKeywordIncludingDeleted(keyword, pageable);
     }
 
+    @Transactional
     public void setupInitialProfile(Long memberId, InitialUserInfoRequestDto requestDto) {
 
         Member member = findByIdAndIsDeletedFalse(memberId);

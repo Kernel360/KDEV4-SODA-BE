@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -94,5 +95,26 @@ public class NotificationService {
         memberNotification.Deleted();
 
         log.debug("알림 읽음 처리 완료 및 저장 예정 - MemberNotification ID: {}", memberNotificationId);
+    }
+
+    @Transactional
+    public void markAllAsReadIterative(Long userId) {
+        log.debug("사용자 모든 알림 읽음 처리 서비스 시작 (개별 업데이트) - User ID: {}", userId);
+
+        // 1. 읽지 않은 알림 조회
+        List<MemberNotification> unreadNotifications = memberNotificationService.findByMemberIdAndIsReadFalse(userId);
+
+        if (unreadNotifications.isEmpty()) {
+            log.info("읽지 않은 알림이 없습니다. User ID: {}", userId);
+            return;
+        }
+
+        // 2. 각 알림을 읽음 상태로 변경
+        for (MemberNotification notification : unreadNotifications) {
+            // 엔티티의 markAsRead 메서드가 readAt도 설정한다고 가정
+            notification.Deleted();
+        }
+
+        log.info("사용자 모든 알림 읽음 처리 완료 (개별 업데이트) - User ID: {}, 업데이트된 알림 수: {}", userId, unreadNotifications.size());
     }
 }

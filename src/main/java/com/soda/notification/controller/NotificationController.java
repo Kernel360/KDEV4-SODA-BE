@@ -76,4 +76,23 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponseForm.success(null, "알림 읽음 처리 성공"));
 
     }
+
+    /**
+     * 현재 로그인한 사용자의 모든 읽지 않은 알림을 읽음 상태로 변경합니다.
+     *
+     * @return 성공 시 ApiResponseForm 형태의 200 OK 응답
+     */
+    @PostMapping("/read-all")
+    public ResponseEntity<ApiResponseForm<Void>> markAllNotificationsAsRead(
+            HttpServletRequest request) {
+        Long currentMemberId = (Long) request.getAttribute("memberId");
+
+        log.info("사용자 모든 알림 읽음 처리 요청 - User ID: {}", currentMemberId);
+
+        notificationService.markAllAsReadIterative(currentMemberId);
+        log.info("사용자 모든 알림 읽음 처리 성공 - User ID: {}", currentMemberId);
+
+        return ResponseEntity.ok(ApiResponseForm.success(null, "모든 알림 읽음 처리 성공"));
+
+    }
 }

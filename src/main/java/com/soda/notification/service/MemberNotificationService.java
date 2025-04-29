@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -30,5 +32,9 @@ public class MemberNotificationService {
                     log.warn("MemberNotificationService: 알림을 찾을 수 없음 - ID: {}", id);
                     return new GeneralException(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
                 });
+    }
+
+    public List<MemberNotification> findByMemberIdAndIsReadFalse(Long userId) {
+        return memberNotificationRepository.findByMemberIdAndIsDeletedFalse(userId);
     }
 }

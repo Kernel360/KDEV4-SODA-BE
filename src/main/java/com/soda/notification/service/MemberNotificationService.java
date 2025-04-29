@@ -21,4 +21,8 @@ public class MemberNotificationService {
     public Page<MemberNotification> findByMemberIdAndIsDeletedFalse(Long userId, Pageable pageable) {
         return memberNotificationRepository.findByMemberIdAndIsDeletedFalse(userId, pageable);
     }
+
+    public MemberNotification findById(Long id) {
+        return memberNotificationRepository.findById(id).orElse(null);
+    }
 }

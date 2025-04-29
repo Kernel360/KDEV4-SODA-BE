@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
@@ -66,5 +67,22 @@ public class NotificationService {
 
         log.info("사용자 알림 목록 조회 완료 - User ID: {}, Found: {} items", userId, responseDtoPage.getTotalElements());
         return responseDtoPage;
+    }
+
+    /**
+     * 사용자의 특정 알림을 읽음 상태로 변경합니다.
+     *
+     * @param userId              요청한 사용자의 ID
+     * @param memberNotificationId 읽음 처리할 MemberNotification의 ID
+     */
+    @Transactional
+    public void markAsRead(Long userId, Long memberNotificationId) {
+        log.debug("알림 읽음 처리 서비스 시작 - User ID: {}, MemberNotification ID: {}", userId, memberNotificationId);
+
+        MemberNotification memberNotification = memberNotificationService.findById(memberNotificationId);
+
+        memberNotification.Deleted();
+
+        log.debug("알림 읽음 처리 완료 및 저장 예정 - MemberNotification ID: {}", memberNotificationId);
     }
 }

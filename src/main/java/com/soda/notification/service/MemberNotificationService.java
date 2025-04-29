@@ -1,6 +1,8 @@
 package com.soda.notification.service;
 
+import com.soda.global.response.GeneralException;
 import com.soda.notification.entity.MemberNotification;
+import com.soda.notification.error.NotificationErrorCode;
 import com.soda.notification.repository.MemberNotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +24,11 @@ public class MemberNotificationService {
         return memberNotificationRepository.findByMemberIdAndIsDeletedFalse(userId, pageable);
     }
 
-    public MemberNotification findById(Long id) {
-        return memberNotificationRepository.findById(id).orElse(null);
+    public MemberNotification findByIdOrThrow(Long id) {
+        return memberNotificationRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("MemberNotificationService: 알림을 찾을 수 없음 - ID: {}", id);
+                    return new GeneralException(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
+                });
     }
 }

@@ -1,6 +1,6 @@
 package com.soda.project.service;
 
-import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
+import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.project.dto.stage.*;

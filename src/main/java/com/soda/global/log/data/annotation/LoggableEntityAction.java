@@ -1,4 +1,4 @@
-package com.soda.global.log.dataLog.annotation;
+package com.soda.global.log.data.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,4 +1,4 @@
-package com.soda.global.log.dataLog.domain;
+package com.soda.global.log.data.domain;
 
 import jakarta.persistence.Id;
 import lombok.*;

@@ -2,7 +2,7 @@ package com.soda.request.service;
 
 import com.soda.common.link.dto.LinkUploadRequest;
 import com.soda.common.link.service.LinkService;
-import com.soda.global.log.dataLog.annotation.LoggableEntityAction;
+import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;

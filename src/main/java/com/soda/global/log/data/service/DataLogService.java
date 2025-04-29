@@ -1,9 +1,9 @@
-package com.soda.global.log.dataLog.service;
+package com.soda.global.log.data.service;
 
-import com.soda.global.log.dataLog.domain.DataLog;
-import com.soda.global.log.dataLog.domain.DataLogRepository;
-import com.soda.global.log.dataLog.dto.DataLogSearchRequest;
-import com.soda.global.log.dataLog.dto.DataLogSearchResponse;
+import com.soda.global.log.data.domain.DataLog;
+import com.soda.global.log.data.domain.DataLogRepository;
+import com.soda.global.log.data.dto.DataLogSearchRequest;
+import com.soda.global.log.data.dto.DataLogSearchResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

@@ -63,7 +63,7 @@ public class NotificationController {
      * @param memberNotificationId 읽음 처리할 MemberNotification의 ID
      * @return 성공 시 ApiResponseForm 형태의 200 OK 응답
      */
-    @PostMapping("/{memberNotificationId}/read")
+    @PatchMapping("/{memberNotificationId}/read")
     public ResponseEntity<ApiResponseForm<Void>> markNotificationAsRead(
             @PathVariable Long memberNotificationId,
             HttpServletRequest request) {

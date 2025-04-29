@@ -1,8 +1,10 @@
 package com.soda.notification.service;
 
+import com.soda.global.response.GeneralException;
 import com.soda.notification.dto.NotificationResponse;
 import com.soda.notification.entity.MemberNotification;
 import com.soda.notification.entity.Notification;
+import com.soda.notification.error.NotificationErrorCode;
 import com.soda.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -79,7 +83,13 @@ public class NotificationService {
     public void markAsRead(Long userId, Long memberNotificationId) {
         log.debug("알림 읽음 처리 서비스 시작 - User ID: {}, MemberNotification ID: {}", userId, memberNotificationId);
 
-        MemberNotification memberNotification = memberNotificationService.findById(memberNotificationId);
+        MemberNotification memberNotification = memberNotificationService.findByIdOrThrow(memberNotificationId);
+
+        if (!Objects.equals(memberNotification.getMember().getId(), userId)) {
+            log.warn("알림 읽음 처리 권한 없음 - 요청 User ID: {}, 알림 소유 User ID: {}, MemberNotification ID: {}",
+                    userId, memberNotification.getMember().getId(), memberNotificationId);
+            throw new GeneralException(NotificationErrorCode.FORBIDDEN_ACCESS_NOTIFICATION);
+        }
 
         memberNotification.Deleted();
 

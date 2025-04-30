@@ -11,18 +11,17 @@ import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
-import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.error.StageErrorCode;
-import com.soda.project.domain.stage.request.dto.request.*;
-import com.soda.project.infrastructure.StageRepository;
-import com.soda.project.domain.stage.request.dto.GetRequestCondition;
-import com.soda.request.dto.request.*;
+import com.soda.project.domain.stage.Stage;
+import com.soda.project.domain.stage.request.dto.*;
 import com.soda.project.domain.stage.request.enums.RequestStatus;
-import com.soda.project.domain.stage.request.enums.ResponseStatus;
 import com.soda.project.domain.stage.request.error.RequestErrorCode;
+import com.soda.project.domain.stage.request.link.RequestLink;
+import com.soda.project.domain.stage.request.response.enums.ResponseStatus;
 import com.soda.project.infrastructure.ApproverDesignationRepository;
 import com.soda.project.infrastructure.RequestLinkRepository;
 import com.soda.project.infrastructure.RequestRepository;
+import com.soda.project.infrastructure.StageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -170,7 +169,7 @@ public class RequestService {
         return stageRepository.findById(stageId).orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
     }
 
-    protected Request getRequestOrThrow(Long requestId) {
+    public Request getRequestOrThrow(Long requestId) {
         return requestRepository.findById(requestId).orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_NOT_FOUND));
     }
 

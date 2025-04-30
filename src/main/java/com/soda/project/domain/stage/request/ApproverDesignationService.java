@@ -4,7 +4,7 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.service.MemberService;
-import com.soda.project.domain.stage.request.dto.request.ApproverDeleteResponse;
+import com.soda.project.domain.stage.request.dto.ApproverDeleteResponse;
 import com.soda.project.domain.stage.request.error.ApproverDesignationErrorCode;
 import com.soda.project.domain.stage.request.error.RequestErrorCode;
 import com.soda.project.infrastructure.ApproverDesignationRepository;

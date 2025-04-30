@@ -10,8 +10,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.soda.article.entity.QVoteAnswer.voteAnswer;
-import static com.soda.article.entity.QVoteAnswerItem.voteAnswerItem;
+import static com.soda.project.domain.stage.article.QVoteAnswer.voteAnswer;
+import static com.soda.project.domain.stage.article.QVoteAnswerItem.voteAnswerItem;
+
 
 @Repository
 @RequiredArgsConstructor

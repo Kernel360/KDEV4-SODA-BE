@@ -21,7 +21,7 @@ import java.util.List;
 
 import static com.soda.member.entity.QCompany.company;
 import static com.soda.member.entity.QMember.member;
-import static com.soda.project.entity.QMemberProject.memberProject;
+import static com.soda.project.domain.member.QMemberProject.memberProject;
 
 @Repository
 @RequiredArgsConstructor

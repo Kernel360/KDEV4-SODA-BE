@@ -1,6 +1,5 @@
 package com.soda.project.domain.stage.article;
 
-import com.soda.article.dto.comment.*;
 import com.soda.project.domain.stage.article.error.CommentErrorCode;
 import com.soda.project.infrastructure.CommentRepository;
 import com.soda.global.log.data.annotation.LoggableEntityAction;

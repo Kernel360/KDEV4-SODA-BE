@@ -1,59 +1,98 @@
 package com.soda.notification.controller;
 
+import com.soda.global.response.ApiResponseForm;
 import com.soda.global.response.GeneralException;
-import com.soda.global.security.auth.UserDetailsImpl;
+import com.soda.notification.dto.NotificationResponse;
 import com.soda.notification.error.NotificationErrorCode;
 import com.soda.notification.service.NotificationService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 
 @RestController
-@RequestMapping("/notices")
+@RequestMapping("/notifications")
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationController {
 
     private final NotificationService notificationService;
 
-    /**
-     * 클라이언트가 실시간 알림을 구독하는 엔드포인트
-     *
-     * @param userDetails 인증된 사용자 정보 (@AuthenticationPrincipal 사용)
-     * @return SseEmitter 객체 또는 에러 응답
-     */
+
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<SseEmitter> subscribe(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<SseEmitter> subscribe(HttpServletRequest request) {
+        Long currentMemberId = (Long) request.getAttribute("memberId");
 
-        Long userId;
-        try {
-            if (userDetails == null || userDetails.getMember() == null) {
-                throw new GeneralException(NotificationErrorCode.USER_INFO_NOT_FOUND);
-            }
-            userId = userDetails.getId();
-            if (userId == null) {
-                throw new GeneralException(NotificationErrorCode.USER_ID_NULL);
-            }
-            log.info("새로운 SSE 연결 요청 for User ID: {}", userId);
-        } catch (Exception e) {
-            log.error("SSE 구독 요청 - 사용자 ID 추출 실패", e);
-            throw new GeneralException(NotificationErrorCode.USER_ID_PARSE_FAILED);
-        }
+        log.info("새로운 SSE 연결 요청 for User ID: {}", currentMemberId);
 
         try {
-            SseEmitter emitter = notificationService.subscribe(userId);
-            log.info("Controller: SSE 구독 요청 처리 완료 for User ID: {}", userId);
+            SseEmitter emitter = notificationService.subscribe(currentMemberId);
+            log.info("Controller: SSE 구독 요청 처리 완료 for User ID: {}", currentMemberId);
             return ResponseEntity.ok(emitter);
         } catch (Exception e) {
-            log.error("SSE 구독 처리 중 컨트롤러에서 오류 발생 for User ID: {}", userId, e);
+            log.error("SSE 구독 처리 중 컨트롤러에서 오류 발생 for User ID: {}", currentMemberId, e);
             throw new GeneralException(NotificationErrorCode.SSE_CONNECTION_ERROR);
         }
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponseForm<Page<NotificationResponse>>> getMyNotifications(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            HttpServletRequest request) {
+        Long currentMemberId = (Long) request.getAttribute("memberId");
+
+        log.info("사용자 알림 목록 조회 요청 - User ID: {}, Pageable: {}", currentMemberId, pageable);
+
+        Page<NotificationResponse> notificationPage = notificationService.getNotifications(currentMemberId, pageable);
+        log.info("사용자 알림 목록 조회 성공 - User ID: {}, 조회된 항목 수: {}", currentMemberId, notificationPage.getNumberOfElements());
+        return ResponseEntity.ok(ApiResponseForm.success(notificationPage, "알림 목록 조회 성공"));
+    }
+
+    /**
+     * 특정 알림을 읽음 상태로 변경합니다.
+     * (이전에 수정한 코드와 동일한 형식 유지)
+     *
+     * @param memberNotificationId 읽음 처리할 MemberNotification의 ID
+     * @return 성공 시 ApiResponseForm 형태의 200 OK 응답
+     */
+    @PatchMapping("/{memberNotificationId}/read")
+    public ResponseEntity<ApiResponseForm<Void>> markNotificationAsRead(
+            @PathVariable Long memberNotificationId,
+            HttpServletRequest request) {
+        Long currentMemberId = (Long) request.getAttribute("memberId");
+
+        log.info("알림 읽음 처리 요청 - User ID: {}, MemberNotification ID: {}", currentMemberId, memberNotificationId);
+
+        notificationService.markAsRead(currentMemberId, memberNotificationId);
+        log.info("알림 읽음 처리 성공 - User ID: {}, MemberNotification ID: {}", currentMemberId, memberNotificationId);
+        return ResponseEntity.ok(ApiResponseForm.success(null, "알림 읽음 처리 성공"));
+
+    }
+
+    /**
+     * 현재 로그인한 사용자의 모든 읽지 않은 알림을 읽음 상태로 변경합니다.
+     *
+     * @return 성공 시 ApiResponseForm 형태의 200 OK 응답
+     */
+    @PatchMapping("/read-all")
+    public ResponseEntity<ApiResponseForm<Void>> markAllNotificationsAsRead(
+            HttpServletRequest request) {
+        Long currentMemberId = (Long) request.getAttribute("memberId");
+
+        log.info("사용자 모든 알림 읽음 처리 요청 - User ID: {}", currentMemberId);
+
+        notificationService.markAllAsReadIterative(currentMemberId);
+        log.info("사용자 모든 알림 읽음 처리 성공 - User ID: {}", currentMemberId);
+
+        return ResponseEntity.ok(ApiResponseForm.success(null, "모든 알림 읽음 처리 성공"));
+
     }
 }

@@ -21,17 +21,15 @@ public class MemberNotification extends BaseEntity {
     @JoinColumn(name = "notification_id", nullable = false)
     private Notification notification;
 
-    @Column(nullable = false)
-    private boolean isRead = false;
 
     @Builder
     public MemberNotification(Member member, Notification notification) {
         this.member = member;
         this.notification = notification;
-        this.isRead = false;
     }
 
-    public void markAsRead() {
-        this.isRead = true;
+    public void Deleted() {
+        this.markAsDeleted();
     }
+
 }

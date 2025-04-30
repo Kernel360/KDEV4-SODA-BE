@@ -1,6 +1,6 @@
 package com.soda.project.stats.repository;
 
-import com.soda.project.stats.entity.ProjectDailyStats;
+import com.soda.project.stats.ProjectDailyStats;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

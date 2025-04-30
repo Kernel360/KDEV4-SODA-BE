@@ -4,7 +4,7 @@ import com.soda.common.BaseEntity;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.enums.MemberStatus;
 import com.soda.notice.entity.MemberNotice;
-import com.soda.project.entity.MemberProject;
+import com.soda.project.domain.member.MemberProject;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

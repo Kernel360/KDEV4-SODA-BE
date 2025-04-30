@@ -17,7 +17,6 @@ import com.soda.project.domain.stage.request.dto.*;
 import com.soda.project.domain.stage.request.enums.RequestStatus;
 import com.soda.project.domain.stage.request.error.RequestErrorCode;
 import com.soda.project.domain.stage.request.link.RequestLink;
-import com.soda.project.domain.stage.request.response.enums.ResponseStatus;
 import com.soda.project.infrastructure.ApproverDesignationRepository;
 import com.soda.project.infrastructure.RequestLinkRepository;
 import com.soda.project.infrastructure.RequestRepository;
@@ -135,19 +134,6 @@ public class RequestService {
         request.delete();
 
         return RequestDeleteResponse.fromEntity(request);
-    }
-
-    @Transactional
-    public void approve(Request request) {
-        if (isAllApproversApproved(request)) {
-            request.approve();
-        } else {
-            request.approving();
-        }
-    }
-
-    private static boolean isAllApproversApproved(Request request) {
-        return request.getResponses().stream().filter(response -> response.getStatus() == ResponseStatus.APPROVED && !response.getIsDeleted()).count() == request.getApprovers().size();
     }
 
     @Transactional

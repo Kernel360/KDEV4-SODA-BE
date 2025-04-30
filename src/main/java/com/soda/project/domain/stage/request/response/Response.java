@@ -49,6 +49,29 @@ public class Response extends BaseEntity {
         this.links = links;
     }
 
+    protected static Response createApprove(Member member, Request request, String comment, List<ResponseLink> links) {
+        Response approval = Response.builder()
+                .member(member)
+                .request(request)
+                .comment(comment)
+                .status(ResponseStatus.APPROVED)
+                .build();
+
+        approval.addLinks(links);
+
+        approval.approveApproverRequest(request);
+
+        return approval;
+    }
+
+    private void approveApproverRequest(Request request) {
+        if (request.isOneRemainUntilApproved(request)) {
+            request.approved();
+        } else {
+            request.approving();
+        }
+    }
+
     public void updateComment(String comment) {
         this.comment = comment;
     }

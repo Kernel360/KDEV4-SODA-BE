@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.article;
 
-import com.soda.project.article.error.VoteErrorCode;
+import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import com.soda.common.BaseEntity;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;

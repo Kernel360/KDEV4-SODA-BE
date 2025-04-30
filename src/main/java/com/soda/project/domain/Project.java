@@ -1,10 +1,10 @@
 package com.soda.project.domain;
 
 import com.soda.common.BaseEntity;
-import com.soda.project.company.CompanyProject;
+import com.soda.project.domain.company.CompanyProject;
 import com.soda.project.domain.stage.Stage;
-import com.soda.project.enums.ProjectStatus;
-import com.soda.project.member.MemberProject;
+import com.soda.project.domain.enums.ProjectStatus;
+import com.soda.project.domain.member.MemberProject;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

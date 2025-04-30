@@ -1,6 +1,6 @@
 package com.soda.project.stats.service;
 
-import com.soda.project.domain.ProjectDailyStats;
+import com.soda.project.stats.ProjectDailyStats;
 import com.soda.project.stats.repository.ProjectDailyStatsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

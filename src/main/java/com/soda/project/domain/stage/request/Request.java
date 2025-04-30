@@ -4,7 +4,7 @@ import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
 import com.soda.member.entity.Member;
 import com.soda.project.domain.stage.Stage;
-import com.soda.project.request.enums.RequestStatus;
+import com.soda.project.domain.stage.request.enums.RequestStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

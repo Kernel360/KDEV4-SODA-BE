@@ -1,7 +1,7 @@
 package com.soda.project.domain.stage.article;
 
-import com.soda.project.article.enums.ArticleStatus;
-import com.soda.project.article.enums.PriorityType;
+import com.soda.project.domain.stage.article.enums.ArticleStatus;
+import com.soda.project.domain.stage.article.enums.PriorityType;
 import com.soda.common.BaseEntity;
 import com.soda.member.entity.Member;
 import com.soda.project.domain.stage.Stage;

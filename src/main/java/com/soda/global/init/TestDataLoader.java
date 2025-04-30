@@ -12,10 +12,10 @@
 //import com.soda.project.domain.Project;
 //import com.soda.project.domain.stage.Stage;
 //import com.soda.project.enums.ProjectStatus;
-//import com.soda.project.repository.CompanyProjectRepository;
-//import com.soda.project.repository.MemberProjectRepository;
-//import com.soda.project.repository.ProjectRepository;
-//import com.soda.project.repository.StageRepository;
+//import com.soda.project.infrastructure.CompanyProjectRepository;
+//import com.soda.project.infrastructure.MemberProjectRepository;
+//import com.soda.project.infrastructure.ProjectRepository;
+//import com.soda.project.infrastructure.StageRepository;
 //import com.soda.request.entity.Request;
 //import com.soda.request.enums.RequestStatus;
 //import com.soda.request.repository.RequestRepository;

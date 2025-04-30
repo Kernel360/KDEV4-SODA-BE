@@ -2,7 +2,7 @@ package com.soda.project.domain.stage.request;
 
 import com.soda.common.BaseEntity;
 import com.soda.member.entity.Member;
-import com.soda.project.request.enums.ResponseStatus;
+import com.soda.project.domain.stage.request.enums.ResponseStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

@@ -14,9 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 
@@ -56,5 +54,45 @@ public class NotificationController {
         Page<NotificationResponse> notificationPage = notificationService.getNotifications(currentMemberId, pageable);
         log.info("사용자 알림 목록 조회 성공 - User ID: {}, 조회된 항목 수: {}", currentMemberId, notificationPage.getNumberOfElements());
         return ResponseEntity.ok(ApiResponseForm.success(notificationPage, "알림 목록 조회 성공"));
+    }
+
+    /**
+     * 특정 알림을 읽음 상태로 변경합니다.
+     * (이전에 수정한 코드와 동일한 형식 유지)
+     *
+     * @param memberNotificationId 읽음 처리할 MemberNotification의 ID
+     * @return 성공 시 ApiResponseForm 형태의 200 OK 응답
+     */
+    @PatchMapping("/{memberNotificationId}/read")
+    public ResponseEntity<ApiResponseForm<Void>> markNotificationAsRead(
+            @PathVariable Long memberNotificationId,
+            HttpServletRequest request) {
+        Long currentMemberId = (Long) request.getAttribute("memberId");
+
+        log.info("알림 읽음 처리 요청 - User ID: {}, MemberNotification ID: {}", currentMemberId, memberNotificationId);
+
+        notificationService.markAsRead(currentMemberId, memberNotificationId);
+        log.info("알림 읽음 처리 성공 - User ID: {}, MemberNotification ID: {}", currentMemberId, memberNotificationId);
+        return ResponseEntity.ok(ApiResponseForm.success(null, "알림 읽음 처리 성공"));
+
+    }
+
+    /**
+     * 현재 로그인한 사용자의 모든 읽지 않은 알림을 읽음 상태로 변경합니다.
+     *
+     * @return 성공 시 ApiResponseForm 형태의 200 OK 응답
+     */
+    @PatchMapping("/read-all")
+    public ResponseEntity<ApiResponseForm<Void>> markAllNotificationsAsRead(
+            HttpServletRequest request) {
+        Long currentMemberId = (Long) request.getAttribute("memberId");
+
+        log.info("사용자 모든 알림 읽음 처리 요청 - User ID: {}", currentMemberId);
+
+        notificationService.markAllAsReadIterative(currentMemberId);
+        log.info("사용자 모든 알림 읽음 처리 성공 - User ID: {}", currentMemberId);
+
+        return ResponseEntity.ok(ApiResponseForm.success(null, "모든 알림 읽음 처리 성공"));
+
     }
 }

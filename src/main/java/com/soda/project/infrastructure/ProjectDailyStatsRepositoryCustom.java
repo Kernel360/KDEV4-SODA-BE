@@ -1,4 +1,4 @@
-package com.soda.project.stats.repository;
+package com.soda.project.infrastructure;
 
 import com.querydsl.core.Tuple;
 import com.soda.project.interfaces.dto.ProjectStatsCondition;

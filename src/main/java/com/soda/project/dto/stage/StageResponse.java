@@ -1,6 +1,6 @@
 package com.soda.project.dto.stage;
 
-import com.soda.project.entity.Stage;
+import com.soda.project.domain.stage.Stage;
 import lombok.Getter;
 
 @Getter

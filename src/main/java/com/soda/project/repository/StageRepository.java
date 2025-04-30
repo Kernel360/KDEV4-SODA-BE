@@ -1,7 +1,7 @@
 package com.soda.project.repository;
 
-import com.soda.project.entity.Project;
-import com.soda.project.entity.Stage;
+import com.soda.project.domain.Project;
+import com.soda.project.domain.stage.Stage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

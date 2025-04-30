@@ -7,10 +7,10 @@
 //import com.soda.member.enums.MemberRole;
 //import com.soda.member.repository.CompanyRepository;
 //import com.soda.member.repository.MemberRepository;
-//import com.soda.project.entity.CompanyProject;
-//import com.soda.project.entity.MemberProject;
-//import com.soda.project.entity.Project;
-//import com.soda.project.entity.Stage;
+//import com.soda.project.company.CompanyProject;
+//import com.soda.project.member.MemberProject;
+//import com.soda.project.domain.Project;
+//import com.soda.project.domain.stage.Stage;
 //import com.soda.project.enums.ProjectStatus;
 //import com.soda.project.repository.CompanyProjectRepository;
 //import com.soda.project.repository.MemberProjectRepository;

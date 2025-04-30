@@ -2,9 +2,8 @@ package com.soda.project.service;
 
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
-import com.soda.project.dto.CompanyProjectDTO;
-import com.soda.project.entity.CompanyProject;
-import com.soda.project.entity.Project;
+import com.soda.project.company.CompanyProject;
+import com.soda.project.domain.Project;
 import com.soda.member.enums.CompanyProjectRole;
 import com.soda.project.error.ProjectErrorCode;
 import com.soda.project.repository.CompanyProjectRepository;

@@ -1,7 +1,7 @@
 package com.soda.project.repository;
 
 import com.soda.member.enums.MemberProjectRole;
-import com.soda.project.entity.MemberProject;
+import com.soda.project.member.MemberProject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

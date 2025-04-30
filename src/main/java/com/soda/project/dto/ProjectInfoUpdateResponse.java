@@ -1,6 +1,6 @@
 package com.soda.project.dto;
 
-import com.soda.project.entity.Project;
+import com.soda.project.domain.Project;
 import lombok.Builder;
 import lombok.Getter;
 

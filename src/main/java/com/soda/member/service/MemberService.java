@@ -13,6 +13,7 @@ import com.soda.member.enums.MemberRole;
 import com.soda.member.enums.MemberStatus;
 import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
+import com.soda.project.domain.error.ProjectErrorCode;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -344,5 +345,11 @@ public class MemberService {
                     log.warn("Member not found with ID: {}", userId);
                     return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
                 });
+    }
+
+
+    public Member findWithProjectsById(Long memberId) {
+        return memberRepository.findWithProjectsById(memberId)
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
     }
 }

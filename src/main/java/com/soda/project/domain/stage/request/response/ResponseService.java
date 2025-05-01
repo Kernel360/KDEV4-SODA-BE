@@ -55,7 +55,7 @@ public class ResponseService {
                 requestRejectRequest.getComment(),
                 requestRejectRequest.getLinks()
         );
-        return RequestRejectResponse.fromEntity(responseProvider.store(rejection););
+        return RequestRejectResponse.fromEntity(responseProvider.store(rejection));
     }
 
     public List<ResponseDTO> findAllByRequestId(Long requestId) {

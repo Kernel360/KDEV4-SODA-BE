@@ -1,8 +1,8 @@
 package com.soda.project.interfaces;
 
-import com.soda.project.domain.stage.article.CommentService;
+import com.soda.project.domain.stage.article.comment.CommentService;
 import com.soda.global.response.ApiResponseForm;
-import com.soda.project.interfaces.dto.comment.*;
+import com.soda.project.domain.stage.article.comment.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

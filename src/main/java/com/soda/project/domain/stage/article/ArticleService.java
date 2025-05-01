@@ -1,8 +1,12 @@
 package com.soda.project.domain.stage.article;
 
 import com.querydsl.core.Tuple;
+import com.soda.project.domain.stage.article.dto.*;
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
+import com.soda.project.domain.stage.article.vote.Vote;
+import com.soda.project.domain.stage.article.vote.VoteService;
+import com.soda.project.domain.stage.article.vote.dto.*;
 import com.soda.project.infrastructure.ArticleRepository;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
@@ -15,7 +19,6 @@ import com.soda.member.service.MemberService;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.error.ProjectErrorCode;
-import com.soda.project.interfaces.dto.article.*;
 import com.soda.project.domain.company.CompanyProjectService;
 import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.ProjectService;

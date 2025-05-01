@@ -1,7 +1,7 @@
 package com.soda.project.interfaces;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.project.interfaces.dto.*;
+import com.soda.project.domain.dto.*;
 import com.soda.project.domain.ProjectService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -45,8 +45,8 @@ public class ProjectController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<ApiResponseForm<Page<MyProjectListResponse>>> getMyProjects(@ModelAttribute ProjectSearchCondition projectSearchCondition,  HttpServletRequest request,
-                                                                                    @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<ApiResponseForm<Page<MyProjectListResponse>>> getMyProjects(@ModelAttribute ProjectSearchCondition projectSearchCondition, HttpServletRequest request,
+                                                                                      @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) request.getAttribute("memberId");
         String userRole = (String) request.getAttribute("userRole").toString();
         Page<MyProjectListResponse> response = projectService.getMyProjects(projectSearchCondition, userId, userRole, pageable);

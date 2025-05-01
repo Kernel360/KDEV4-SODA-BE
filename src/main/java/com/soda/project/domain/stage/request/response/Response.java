@@ -57,7 +57,7 @@ public class Response extends BaseEntity {
                 .status(ResponseStatus.APPROVED)
                 .build();
 
-        approval.approveApproverRequest(request);
+        approval.approveApproverRequest();
 
         return approval;
     }
@@ -79,7 +79,7 @@ public class Response extends BaseEntity {
         return null;
     }
 
-    private void approveApproverRequest(Request request) {
+    private void approveApproverRequest() {
         if (request.isOneRemainUntilApproved(request)) {
             request.approved();
         } else {

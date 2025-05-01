@@ -51,6 +51,15 @@ public class Comment extends BaseEntity {
         }
     }
 
+    protected static Comment create(String content, Member member, Article article, Comment parentComment) {
+        return Comment.builder()
+                .content(content)
+                .article(article)
+                .member(member)
+                .parentComment(parentComment)
+                .build();
+    }
+
     public void delete() {
         this.markAsDeleted();
     }

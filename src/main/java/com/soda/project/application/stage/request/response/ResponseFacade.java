@@ -9,6 +9,8 @@ import com.soda.project.domain.stage.request.RequestService;
 import com.soda.project.domain.stage.request.response.ResponseService;
 import com.soda.project.domain.stage.request.response.dto.RequestApproveRequest;
 import com.soda.project.domain.stage.request.response.dto.RequestApproveResponse;
+import com.soda.project.domain.stage.request.response.dto.RequestRejectRequest;
+import com.soda.project.domain.stage.request.response.dto.RequestRejectResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +25,23 @@ public class ResponseFacade {
     private final ProjectValidator projectValidator;
     private final RequestApproverValidator requestApproverValidator;
 
-    public RequestApproveResponse approveRequest(Long memberId, Long requestId, RequestApproveRequest requestApproveRequest) {
+    public RequestApproveResponse approveRequest(Long memberId, Long requestId,
+                                                 RequestApproveRequest requestApproveRequest) {
         Member member = memberService.getMemberWithProjectOrThrow(memberId);
         Request request = requestService.getRequestOrThrow(requestId);
         projectValidator.validateProjectAuthority(member, requestApproveRequest.getProjectId());
         requestApproverValidator.validateApprover(member, request.getApprovers());
 
         return responseService.approveRequest(member, request, requestApproveRequest);
+    }
+
+    public RequestRejectResponse rejectRequest(Long memberId, Long requestId,
+                                               RequestRejectRequest requestRejectRequest) {
+        Member member = memberService.getMemberWithProjectOrThrow(memberId);
+        Request request = requestService.getRequestOrThrow(requestId);
+        projectValidator.validateProjectAuthority(member, requestRejectRequest.getProjectId());
+        requestApproverValidator.validateApprover(member, request.getApprovers());
+
+        return responseService.rejectRequest(member, request, requestRejectRequest);
     }
 }

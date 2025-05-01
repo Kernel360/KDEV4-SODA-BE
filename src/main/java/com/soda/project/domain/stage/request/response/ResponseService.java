@@ -1,22 +1,14 @@
 package com.soda.project.domain.stage.request.response;
 
-import com.soda.common.link.dto.LinkUploadRequest;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
-import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
-import com.soda.member.enums.MemberProjectRole;
-import com.soda.member.enums.MemberRole;
 import com.soda.member.service.MemberService;
-import com.soda.project.domain.stage.request.ApproverDesignation;
 import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.RequestService;
-import com.soda.project.domain.stage.request.error.RequestErrorCode;
 import com.soda.project.domain.stage.request.response.dto.*;
-import com.soda.project.domain.stage.request.response.enums.ResponseStatus;
 import com.soda.project.domain.stage.request.response.error.ResponseErrorCode;
-import com.soda.project.domain.stage.request.response.link.ResponseLink;
 import com.soda.project.infrastructure.ResponseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -56,28 +48,16 @@ public class ResponseService {
 
     @LoggableEntityAction(action = "CREATE", entityClass = Response.class)
     @Transactional
-    public RequestRejectResponse rejectRequest(Long memberId, Long requestId, RequestRejectRequest requestRejectRequest) {
-        Member member = getMemberWithProjectOrThrow(memberId);
-        Request request = requestService.getRequestOrThrow(requestId);
-
-        validateProjectAuthority(member, requestRejectRequest.getProjectId());
-        validateApprover(member, request.getApprovers());
-
-        Response rejection = createResponse(member, request, requestRejectRequest.getComment(), requestRejectRequest.getLinks(), ResponseStatus.REJECTED);
+    public RequestRejectResponse rejectRequest(Member member, Request request, RequestRejectRequest requestRejectRequest) {
+        Response rejection = responseFactory.createRejectResponse(
+                member,
+                request,
+                requestRejectRequest.getComment(),
+                requestRejectRequest.getLinks()
+        );
         responseRepository.save(rejection);
 
-        requestService.reject(request);
-
         return RequestRejectResponse.fromEntity(rejection);
-    }
-
-    private void validateApprover(Member member, List<ApproverDesignation> approvers) {
-        List<Member> members = approvers.stream()
-                .map(ApproverDesignation::getMember)
-                .collect(Collectors.toList());
-        if (!members.contains(member)) {
-            throw new GeneralException(RequestErrorCode.USER_IS_NOT_APPROVER);
-        }
     }
 
     public List<ResponseDTO> findAllByRequestId(Long requestId) {
@@ -131,22 +111,6 @@ public class ResponseService {
 
 
     // 분리한 메서드들
-    private Response createResponse(Member member, Request request, String comment,
-                                    List<LinkUploadRequest.LinkUploadDTO> linkDTOs, ResponseStatus responseStatus) {
-        Response response = buildResponse(member, request, comment, responseStatus);
-        List<ResponseLink> links = linkService.buildLinks(DOMAIN_TYPE, response, linkDTOs);
-        response.addLinks(links);
-        return response;
-    }
-
-    private Response buildResponse(Member member, Request request, String comment, ResponseStatus responseStatus) {
-        return Response.builder()
-                .member(member)
-                .request(request)
-                .comment(comment)
-                .status(responseStatus)
-                .build();
-    }
 
     private void updateResponseFields(ResponseUpdateRequest responseUpdateRequest, Response response) {
         if(responseUpdateRequest.getComment() != null) {
@@ -165,28 +129,5 @@ public class ResponseService {
     private void validateResponseWriter(Response response, Long memberId) throws GeneralException {
         boolean isRequestWriter = response.getMember().getId().equals(memberId);
         if (!isRequestWriter) { throw new GeneralException(ResponseErrorCode.USER_NOT_WRITE_RESPONSE); }
-    }
-
-    private Member getMemberWithProjectOrThrow(Long memberId) {
-        return memberService.findWithProjectsById(memberId);
-    }
-
-    private void validateProjectAuthority(Member member, Long projectId) {
-        if (!isCliInCurrentProject(projectId, member) && !isAdmin(member.getRole())) {
-            throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_CLI);
-        }
-    }
-
-    // member가 현재 프로젝트에 속한 "개발사"의 멤버인지 확인하는 메서드
-    private static boolean isCliInCurrentProject(Long projectId, Member member) {
-        return member.getMemberProjects().stream()
-                .anyMatch(mp ->
-                        mp.getProject().getId().equals(projectId) &&
-                                (mp.getRole() == MemberProjectRole.CLI_MANAGER || mp.getRole() == MemberProjectRole.CLI_PARTICIPANT)
-                );
-    }
-
-    private static boolean isAdmin(MemberRole memberRole) {
-        return memberRole == MemberRole.ADMIN;
     }
 }

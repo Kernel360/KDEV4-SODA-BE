@@ -38,7 +38,7 @@ public class ResponseController {
                                                             @PathVariable Long requestId,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        RequestRejectResponse requestRejectResponse = responseService.rejectRequest(memberId, requestId, requestRejectRequest);
+        RequestRejectResponse requestRejectResponse = responseFacade.rejectRequest(memberId, requestId, requestRejectRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestRejectResponse));
     }
 

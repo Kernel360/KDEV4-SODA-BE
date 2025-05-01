@@ -62,6 +62,19 @@ public class Response extends BaseEntity {
         return approval;
     }
 
+    public static Response createReject(Member member, Request request, String comment) {
+        Response rejection = Response.builder()
+                .member(member)
+                .request(request)
+                .comment(comment)
+                .status(ResponseStatus.REJECTED)
+                .build();
+
+        request.reject();
+
+        return rejection;
+    }
+
     private void approveApproverRequest(Request request) {
         if (request.isOneRemainUntilApproved(request)) {
             request.approved();

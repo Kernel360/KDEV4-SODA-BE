@@ -24,6 +24,16 @@ public class ResponseFactory {
         List<ResponseLink> links = linkService.buildLinks("response", approval, linkContents);
         approval.addLinks(links);
 
-        return Response.createApprove(member, request, comment);
+        return approval;
+    }
+
+    public Response createRejectResponse(Member member, Request request, String comment, List<LinkUploadRequest.LinkUploadDTO> linkContents) {
+
+        Response rejection = Response.createReject(member, request, comment);
+
+        List<ResponseLink> links = linkService.buildLinks("response", rejection, linkContents);
+        rejection.addLinks(links);
+
+        return rejection;
     }
 }

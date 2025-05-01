@@ -2,7 +2,11 @@ package com.soda.project.infrastructure;
 
 import com.soda.project.domain.stage.request.response.Response;
 import com.soda.project.domain.stage.request.response.ResponseProvider;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+@Component
+@RequiredArgsConstructor
 public class ResponseProviderImpl implements ResponseProvider {
     private ResponseRepository responseRepository;
 

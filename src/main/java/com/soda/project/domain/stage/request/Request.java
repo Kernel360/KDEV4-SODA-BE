@@ -8,6 +8,7 @@ import com.soda.project.domain.stage.request.enums.RequestStatus;
 import com.soda.project.domain.stage.request.file.RequestFile;
 import com.soda.project.domain.stage.request.link.RequestLink;
 import com.soda.project.domain.stage.request.response.Response;
+import com.soda.project.domain.stage.request.response.enums.ResponseStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -93,7 +94,7 @@ public class Request extends BaseEntity {
         markAsDeleted();
     }
 
-    public void approve() {
+    public void approved() {
         this.status = RequestStatus.APPROVED;
     }
 
@@ -114,5 +115,12 @@ public class Request extends BaseEntity {
 
     public void approving() {
         this.status = RequestStatus.APPROVING;
+    }
+
+    public boolean isOneRemainUntilApproved(Request request) {
+        return request.getResponses().stream()
+                .filter(response ->
+                        response.getStatus() == ResponseStatus.APPROVED && !response.getIsDeleted())
+                .count() == request.getApprovers().size() - 1;
     }
 }

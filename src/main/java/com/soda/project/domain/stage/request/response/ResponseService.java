@@ -8,8 +8,7 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.project.domain.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
-import com.soda.member.repository.MemberRepository;
-import com.soda.project.domain.error.ProjectErrorCode;
+import com.soda.member.service.MemberService;
 import com.soda.project.domain.stage.request.ApproverDesignation;
 import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.RequestService;
@@ -30,26 +29,27 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ResponseService {
+    private final static String DOMAIN_TYPE = "response";
+
     private final RequestService requestService;
 
     private final ResponseRepository responseRepository;
-    private final MemberRepository memberRepository;
+    private final MemberService memberService;
     private final LinkService linkService;
+
+    private final ResponseFactory responseFactory;
 
 
     @LoggableEntityAction(action = "CREATE", entityClass = Response.class)
     @Transactional
-    public RequestApproveResponse approveRequest(Long memberId, Long requestId, RequestApproveRequest requestApproveRequest) {
-        Member member = getMemberWithProjectOrThrow(memberId);
-        Request request = requestService.getRequestOrThrow(requestId);
-
-        validateProjectAuthority(member, requestApproveRequest.getProjectId());
-        validateApprover(member, request.getApprovers());
-
-        Response approval = createResponse(member, request, requestApproveRequest.getComment(), requestApproveRequest.getLinks(), ResponseStatus.APPROVED);
+    public RequestApproveResponse approveRequest(Member member, Request request, RequestApproveRequest requestApproveRequest) {
+        Response approval = responseFactory.createApproveResponse(
+                member,
+                request,
+                requestApproveRequest.getComment(),
+                requestApproveRequest.getLinks()
+        );
         responseRepository.save(approval);
-
-        requestService.approve(request);
 
         return RequestApproveResponse.fromEntity(approval);
     }
@@ -131,9 +131,10 @@ public class ResponseService {
 
 
     // 분리한 메서드들
-    private Response createResponse(Member member, Request request, String comment, List<LinkUploadRequest.LinkUploadDTO> linkDTOs, ResponseStatus responseStatus) {
+    private Response createResponse(Member member, Request request, String comment,
+                                    List<LinkUploadRequest.LinkUploadDTO> linkDTOs, ResponseStatus responseStatus) {
         Response response = buildResponse(member, request, comment, responseStatus);
-        List<ResponseLink> links = linkService.buildLinks("response", response, linkDTOs);
+        List<ResponseLink> links = linkService.buildLinks(DOMAIN_TYPE, response, linkDTOs);
         response.addLinks(links);
         return response;
     }
@@ -147,23 +148,12 @@ public class ResponseService {
                 .build();
     }
 
-    private List<ResponseLink> buildResponseLinks(List<LinkUploadRequest.LinkUploadDTO> linkDTOs) {
-        if (linkDTOs == null) return List.of();
-
-        return linkDTOs.stream()
-                .map(dto -> ResponseLink.builder()
-                        .urlAddress(dto.getUrlAddress())
-                        .urlDescription(dto.getUrlDescription())
-                        .build())
-                .toList();
-    }
-
     private void updateResponseFields(ResponseUpdateRequest responseUpdateRequest, Response response) {
         if(responseUpdateRequest.getComment() != null) {
             response.updateComment(responseUpdateRequest.getComment());
         }
         if(responseUpdateRequest.getLinks() != null) {
-            response.addLinks(linkService.buildLinks("response", response, responseUpdateRequest.getLinks()));
+            response.addLinks(linkService.buildLinks(DOMAIN_TYPE, response, responseUpdateRequest.getLinks()));
         }
     }
 
@@ -178,8 +168,7 @@ public class ResponseService {
     }
 
     private Member getMemberWithProjectOrThrow(Long memberId) {
-        return memberRepository.findWithProjectsById(memberId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
+        return memberService.findWithProjectsById(memberId);
     }
 
     private void validateProjectAuthority(Member member, Long projectId) {

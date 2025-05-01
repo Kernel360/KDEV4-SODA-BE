@@ -1,4 +1,4 @@
-package com.soda.project.event;
+package com.soda.project.domain.event;
 
 import lombok.Getter;
 

@@ -9,7 +9,7 @@ import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
-import com.soda.member.enums.CompanyProjectRole;
+import com.soda.project.domain.company.enums.CompanyProjectRole;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.service.MemberService;
 import com.soda.project.domain.Project;

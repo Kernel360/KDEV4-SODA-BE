@@ -27,7 +27,8 @@ public class ResponseFactory {
         return approval;
     }
 
-    public Response createRejectResponse(Member member, Request request, String comment, List<LinkUploadRequest.LinkUploadDTO> linkContents) {
+    public Response createRejectResponse(Member member, Request request, String comment,
+                                         List<LinkUploadRequest.LinkUploadDTO> linkContents) {
 
         Response rejection = Response.createReject(member, request, comment);
 
@@ -35,5 +36,16 @@ public class ResponseFactory {
         rejection.addLinks(links);
 
         return rejection;
+    }
+
+    public Response updateResponse(Long memberId, Long responseId, String comment,
+                                   List<LinkUploadRequest.LinkUploadDTO> linkContents) {
+
+        Response response = Response.updateResponse();
+
+        List<ResponseLink> links = linkService.buildLinks("response", response, linkContents);
+        response.addLinks(links);
+
+        return response;
     }
 }

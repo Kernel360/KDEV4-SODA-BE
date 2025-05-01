@@ -23,6 +23,13 @@ public class ResponseProviderImpl implements ResponseProvider {
     }
 
     @Override
+    public Response storeAndflush(Response response) {
+        Response savedResponse = responseRepository.save(response);
+        responseRepository.flush();
+        return savedResponse;
+    }
+
+    @Override
     public List<ResponseDTO> findAllByRequestId(Long requestId) {
         return responseRepository.findAllByRequest_IdAndIsDeletedFalse(requestId).stream()
                 .map(ResponseDTO::fromEntity)
@@ -32,6 +39,11 @@ public class ResponseProviderImpl implements ResponseProvider {
     @Override
     public Response findById(Long responseId) {
         return getResponseOrThrow(responseId);
+    }
+
+    @Override
+    public Long countNotDeletedByRequestId(Response response) {
+        return responseRepository.countNotDeletedByRequestId(response.getRequest().getId());
     }
 
     private Response getResponseOrThrow(Long responseId) {

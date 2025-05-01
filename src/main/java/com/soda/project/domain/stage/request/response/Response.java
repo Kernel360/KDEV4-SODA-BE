@@ -75,6 +75,10 @@ public class Response extends BaseEntity {
         return rejection;
     }
 
+    public static Response updateResponse() {
+        return null;
+    }
+
     private void approveApproverRequest(Request request) {
         if (request.isOneRemainUntilApproved(request)) {
             request.approved();
@@ -87,8 +91,15 @@ public class Response extends BaseEntity {
         this.comment = comment;
     }
 
-    public void delete() {
+    public void delete(Long count) {
         markAsDeleted();
+        checkAndchangeStatusToPending(count);
+    }
+
+    private void checkAndchangeStatusToPending(Long count) {
+        if(count == 0) {
+            request.changeStatusToPending();
+        }
     }
 
     public void addLinks(List<ResponseLink> newLinks) {

@@ -59,7 +59,7 @@ public class ResponseController {
                                                             @PathVariable Long responseId,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        ResponseUpdateResponse responseUpdateResponse = responseService.updateResponse(memberId, responseId, responseUpdateRequest);
+        ResponseUpdateResponse responseUpdateResponse = responseFacade.updateResponse(memberId, responseId, responseUpdateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(responseUpdateResponse));
     }
 
@@ -67,7 +67,7 @@ public class ResponseController {
     public ResponseEntity<ApiResponseForm<?>> deleteRequest(@PathVariable Long responseId,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        ResponseDeleteResponse responseDeleteResponse = responseService.deleteResponse(memberId, responseId);
+        ResponseDeleteResponse responseDeleteResponse = responseFacade.deleteResponse(memberId, responseId);
         return ResponseEntity.ok(ApiResponseForm.success(responseDeleteResponse));
     }
 

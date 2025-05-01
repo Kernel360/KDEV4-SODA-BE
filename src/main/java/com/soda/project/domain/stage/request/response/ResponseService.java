@@ -68,61 +68,24 @@ public class ResponseService {
     @LoggableEntityAction(action = "UPDATE", entityClass = Response.class)
     @Transactional
     public ResponseUpdateResponse updateResponse(Long memberId, Long responseId, ResponseUpdateRequest responseUpdateRequest) {
-        Response response = getResponseOrThrow(responseId);
-
-        // update요청을 한 member가 Response를 작성했던 member인지 확인
-        validateResponseWriter(response, memberId);
-
-        // response의 제목, 내용을 수정
-        updateResponseFields(responseUpdateRequest, response);
-
-        responseRepository.save(response);
-        responseRepository.flush();
-
-        return ResponseUpdateResponse.fromEntity(response);
+        Response response = responseFactory.updateResponse(
+                memberId,
+                responseId,
+                responseUpdateRequest.getComment(),
+                responseUpdateRequest.getLinks()
+        );
+        return ResponseUpdateResponse.fromEntity(responseProvider.storeAndflush(response));
     }
 
     @LoggableEntityAction(action = "DELETE", entityClass = Response.class)
     @Transactional
-    public ResponseDeleteResponse deleteResponse(Long memberId, Long responseId) throws GeneralException {
-        Response response = getResponseOrThrow(responseId);
-
-        // delete요청을 한 member가 승인요청을 작성했던 member인지 확인
-        validateResponseWriter(response, memberId);
-
-        // request 소프트 삭제
-        response.delete();
-
-        checkAndchangeStatusToPending(response);
-
+    public ResponseDeleteResponse deleteResponse(Response response) throws GeneralException {
+        Long countResponse = responseProvider.countNotDeletedByRequestId(response);
+        response.delete(countResponse);
         return ResponseDeleteResponse.fromEntity(response);
     }
 
-    private void checkAndchangeStatusToPending(Response response) {
-        if(responseRepository.countNotDeletedByRequestId(response.getRequest().getId()) == 0) {
-            requestService.changeStatusToPending(response.getRequest());
-        }
-    }
-
-
-    // 분리한 메서드들
-
-    private void updateResponseFields(ResponseUpdateRequest responseUpdateRequest, Response response) {
-        if(responseUpdateRequest.getComment() != null) {
-            response.updateComment(responseUpdateRequest.getComment());
-        }
-        if(responseUpdateRequest.getLinks() != null) {
-            response.addLinks(linkService.buildLinks(DOMAIN_TYPE, response, responseUpdateRequest.getLinks()));
-        }
-    }
-
-    private Response getResponseOrThrow(Long responseId) {
+    public Response getResponseOrThrow(Long responseId) {
         return responseRepository.findById(responseId).orElseThrow(() -> new GeneralException(ResponseErrorCode.RESPONSE_NOT_FOUND));
-    }
-
-    // 외부 메서드(외부로 옮겨야함)
-    private void validateResponseWriter(Response response, Long memberId) throws GeneralException {
-        boolean isRequestWriter = response.getMember().getId().equals(memberId);
-        if (!isRequestWriter) { throw new GeneralException(ResponseErrorCode.USER_NOT_WRITE_RESPONSE); }
     }
 }

@@ -1,4 +1,4 @@
-package com.soda.project.application.response;
+package com.soda.project.application.stage.request.response;
 
 import com.soda.member.entity.Member;
 import com.soda.member.service.MemberService;

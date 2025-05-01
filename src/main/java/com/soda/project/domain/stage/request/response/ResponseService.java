@@ -42,12 +42,7 @@ public class ResponseService {
 
     @LoggableEntityAction(action = "CREATE", entityClass = Response.class)
     @Transactional
-    public RequestApproveResponse approveRequest(Long memberId, Long requestId, RequestApproveRequest requestApproveRequest) {
-        Member member = memberService.getMemberWithProjectOrThrow(memberId);
-        Request request = requestService.getRequestOrThrow(requestId);
-        validateProjectAuthority(member, requestApproveRequest.getProjectId());
-        validateApprover(member, request.getApprovers());
-
+    public RequestApproveResponse approveRequest(Member member, Request request, RequestApproveRequest requestApproveRequest) {
         Response approval = responseFactory.createApproveResponse(
                 member,
                 request,

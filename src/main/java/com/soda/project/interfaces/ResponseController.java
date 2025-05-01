@@ -44,13 +44,13 @@ public class ResponseController {
 
     @GetMapping("/requests/{requestId}/responses")
     public ResponseEntity<ApiResponseForm<?>> getAllResponse(@PathVariable Long requestId) {
-        List<ResponseDTO> responseDTOList = responseService.findAllByRequestId(requestId);
+        List<ResponseDTO> responseDTOList = responseFacade.findAllByRequestId(requestId);
         return ResponseEntity.ok(ApiResponseForm.success(responseDTOList));
     }
 
     @GetMapping("responses/{responseId}")
     public ResponseEntity<ApiResponseForm<?>> getResponse(@PathVariable Long responseId) {
-        ResponseDTO responseDTO = responseService.findById(responseId);
+        ResponseDTO responseDTO = responseFacade.findById(responseId);
         return ResponseEntity.ok(ApiResponseForm.success(responseDTO));
     }
 

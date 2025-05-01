@@ -7,12 +7,11 @@ import com.soda.project.application.validator.ProjectValidator;
 import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.RequestService;
 import com.soda.project.domain.stage.request.response.ResponseService;
-import com.soda.project.domain.stage.request.response.dto.RequestApproveRequest;
-import com.soda.project.domain.stage.request.response.dto.RequestApproveResponse;
-import com.soda.project.domain.stage.request.response.dto.RequestRejectRequest;
-import com.soda.project.domain.stage.request.response.dto.RequestRejectResponse;
+import com.soda.project.domain.stage.request.response.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -43,5 +42,13 @@ public class ResponseFacade {
         requestApproverValidator.validateApprover(member, request.getApprovers());
 
         return responseService.rejectRequest(member, request, requestRejectRequest);
+    }
+
+    public List<ResponseDTO> findAllByRequestId(Long requestId) {
+        return responseService.findAllByRequestId(requestId);
+    }
+
+    public ResponseDTO findById(Long responseId) {
+        return responseService.findById(responseId);
     }
 }

@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -59,13 +58,11 @@ public class ResponseService {
     }
 
     public List<ResponseDTO> findAllByRequestId(Long requestId) {
-        return responseRepository.findAllByRequest_IdAndIsDeletedFalse(requestId).stream()
-                .map(ResponseDTO::fromEntity)
-                .collect(Collectors.toList());
+        return responseProvider.findAllByRequestId(requestId);
     }
 
     public ResponseDTO findById(Long responseId) {
-        return ResponseDTO.fromEntity(getResponseOrThrow(responseId));
+        return ResponseDTO.fromEntity(responseProvider.findById(responseId));
     }
 
     @LoggableEntityAction(action = "UPDATE", entityClass = Response.class)

@@ -38,19 +38,19 @@ public class ResponseController {
                                                             @PathVariable Long requestId,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        RequestRejectResponse requestRejectResponse = responseService.rejectRequest(memberId, requestId, requestRejectRequest);
+        RequestRejectResponse requestRejectResponse = responseFacade.rejectRequest(memberId, requestId, requestRejectRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestRejectResponse));
     }
 
     @GetMapping("/requests/{requestId}/responses")
     public ResponseEntity<ApiResponseForm<?>> getAllResponse(@PathVariable Long requestId) {
-        List<ResponseDTO> responseDTOList = responseService.findAllByRequestId(requestId);
+        List<ResponseDTO> responseDTOList = responseFacade.findAllByRequestId(requestId);
         return ResponseEntity.ok(ApiResponseForm.success(responseDTOList));
     }
 
     @GetMapping("responses/{responseId}")
     public ResponseEntity<ApiResponseForm<?>> getResponse(@PathVariable Long responseId) {
-        ResponseDTO responseDTO = responseService.findById(responseId);
+        ResponseDTO responseDTO = responseFacade.findById(responseId);
         return ResponseEntity.ok(ApiResponseForm.success(responseDTO));
     }
 
@@ -59,7 +59,7 @@ public class ResponseController {
                                                             @PathVariable Long responseId,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        ResponseUpdateResponse responseUpdateResponse = responseService.updateResponse(memberId, responseId, responseUpdateRequest);
+        ResponseUpdateResponse responseUpdateResponse = responseFacade.updateResponse(memberId, responseId, responseUpdateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(responseUpdateResponse));
     }
 
@@ -67,7 +67,7 @@ public class ResponseController {
     public ResponseEntity<ApiResponseForm<?>> deleteRequest(@PathVariable Long responseId,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        ResponseDeleteResponse responseDeleteResponse = responseService.deleteResponse(memberId, responseId);
+        ResponseDeleteResponse responseDeleteResponse = responseFacade.deleteResponse(memberId, responseId);
         return ResponseEntity.ok(ApiResponseForm.success(responseDeleteResponse));
     }
 

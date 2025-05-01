@@ -2,6 +2,8 @@ package com.soda.project.domain.stage.article;
 
 import com.soda.common.BaseEntity;
 import com.soda.member.entity.Member;
+import com.soda.notification.event.CommentCreatedEvent;
+import com.soda.notification.event.ReplyCreatedEvent;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,6 +49,66 @@ public class Comment extends BaseEntity {
         if (parentComment != null) {
             this.parentComment = parentComment;
             parentComment.addChildComment(this);
+        }
+    }
+
+    @PostPersist
+    public void publishCommentCreationEvents() {
+        try {
+            Long currentCommentId = this.getId();
+            Article article = this.article;
+            Member commenter = this.member;
+
+            if (currentCommentId == null || article == null || commenter == null || article.getMember() == null) {
+                System.out.println("@PostPersist: 필수 정보 부족 (ID, Post, Commenter, PostAuthor) for commentId=" + currentCommentId);
+                return;
+            }
+            Long projectId = article.getStage().getProject().getId();
+            Long currentPostId = article.getId();
+            Member articleAuthor = article.getMember();
+            String commenterNickname = commenter.getName();
+            String articleTitle = article.getTitle();
+            Long articleAuthorId = articleAuthor.getId();
+            Long commenterId = commenter.getId();
+
+
+            if (this.parentComment == null) {
+                if (!commenterId.equals(articleAuthorId)) {
+                    CommentCreatedEvent event = new CommentCreatedEvent(
+                            this, projectId, currentCommentId, currentPostId, commenterId,
+                            commenterNickname, this.content, articleTitle, articleAuthorId
+                    );
+                    registerEvent(event);
+                }
+
+            } else {
+                Comment parent = this.parentComment;
+                Member parentCommentAuthor = parent.getMember();
+
+                if (parentCommentAuthor == null) {
+                    System.out.println("@PostPersist: ParentCommentAuthor is null for replyId=" + currentCommentId);
+                    return;
+                }
+                Long parentCommentId = parent.getId();
+                Long parentCommentAuthorId = parentCommentAuthor.getId();
+
+                ReplyCreatedEvent replyEvent = new ReplyCreatedEvent(
+                        this,
+                        projectId,
+                        currentCommentId,
+                        parentCommentId,
+                        currentPostId,
+                        commenterId,
+                        commenterNickname,
+                        this.content,
+                        articleAuthorId,
+                        articleTitle,
+                        parentCommentAuthorId
+                );
+                registerEvent(replyEvent);
+            }
+        } catch (Exception e) {
+            System.out.println("@PostPersist: Error registering event for commentId=" + this.getId() + ", Error: " + e.getMessage()); // 임시 로깅
         }
     }
 

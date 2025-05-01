@@ -3,7 +3,7 @@ package com.soda.project.application.validator;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
-import com.soda.member.enums.MemberProjectRole;
+import com.soda.project.domain.member.enums.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

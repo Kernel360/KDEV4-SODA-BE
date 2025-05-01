@@ -1,7 +1,6 @@
 package com.soda.project.domain.stage.article;
 
 import com.querydsl.core.Tuple;
-import com.soda.article.dto.article.*;
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import com.soda.project.infrastructure.ArticleRepository;

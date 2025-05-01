@@ -1,6 +1,5 @@
 package com.soda.project.interfaces;
 
-import com.soda.article.dto.article.*;
 import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.common.file.dto.*;
 import com.soda.common.file.service.FileService;

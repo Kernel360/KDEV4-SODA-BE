@@ -1,6 +1,5 @@
 package com.soda.project.interfaces;
 
-import com.soda.article.dto.comment.*;
 import com.soda.project.domain.stage.article.CommentService;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.project.interfaces.dto.comment.*;

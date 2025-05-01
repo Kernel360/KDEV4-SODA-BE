@@ -2,7 +2,7 @@ package com.soda.project.infrastructure;
 
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
-import com.soda.member.enums.MemberProjectRole;
+import com.soda.project.domain.member.enums.MemberProjectRole;
 import com.soda.project.domain.member.MemberProject;
 import com.soda.project.domain.Project;
 import org.springframework.data.domain.Page;

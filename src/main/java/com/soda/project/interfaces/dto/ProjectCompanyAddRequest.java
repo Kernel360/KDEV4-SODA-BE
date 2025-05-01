@@ -1,6 +1,6 @@
 package com.soda.project.interfaces.dto;
 
-import com.soda.member.enums.CompanyProjectRole;
+import com.soda.project.domain.company.enums.CompanyProjectRole;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 

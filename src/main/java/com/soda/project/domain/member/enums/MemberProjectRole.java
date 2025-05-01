@@ -1,4 +1,4 @@
-package com.soda.member.enums;
+package com.soda.project.domain.member.enums;
 
 import lombok.Getter;
 

@@ -5,7 +5,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.soda.project.interfaces.dto.ProjectStatsCondition.TimeUnit;
-import com.soda.project.stats.QProjectDailyStats;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProjectDailyStatsRepositoryImpl implements ProjectDailyStatsRepositoryCustom{
     private final JPAQueryFactory queryFactory;
-    private final QProjectDailyStats stats = QProjectDailyStats.projectDailyStats;
+    private final QProjectDailyStatS stats = QProjectDailyStats.projectDailyStats;
 
     @Override
     public List<Tuple> findProjectCreationStats(LocalDate startDate, LocalDate endDate, TimeUnit timeUnit) {

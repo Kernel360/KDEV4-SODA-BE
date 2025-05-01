@@ -10,6 +10,7 @@ import com.soda.member.enums.MemberProjectRole;
 import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.domain.company.CompanyProjectService;
+import com.soda.project.domain.dto.ProjectDTO;
 import com.soda.project.domain.member.MemberProject;
 import com.soda.project.domain.enums.ProjectStatus;
 import com.soda.project.domain.error.ProjectErrorCode;

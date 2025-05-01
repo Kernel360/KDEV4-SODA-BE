@@ -1,4 +1,4 @@
-package com.soda.project.interfaces.dto;
+package com.soda.project.domain.dto;
 
 import com.soda.project.domain.Project;
 import com.soda.project.domain.enums.ProjectStatus;

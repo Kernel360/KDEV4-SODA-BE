@@ -15,7 +15,7 @@ import com.soda.member.dto.company.CompanyResponse;
 import com.soda.member.dto.company.MemberResponse;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
-import com.soda.project.interfaces.dto.ProjectDTO;
+import com.soda.project.domain.dto.ProjectDTO;
 import com.soda.project.interfaces.dto.stage.StageResponse;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.stage.Stage;

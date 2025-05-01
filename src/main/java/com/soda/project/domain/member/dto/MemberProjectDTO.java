@@ -1,4 +1,4 @@
-package com.soda.project.interfaces.dto;
+package com.soda.project.domain.member.dto;
 
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberProjectRole;

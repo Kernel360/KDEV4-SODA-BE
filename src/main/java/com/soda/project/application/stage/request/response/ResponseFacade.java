@@ -5,6 +5,7 @@ import com.soda.member.service.MemberService;
 import com.soda.project.application.stage.request.response.validator.ResponseValidator;
 import com.soda.project.application.stage.request.validator.RequestApproverValidator;
 import com.soda.project.application.validator.ProjectValidator;
+import com.soda.project.domain.ProjectService;
 import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.RequestService;
 import com.soda.project.domain.stage.request.response.Response;
@@ -26,13 +27,13 @@ public class ResponseFacade {
     private final ProjectValidator projectValidator;
     private final RequestApproverValidator requestApproverValidator;
     private final ResponseValidator responseValidator;
+    private final ProjectService projectService;
 
-    public RequestApproveResponse approveRequest(Long memberId, Long requestId,
+    public RequestApproveResponse approveRequest(Long memberId, Long requestId, Long projectId,
                                                  RequestApproveRequest requestApproveRequest) {
-        Member member = memberService.getMemberWithProjectOrThrow(memberId);
-        Request request = requestService.getRequestOrThrow(requestId);
-        projectValidator.validateProjectAuthority(member, requestApproveRequest.getProjectId());
-        requestApproverValidator.validateApprover(member, request.getApprovers());
+        var project = projectService.getValidProject(projectId);
+
+        project.approveRequest(memberId, requestId);
 
         return responseService.approveRequest(member, request, requestApproveRequest);
     }

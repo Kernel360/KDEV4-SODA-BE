@@ -4,8 +4,6 @@ import com.soda.common.BaseEntity;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.enums.MemberStatus;
 import com.soda.notification.entity.MemberNotification;
-import com.soda.project.entity.MemberProject;
-import com.soda.notice.entity.MemberNotice;
 import com.soda.project.domain.member.MemberProject;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -50,7 +48,7 @@ public class Member extends BaseEntity {
     private List<MemberProject> memberProjects = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<MemberNotice> noticeList = new ArrayList<>();
+    private List<MemberNotification> noticeList = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

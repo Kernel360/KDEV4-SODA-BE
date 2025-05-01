@@ -9,6 +9,8 @@ import com.soda.member.dto.member.LoginResponse;
 import com.soda.member.dto.member.admin.CreateMemberRequest;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
+import com.soda.member.enums.MemberRole;
+import com.soda.member.enums.MemberStatus;
 import com.soda.member.error.AuthErrorCode;
 import com.soda.member.repository.RefreshTokenRepository;
 import com.soda.member.repository.VerificationCodeRepository;
@@ -21,6 +23,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,11 +71,10 @@ public class AuthService {
         log.info("회원 가입 시도: authId={}", requestDto.getAuthId());
         memberService.validateDuplicateAuthId(requestDto.getAuthId());
         Company company = null;
-        if(requestDto.getCompanyId()!=null){
+        if(requestDto.getRole().equals(MemberRole.USER)){
             company = companyService.getCompany(requestDto.getCompanyId());
         }
 
-        // 회원 엔티티 생성 및 비밀번호 암호화
         Member member = Member.builder()
                 .authId(requestDto.getAuthId())
                 .name(requestDto.getName())
@@ -98,6 +101,13 @@ public class AuthService {
         log.info("로그인 시도: authId={}", requestDto.getAuthId());
         Member member = memberService.findMemberByAuthId(requestDto.getAuthId());
         validatePassword(requestDto.getPassword(), member.getPassword(), member.getAuthId());
+
+        if (member.getMemberStatus() == MemberStatus.AWAY || member.getMemberStatus() == null) {
+            member.updateMemberStatus(MemberStatus.AVAILABLE);
+            log.debug("로그인 성공: 멤버 상태를 AVAILABLE로 변경 (이전 상태: {}) - authId={}",
+                    member.getMemberStatus() == null ? "NULL" : "AWAY", member.getAuthId());
+        }
+
         String accessToken = jwtTokenProvider.createAccessToken(member.getAuthId());
         String refreshToken = jwtTokenProvider.createRefreshToken(member.getAuthId());
         storeRefreshToken(member.getAuthId(), refreshToken);
@@ -206,7 +216,7 @@ public class AuthService {
      * @throws GeneralException 해당 이메일의 회원을 찾을 수 없는 경우 발생
      */
     @Transactional
-    public void changePassword(ChangePasswordRequest requestDto) {
+    public void resetPassword(ResetPasswordRequest requestDto) {
         log.info("비밀번호 변경 시도: 이메일={}", requestDto.getEmail());
         Member member = memberService.findMemberByEmail(requestDto.getEmail());
         member.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));
@@ -214,6 +224,43 @@ public class AuthService {
         log.info("비밀번호 변경 및 Refresh Token 삭제 완료: 이메일={}", requestDto.getEmail());
     }
 
+    /**
+     * 사용자의 로그아웃을 처리합니다.
+     * 저장된 Refresh Token을 삭제하고, 클라이언트의 Refresh Token 쿠키를 만료시킵니다.
+     *
+     * @param response HttpServletResponse (쿠키 삭제를 위함)
+     * @throws GeneralException 사용자가 인증되지 않았을 경우 발생
+     */
+    @Transactional
+    public void logout(HttpServletResponse response) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            log.warn("로그아웃 시도: 인증되지 않은 사용자.");
+            return;
+        }
+        String authId = authentication.getName();
+        log.info("로그아웃 시도: authId={}", authId);
+
+        try {
+            Member member = memberService.findMemberByAuthId(authId);
+
+            member.updateMemberStatus(MemberStatus.AWAY);
+            log.debug("멤버 상태를 AWAY로 변경: authId={}", authId);
+
+            refreshTokenRepository.deleteByAuthId(authId);
+            log.debug("저장된 Refresh Token 삭제 완료: authId={}", authId);
+
+            clearRefreshTokenCookie(response);
+
+            log.info("로그아웃 성공 및 상태 변경(AWAY) 완료: authId={}", authId);
+
+        } catch (GeneralException e) {
+            log.error("로그아웃 처리 중 오류 발생: authId={}", authId, e);
+            clearRefreshTokenCookie(response);
+            throw e;
+        }
+    }
 
     /**
      * 입력된 비밀번호와 저장된 해시 비밀번호를 비교하여 검증합니다.
@@ -238,8 +285,7 @@ public class AuthService {
      * @param refreshToken 저장할 Refresh Token 문자열
      */
     private void storeRefreshToken(String authId, String refreshToken) {
-        refreshTokenRepository.deleteByAuthId(authId); // 이전 토큰 삭제
-        refreshTokenRepository.save(authId, refreshToken); // 새 토큰 저장
+        refreshTokenRepository.save(authId, refreshToken);
         log.debug("새로운 Refresh Token 저장 완료: authId={}", authId);
     }
 
@@ -321,5 +367,22 @@ public class AuthService {
         refreshTokenCookie.setMaxAge((int) (refreshTokenValidTimeMillis / 1000));
         response.addCookie(refreshTokenCookie);
         log.debug("Refresh Token 쿠키를 응답에 추가했습니다.");
+    }
+
+
+    /**
+     * Refresh Token 쿠키를 삭제(만료)하기 위해 응답에 설정합니다.
+     * 쿠키를 생성할 때와 동일한 속성(Path, HttpOnly, Secure)을 사용해야 합니다.
+     *
+     * @param response 쿠키를 설정할 HttpServletResponse 객체
+     */
+    private void clearRefreshTokenCookie(HttpServletResponse response) {
+        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(0);
+        response.addCookie(refreshTokenCookie);
+        log.debug("Refresh Token 쿠키를 삭제(만료)하도록 응답에 설정했습니다.");
     }
 }

@@ -1,0 +1,8 @@
+services:
+  logstash:
+    build: ./logstash
+    volumes:
+      - ./logs:/usr/share/logstash/logs
+    env_file:
+      - .env
+    container_name: logstash

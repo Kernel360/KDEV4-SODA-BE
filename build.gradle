@@ -55,8 +55,9 @@ dependencies {
 	// smtp
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
-	// AWS S3
-	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+	// AWS S3 v2
+	implementation platform("software.amazon.awssdk:bom:2.25.16")
+	implementation 'software.amazon.awssdk:s3'
 
 	// MongoDB
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
@@ -67,9 +68,23 @@ dependencies {
 	// Mapper(데이터로그 저장시 엔티티에서 필드값 가져오면 양방향매핑이 있는 경우 순환참조 문제가 발생하므로 DTO에서 필드 접근하기 위함)
 	implementation 'org.modelmapper:modelmapper:3.2.0'
 
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// QueryDSL
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+	// logstash
+	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+clean {
+	delete file('src/main/generated')
 }

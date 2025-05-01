@@ -2,13 +2,23 @@
 //
 //import com.soda.member.entity.Company;
 //import com.soda.member.entity.Member;
-//import com.soda.member.enums.CompanyProjectRole;
-//import com.soda.member.enums.MemberProjectRole;
+//import com.soda.project.domain.company.enums.CompanyProjectRole;
+//import com.soda.project.domain.member.enums.MemberProjectRole;
 //import com.soda.member.enums.MemberRole;
 //import com.soda.member.repository.CompanyRepository;
 //import com.soda.member.repository.MemberRepository;
-//import com.soda.project.entity.*;
-//import com.soda.project.repository.*;
+//import com.soda.project.company.CompanyProject;
+//import com.soda.project.member.MemberProject;
+//import com.soda.project.domain.Project;
+//import com.soda.project.domain.stage.Stage;
+//import com.soda.project.enums.ProjectStatus;
+//import com.soda.project.infrastructure.CompanyProjectRepository;
+//import com.soda.project.infrastructure.MemberProjectRepository;
+//import com.soda.project.infrastructure.ProjectRepository;
+//import com.soda.project.infrastructure.StageRepository;
+//import com.soda.request.entity.Request;
+//import com.soda.request.enums.RequestStatus;
+//import com.soda.request.repository.RequestRepository;
 //import jakarta.annotation.PostConstruct;
 //import lombok.RequiredArgsConstructor;
 //import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,10 +34,10 @@
 //    private final ProjectRepository projectRepository;
 //    private final MemberProjectRepository memberProjectRepository;
 //    private final StageRepository stageRepository;
-//    private final TaskRepository taskRepository;
 //    private final PasswordEncoder passwordEncoder;
 //    private final CompanyRepository companyRepository;
 //    private final CompanyProjectRepository companyProjectRepository;
+//    private final RequestRepository requestRepository;
 //
 //    @PostConstruct
 //    public void init() {
@@ -80,7 +90,7 @@
 //
 //
 //        // 프로젝트 생성
-//        Project soda = projectRepository.save(new Project("SODA", "소다", LocalDateTime.now(), LocalDateTime.now()));
+//        Project soda = projectRepository.save(new Project("SODA", "소다", LocalDateTime.now(), LocalDateTime.now(), ProjectStatus.IN_PROGRESS));
 //
 //        // 멤버-프로젝트 매핑
 //        MemberProject memberProject1 = memberProjectRepository.save(new MemberProject(dabin, soda, MemberProjectRole.DEV_MANAGER));
@@ -103,9 +113,19 @@
 //        Stage development = stageRepository.save(new Stage("개발", 2.0F, soda));
 //        Stage deployment = stageRepository.save(new Stage("배포", 3.0F, soda));
 //
-//        // 작업 생성
-//        taskRepository.save(new Task("기획하기", "기획하기~~", 1F, planning));
-//        taskRepository.save(new Task("백엔드 프론트 개발", "프론트 백엔드 개발", 2.0F, development));
-//        taskRepository.save(new Task("cicd 구축", "배포하기 젠킨스 써서", 3.0F, deployment));
+//        Request projectCrud = requestRepository.save(Request.builder()
+//                .member(dabin)
+//                .stage(development)
+//                .title("프로젝트 CRUD API 개발")
+//                .status(RequestStatus.PENDING)
+//                .content("프로젝트 skrr하게 개발 완료 ^_^")
+//                .build());
+//        Request rfpAnalyze = requestRepository.save(Request.builder()
+//                        .member(junbeom)
+//                        .stage(planning)
+//                        .title("RFP분석")
+//                        .status(RequestStatus.APPROVED)
+//                        .content("RFP 1차로 분석 완료하였습니다.")
+//                .build());
 //    }
 //}

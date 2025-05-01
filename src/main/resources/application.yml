@@ -47,6 +47,11 @@ spring:
       host: ${REDIS_HOST}
       port: 6379
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
 logging:
   level:
     com.practice.simple: debug

@@ -2,8 +2,9 @@ package com.soda.member.entity;
 
 import com.soda.common.BaseEntity;
 import com.soda.member.enums.MemberRole;
-import com.soda.notice.entity.MemberNotice;
-import com.soda.project.entity.MemberProject;
+import com.soda.member.enums.MemberStatus;
+import com.soda.notification.entity.MemberNotification;
+import com.soda.project.domain.member.MemberProject;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +24,7 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String authId;
 
     @Column(nullable = false)
@@ -35,6 +36,7 @@ public class Member extends BaseEntity {
 
     private String phoneNumber;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private MemberRole role;
 
@@ -46,7 +48,13 @@ public class Member extends BaseEntity {
     private List<MemberProject> memberProjects = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<MemberNotice> noticeList = new ArrayList<>();
+    private List<MemberNotification> noticeList = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private MemberStatus memberStatus = MemberStatus.AVAILABLE;
+
+    public void updateMemberStatus(MemberStatus memberStatus) {this.memberStatus = memberStatus;}
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
@@ -59,6 +67,22 @@ public class Member extends BaseEntity {
         this.company = company;
         this.position = position;
         this.phoneNumber = phoneNumber;
+    }
+
+    public void initialProfile(String name, String email, String phoneNumber, String authId, String newPassword, String position) {
+        this.name = name;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.authId = authId;
+        this.password = newPassword;
+        this.position = position;
+    }
+
+    public void myProfileUpdate(String name, String email, String phoneNumber, String position) {
+        this.name = name;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.position = position;
     }
 
     public void Deleted() {

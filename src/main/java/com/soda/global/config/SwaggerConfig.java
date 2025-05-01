@@ -1,5 +1,7 @@
 package com.soda.global.config;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -9,11 +11,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-//@OpenAPIDefinition(
-//        servers = {
-//                @Server(url = "ec2-54-180-108-126.ap-northeast-2.compute.amazonaws.com", description = "Production Server")
-//        }
-//)
+@OpenAPIDefinition(
+        servers = {
+                @Server(url = "https://api.s0da.co.kr", description = "Production Server"),
+                @Server(url = "http://localhost:8080", description = "Local Development Server")
+        }
+)
 public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI() {

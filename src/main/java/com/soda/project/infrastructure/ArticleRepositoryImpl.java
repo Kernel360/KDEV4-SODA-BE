@@ -19,11 +19,13 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.Optional;
 
-import static com.soda.article.entity.QArticle.article;
+
 import static com.soda.member.entity.QCompany.company;
 import static com.soda.member.entity.QMember.member;
-import static com.soda.project.entity.QProject.project;
-import static com.soda.project.entity.QStage.stage;
+import static com.soda.project.domain.QProject.project;
+import static com.soda.project.domain.stage.QStage.stage;
+import static com.soda.project.domain.stage.article.QArticle.article;
+
 
 @Repository
 @RequiredArgsConstructor

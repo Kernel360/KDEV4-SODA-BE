@@ -1,6 +1,5 @@
 package com.soda.project.domain.stage.article;
 
-import com.soda.article.dto.article.*;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import com.soda.project.infrastructure.VoteRepository;
 import com.soda.global.response.GeneralException;

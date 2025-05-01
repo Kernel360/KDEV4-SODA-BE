@@ -1,6 +1,6 @@
 package com.soda.project.infrastructure;
 
-import com.soda.project.domain.stage.request.ResponseLink;
+import com.soda.project.domain.stage.request.response.link.ResponseLink;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

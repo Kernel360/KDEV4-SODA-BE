@@ -31,6 +31,8 @@ public class ResponseService {
 
     private final ResponseFactory responseFactory;
 
+    private final ResponseProvider responseProvider;
+
 
     @LoggableEntityAction(action = "CREATE", entityClass = Response.class)
     @Transactional
@@ -41,7 +43,7 @@ public class ResponseService {
                 requestApproveRequest.getComment(),
                 requestApproveRequest.getLinks()
         );
-        responseRepository.save(approval);
+        responseProvider.store(approval);
 
         return RequestApproveResponse.fromEntity(approval);
     }
@@ -55,7 +57,7 @@ public class ResponseService {
                 requestRejectRequest.getComment(),
                 requestRejectRequest.getLinks()
         );
-        responseRepository.save(rejection);
+        responseProvider.store(rejection);
 
         return RequestRejectResponse.fromEntity(rejection);
     }

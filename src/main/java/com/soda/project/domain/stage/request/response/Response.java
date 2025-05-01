@@ -49,15 +49,13 @@ public class Response extends BaseEntity {
         this.links = links;
     }
 
-    protected static Response createApprove(Member member, Request request, String comment, List<ResponseLink> links) {
+    protected static Response createApprove(Member member, Request request, String comment) {
         Response approval = Response.builder()
                 .member(member)
                 .request(request)
                 .comment(comment)
                 .status(ResponseStatus.APPROVED)
                 .build();
-
-        approval.addLinks(links);
 
         approval.approveApproverRequest(request);
 

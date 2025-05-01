@@ -43,9 +43,7 @@ public class ResponseService {
                 requestApproveRequest.getComment(),
                 requestApproveRequest.getLinks()
         );
-        responseProvider.store(approval);
-
-        return RequestApproveResponse.fromEntity(approval);
+        return RequestApproveResponse.fromEntity(responseProvider.store(approval));
     }
 
     @LoggableEntityAction(action = "CREATE", entityClass = Response.class)
@@ -57,9 +55,7 @@ public class ResponseService {
                 requestRejectRequest.getComment(),
                 requestRejectRequest.getLinks()
         );
-        responseProvider.store(rejection);
-
-        return RequestRejectResponse.fromEntity(rejection);
+        return RequestRejectResponse.fromEntity(responseProvider.store(rejection););
     }
 
     public List<ResponseDTO> findAllByRequestId(Long requestId) {

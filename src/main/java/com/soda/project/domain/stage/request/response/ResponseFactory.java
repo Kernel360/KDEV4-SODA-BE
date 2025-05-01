@@ -38,10 +38,10 @@ public class ResponseFactory {
         return rejection;
     }
 
-    public Response updateResponse(Long memberId, Long responseId, String comment,
+    public Response updateResponse(Response response, String comment,
                                    List<LinkUploadRequest.LinkUploadDTO> linkContents) {
 
-        Response response = Response.updateResponse();
+        response.updateResponse(comment);
 
         List<ResponseLink> links = linkService.buildLinks("response", response, linkContents);
         response.addLinks(links);

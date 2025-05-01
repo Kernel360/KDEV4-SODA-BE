@@ -67,14 +67,13 @@ public class ResponseService {
 
     @LoggableEntityAction(action = "UPDATE", entityClass = Response.class)
     @Transactional
-    public ResponseUpdateResponse updateResponse(Long memberId, Long responseId, ResponseUpdateRequest responseUpdateRequest) {
-        Response response = responseFactory.updateResponse(
-                memberId,
-                responseId,
+    public ResponseUpdateResponse updateResponse(Response response, ResponseUpdateRequest responseUpdateRequest) {
+        Response updatedResponse = responseFactory.updateResponse(
+                response,
                 responseUpdateRequest.getComment(),
                 responseUpdateRequest.getLinks()
         );
-        return ResponseUpdateResponse.fromEntity(responseProvider.storeAndflush(response));
+        return ResponseUpdateResponse.fromEntity(responseProvider.storeAndflush(updatedResponse));
     }
 
     @LoggableEntityAction(action = "DELETE", entityClass = Response.class)

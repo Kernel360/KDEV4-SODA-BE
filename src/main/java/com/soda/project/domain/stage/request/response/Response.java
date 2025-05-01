@@ -75,8 +75,8 @@ public class Response extends BaseEntity {
         return rejection;
     }
 
-    public static Response updateResponse() {
-        return null;
+    public void updateResponse(String comment) {
+        this.comment = comment;
     }
 
     private void approveApproverRequest() {

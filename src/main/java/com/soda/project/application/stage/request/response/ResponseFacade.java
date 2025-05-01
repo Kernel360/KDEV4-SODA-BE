@@ -59,7 +59,7 @@ public class ResponseFacade {
                                                  ResponseUpdateRequest responseUpdateRequest) {
         Response response = responseService.getResponseOrThrow(responseId);
         responseValidator.validateResponseWriter(response, memberId);
-        return responseService.updateResponse(memberId, responseId, responseUpdateRequest);
+        return responseService.updateResponse(response, responseUpdateRequest);
     }
 
     public ResponseDeleteResponse deleteResponse(Long memberId, Long responseId) {

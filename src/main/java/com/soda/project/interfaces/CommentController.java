@@ -1,5 +1,6 @@
 package com.soda.project.interfaces;
 
+import com.soda.project.application.stage.article.comment.CommentFacade;
 import com.soda.project.domain.stage.article.comment.CommentService;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.project.domain.stage.article.comment.dto.*;
@@ -14,13 +15,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentController {
 
+    private final CommentFacade commentFacade;
     private final CommentService commentService;
 
     @PostMapping("/comments")
     public ResponseEntity<ApiResponseForm<CommentCreateResponse>> createComment(HttpServletRequest user, @RequestBody CommentCreateRequest request) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        CommentCreateResponse response = commentService.createComment(userId, userRole, request);
+        CommentCreateResponse response = commentFacade.createComment(userId, userRole, request);
         return ResponseEntity.ok(ApiResponseForm.success(response, "댓글 생성 성공"));
     }
 

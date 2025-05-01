@@ -1,10 +1,5 @@
 package com.soda.project.domain.stage.article.comment;
 
-import com.soda.project.domain.stage.article.Article;
-import com.soda.project.domain.stage.article.ArticleService;
-import com.soda.project.domain.stage.article.comment.dto.*;
-import com.soda.project.domain.stage.article.comment.error.CommentErrorCode;
-import com.soda.project.infrastructure.CommentRepository;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
@@ -13,13 +8,21 @@ import com.soda.member.service.MemberService;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.error.ProjectErrorCode;
 import com.soda.project.domain.member.MemberProjectService;
-import com.soda.project.domain.ProjectService;
+import com.soda.project.domain.stage.article.Article;
+import com.soda.project.domain.stage.article.ArticleService;
+import com.soda.project.domain.stage.article.comment.dto.CommentCreateResponse;
+import com.soda.project.domain.stage.article.comment.dto.CommentDTO;
+import com.soda.project.domain.stage.article.comment.dto.CommentUpdateRequest;
+import com.soda.project.domain.stage.article.comment.dto.CommentUpdateResponse;
+import com.soda.project.domain.stage.article.comment.error.CommentErrorCode;
+import com.soda.project.infrastructure.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Transactional(readOnly = true)
@@ -29,46 +32,18 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final MemberService memberService;
-    private final ProjectService projectService;
     private final MemberProjectService memberProjectService;
     private final ArticleService articleService;
+    private final CommentProvider commentProvider;
 
     /**
      * 댓글 생성
-     * @param userId 댓글을 작성하는 사용자 ID
-     * @param userRole 댓글을 작성하는 사용자 역할
-     * @param request 댓글 생성 요청 정보
-     * @return 생성된 댓글의 정보
-     * @throws GeneralException 사용자가 프로젝트에 참여하지 않거나 댓글을 작성할 권한이 없는 경우 예외 발생
      */
     @LoggableEntityAction(action = "CREATE", entityClass = Comment.class)
     @Transactional
-    public CommentCreateResponse createComment(Long userId, String userRole, CommentCreateRequest request) {
-        // 1. 유저가 해당 프로젝트에 참여하는지 / 관리자인지 체크
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(request.getProjectId());
-        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
-
-        // 2. 해당 게시글이 프로젝트에 포함되어있는지 체크
-        Article article = articleService.validateArticle(request.getArticleId());
-
-        // 3. 해당 댓글이 대댓글인 경우 (아니면 null)
-        Comment parentComment = null;
-        if (request.getParentCommentId() != null) {
-            parentComment = commentRepository.findById(request.getParentCommentId())
-                    .orElseThrow(() -> new GeneralException(CommentErrorCode.PARENT_COMMENT_NOT_FOUND));
-        }
-
-        // 4. 댓글 생성 및 저장
-        Comment comment = Comment.builder()
-                .content(request.getContent())
-                .article(article)
-                .member(member)
-                .parentComment(parentComment)
-                .build();
-        commentRepository.save(comment);
-
-        return CommentCreateResponse.fromEntity(comment);
+    public CommentCreateResponse createComment(String content, Member member, Article article, Comment parentComment) {
+        Comment comment = Comment.create(content, member, article, parentComment);
+        return CommentCreateResponse.fromEntity(commentProvider.store(comment));
     }
 
     /**
@@ -214,6 +189,13 @@ public class CommentService {
         if(!comment.getMember().getId().equals(member.getId())) {
             throw new GeneralException(CommentErrorCode.FORBIDDEN_ACTION);
         }
+    }
+
+    public Optional<Comment> findOptionalParentComment(Long parentCommentId) {
+        if (parentCommentId == null) {
+            return Optional.empty();
+        }
+        return commentRepository.findByIdAndIsDeletedFalse(parentCommentId);
     }
 
 }

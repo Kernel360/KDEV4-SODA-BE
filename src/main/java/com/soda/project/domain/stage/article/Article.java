@@ -1,10 +1,12 @@
 package com.soda.project.domain.stage.article;
 
+import com.soda.project.domain.stage.article.comment.Comment;
 import com.soda.project.domain.stage.article.enums.ArticleStatus;
 import com.soda.project.domain.stage.article.enums.PriorityType;
 import com.soda.common.BaseEntity;
 import com.soda.member.entity.Member;
 import com.soda.project.domain.stage.Stage;
+import com.soda.project.domain.stage.article.vote.Vote;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

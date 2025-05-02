@@ -1,6 +1,6 @@
 package com.soda.project.infrastructure;
 
-import com.soda.project.domain.stage.article.VoteAnswerItem;
+import com.soda.project.domain.stage.article.vote.VoteAnswerItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

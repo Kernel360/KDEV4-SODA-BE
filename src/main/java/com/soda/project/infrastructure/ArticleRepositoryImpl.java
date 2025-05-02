@@ -4,7 +4,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.soda.project.interfaces.dto.article.ArticleSearchCondition;
+import com.soda.project.domain.stage.article.dto.ArticleSearchCondition;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.enums.ArticleStatus;
 import com.soda.project.domain.stage.article.enums.PriorityType;

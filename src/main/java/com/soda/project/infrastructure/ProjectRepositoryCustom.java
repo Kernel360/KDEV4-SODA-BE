@@ -1,8 +1,8 @@
 package com.soda.project.infrastructure;
 
 import com.querydsl.core.Tuple;
-import com.soda.project.interfaces.dto.ProjectListResponse;
-import com.soda.project.interfaces.dto.ProjectSearchCondition;
+import com.soda.project.domain.dto.ProjectListResponse;
+import com.soda.project.domain.dto.ProjectSearchCondition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

@@ -1,7 +1,7 @@
 package com.soda.project.infrastructure;
 
 import com.soda.project.domain.stage.article.Article;
-import com.soda.project.domain.stage.article.Comment;
+import com.soda.project.domain.stage.article.comment.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

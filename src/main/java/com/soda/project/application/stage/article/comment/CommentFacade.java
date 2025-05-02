@@ -15,11 +15,13 @@ import com.soda.project.domain.stage.article.comment.CommentService;
 import com.soda.project.domain.stage.article.comment.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentFacade {
 
     private final CommentService commentService;
@@ -31,6 +33,8 @@ public class CommentFacade {
     private final ArticleValidator articleValidator;
     private final CommentValidator commentValidator;
 
+    @LoggableEntityAction(action = "CREATE", entityClass = Comment.class)
+    @Transactional
     public CommentCreateResponse createComment(Long userId, String userRole, CommentCreateRequest request) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(request.getProjectId());
@@ -57,6 +61,8 @@ public class CommentFacade {
         return commentHierarchyBuilder.buildHierarchy(comments);
     }
 
+    @LoggableEntityAction(action = "DELETE", entityClass = Comment.class)
+    @Transactional
     public void deleteComment(Long userId, Long commentId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Comment comment = commentService.findCommentById(commentId);
@@ -67,6 +73,7 @@ public class CommentFacade {
     }
 
     @LoggableEntityAction(action = "UPDATE", entityClass = Comment.class)
+    @Transactional
     public CommentUpdateResponse updateComment(Long userId, CommentUpdateRequest request, Long commentId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Comment comment = commentService.findCommentById(commentId);

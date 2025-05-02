@@ -1,36 +1,28 @@
 package com.soda.project.domain.stage.article.comment;
 
-import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
-import com.soda.project.application.stage.article.comment.builder.CommentHierarchyBuilder;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.comment.dto.CommentCreateResponse;
-import com.soda.project.domain.stage.article.comment.dto.CommentDTO;
 import com.soda.project.domain.stage.article.comment.dto.CommentUpdateResponse;
 import com.soda.project.domain.stage.article.comment.error.CommentErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class CommentService {
 
     private final CommentProvider commentProvider;
-    private final CommentHierarchyBuilder commentHierarchyBuilder;
 
     /**
      * 댓글 생성
      */
-    @LoggableEntityAction(action = "CREATE", entityClass = Comment.class)
-    @Transactional
     public CommentCreateResponse createComment(String content, Member member, Article article, Comment parentComment) {
         log.debug("CommentService: 댓글 생성 시작");
         Comment comment = Comment.create(content, member, article, parentComment);
@@ -51,8 +43,6 @@ public class CommentService {
     /**
      * 댓글 삭제
      */
-    @LoggableEntityAction(action = "DELETE", entityClass = Comment.class)
-    @Transactional
     public void markCommentAsDeleted(Comment comment) {
         log.debug("CommentService: 댓글 삭제(상태변경) 시작 commentId={}", comment.getId());
         comment.delete();
@@ -62,7 +52,6 @@ public class CommentService {
     /**
      * 댓글 수정
      */
-    @Transactional
     public CommentUpdateResponse updateCommentContent(Comment comment, String newContent) {
         log.debug("CommentService: 댓글 수정 시작 commentId={}", comment.getId());
         comment.update(newContent);

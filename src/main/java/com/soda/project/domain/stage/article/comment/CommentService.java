@@ -41,17 +41,11 @@ public class CommentService {
     /**
      * 특정 게시글에 달린 댓글 목록 조회
      */
-    public List<CommentDTO> getCommentList(Article article) {
-        // 1. 댓글 조회
+    public List<Comment> getCommentsForArticle(Article article) {
         log.debug("CommentService: '{}' 게시글의 댓글 트리 조회 시작 (Article ID: {})", article.getTitle(), article.getId());
         List<Comment> comments = commentProvider.findAllByArticle(article);
-        log.debug("CommentService: 댓글 {}건 조회 완료", comments.size());
-
-        // 2. 트리 구조 생성 및 DTO 변환
-        List<CommentDTO> commentTree = commentHierarchyBuilder.buildHierarchy(comments);
-
-        log.info("CommentService: '{}' 게시글의 댓글 트리 조회 완료 (최상위 댓글 {}건)", article.getTitle(), commentTree.size());
-        return commentTree;
+        log.info("CommentService: '{}' 게시글 댓글 엔티티 목록 조회 완료 ({}건)", article.getTitle(), comments.size());
+        return comments;
     }
 
     /**

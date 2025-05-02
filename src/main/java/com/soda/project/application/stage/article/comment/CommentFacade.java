@@ -2,6 +2,7 @@ package com.soda.project.application.stage.article.comment;
 
 import com.soda.member.entity.Member;
 import com.soda.member.service.MemberService;
+import com.soda.project.application.stage.article.comment.builder.CommentHierarchyBuilder;
 import com.soda.project.application.stage.article.comment.validator.CommentValidator;
 import com.soda.project.application.stage.article.validator.ArticleValidator;
 import com.soda.project.domain.Project;
@@ -24,6 +25,7 @@ public class CommentFacade {
     private final MemberService memberService;
     private final ArticleService articleService;
     private final ProjectService projectService;
+    private final CommentHierarchyBuilder commentHierarchyBuilder;
 
     private final ArticleValidator articleValidator;
     private final CommentValidator commentValidator;
@@ -50,7 +52,8 @@ public class CommentFacade {
 
         commentValidator.validateAccessPermission(userRole, member, project);
 
-        return commentService.getCommentList(article);
+        List<Comment> comments = commentService.getCommentsForArticle(article);
+        return commentHierarchyBuilder.buildHierarchy(comments);
     }
 
     public void deleteComment(Long userId, Long commentId) {

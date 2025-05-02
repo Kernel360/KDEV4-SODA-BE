@@ -30,7 +30,7 @@ public class CommentController {
     public ResponseEntity<ApiResponseForm<List<CommentDTO>>> getCommentList(HttpServletRequest user, @PathVariable Long articleId) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        List<CommentDTO> response = commentService.getCommentList(userId, userRole, articleId);
+        List<CommentDTO> response = commentFacade.getCommentList(userId, userRole, articleId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

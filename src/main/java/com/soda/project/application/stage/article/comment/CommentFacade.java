@@ -12,8 +12,11 @@ import com.soda.project.domain.stage.article.comment.Comment;
 import com.soda.project.domain.stage.article.comment.CommentService;
 import com.soda.project.domain.stage.article.comment.dto.CommentCreateRequest;
 import com.soda.project.domain.stage.article.comment.dto.CommentCreateResponse;
+import com.soda.project.domain.stage.article.comment.dto.CommentDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -40,5 +43,15 @@ public class CommentFacade {
         commentValidator.validateParentCommentPresent(parentComment, article, request.getParentCommentId());
 
         return commentService.createComment(request.getContent(), member, article, parentComment);
+    }
+
+    public List<CommentDTO> getCommentList(Long userId, String userRole, Long articleId) {
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Article article = articleService.validateArticle(articleId);
+        Project project = article.getStage().getProject();
+
+        commentValidator.validateAccessPermission(userRole, member, project);
+
+        return commentService.getCommentList(article);
     }
 }

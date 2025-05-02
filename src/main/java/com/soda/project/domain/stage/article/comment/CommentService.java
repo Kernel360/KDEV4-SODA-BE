@@ -5,6 +5,7 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.service.MemberService;
+import com.soda.project.application.stage.article.comment.builder.CommentHierarchyBuilder;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.error.ProjectErrorCode;
 import com.soda.project.domain.member.MemberProjectService;
@@ -17,6 +18,7 @@ import com.soda.project.domain.stage.article.comment.dto.CommentUpdateResponse;
 import com.soda.project.domain.stage.article.comment.error.CommentErrorCode;
 import com.soda.project.infrastructure.CommentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
@@ -35,6 +38,7 @@ public class CommentService {
     private final MemberProjectService memberProjectService;
     private final ArticleService articleService;
     private final CommentProvider commentProvider;
+    private final CommentHierarchyBuilder commentHierarchyBuilder;
 
     /**
      * 댓글 생성
@@ -42,88 +46,26 @@ public class CommentService {
     @LoggableEntityAction(action = "CREATE", entityClass = Comment.class)
     @Transactional
     public CommentCreateResponse createComment(String content, Member member, Article article, Comment parentComment) {
+        log.debug("CommentService: 댓글 생성 시작");
         Comment comment = Comment.create(content, member, article, parentComment);
+        log.info("CommentService: 댓글 저장 완료 (via Provider): commentId={}", comment.getId());
         return CommentCreateResponse.fromEntity(commentProvider.store(comment));
     }
 
     /**
-     * 관리자 여부 체크 및 프로젝트 멤버 여부 체크
-     * @param userRole 사용자 역할
-     * @param member 사용자의 멤버 정보
-     * @param project 프로젝트 정보
-     * @throws GeneralException 사용자가 관리자도 아니고 프로젝트 멤버도 아닌 경우 예외 발생
-     */
-    private void checkIfMemberIsAdminOrProjectMember(String userRole, Member member, Project project) {
-        boolean isAdmin = memberService.isAdmin(MemberRole.valueOf(userRole));
-        boolean isProjectMember = memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
-
-        if (!isAdmin && !isProjectMember) {
-            throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
-        }
-    }
-
-    /**
      * 특정 게시글에 달린 댓글 목록 조회
-     * @param userId 조회하는 사용자 ID
-     * @param userRole 조회하는 사용자 역할
-     * @param articleId 게시글 ID
-     * @return 게시글에 달린 댓글 목록
-     * @throws GeneralException 댓글을 조회할 권한이 없을 경우 예외 발생
      */
-    public List<CommentDTO> getCommentList(Long userId, String userRole, Long articleId) {
-        // 1. 유저의 접근 권한 확인
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Article article = articleService.validateArticle(articleId);
+    public List<CommentDTO> getCommentList(Article article) {
+        // 1. 댓글 조회
+        log.debug("CommentService: '{}' 게시글의 댓글 트리 조회 시작 (Article ID: {})", article.getTitle(), article.getId());
+        List<Comment> comments = commentProvider.findAllByArticle(article);
+        log.debug("CommentService: 댓글 {}건 조회 완료", comments.size());
 
-        Project project = article.getStage().getProject();
-        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
+        // 2. 트리 구조 생성 및 DTO 변환
+        List<CommentDTO> commentTree = commentHierarchyBuilder.buildHierarchy(comments);
 
-        // 2. 댓글 조회
-        List<Comment> comments = commentRepository.findAllByArticle(article);
-
-        List<CommentDTO> commentDTOList = comments.stream()
-                .map(CommentDTO::fromEntity) // Comment 엔티티를 DTO로 변환
-                .toList();
-
-        // 3. 부모 댓글과 자식 댓글 관계 설정
-        Map<Long, List<CommentDTO>> parentToChildMap = commentDTOList.stream()
-                .filter(commentDTO -> commentDTO.getParentCommentId() != null) // 자식 댓글만 필터링
-                .collect(Collectors.groupingBy(CommentDTO::getParentCommentId)); // 부모 댓글 ID로 자식 댓글 그룹화
-
-        // 4. 자식 댓글을 부모 댓글에 설정하는 재귀적 메소드
-        List<CommentDTO> finalCommentDTOList = commentDTOList.stream()
-                .map(commentDTO -> addChildCommentsToParent(commentDTO, parentToChildMap)) // 각 댓글에 자식 댓글 추가
-                .toList();
-
-        // 5. 최종적으로 부모 댓글만 반환 (대댓글을 포함한 전체 트리 형태로 반환)
-        return finalCommentDTOList.stream()
-                .filter(commentDTO -> commentDTO.getParentCommentId() == null) // 부모 댓글만 반환
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 자식 댓글을 부모 댓글에 추가하는 재귀 메소드
-     * @param commentDTO 부모 댓글
-     * @param parentToChildMap 부모 댓글에 해당하는 자식 댓글 리스트를 포함한 맵
-     * @return 자식 댓글을 포함한 부모 댓글 DTO
-     */
-    private CommentDTO addChildCommentsToParent(CommentDTO commentDTO, Map<Long, List<CommentDTO>> parentToChildMap) {
-        // 부모 댓글에 해당하는 자식 댓글을 찾음
-        List<CommentDTO> childComments = parentToChildMap.get(commentDTO.getId());
-
-        // 자식 댓글이 있는 경우
-        if (childComments != null && !childComments.isEmpty()) {
-            // 자식 댓글을 부모 댓글에 설정
-            commentDTO = commentDTO.withChildComments(childComments);  // 기존 댓글의 childComments 필드를 갱신
-
-            // 자식 댓글에도 자식 댓글이 있을 수 있으므로 재귀적으로 자식 댓글을 처리
-            for (CommentDTO childComment : childComments) {
-                // 자식 댓글에 대해서도 재귀 호출하여 자식 댓글을 추가
-                addChildCommentsToParent(childComment, parentToChildMap); // 재귀 호출
-            }
-        }
-
-        return commentDTO;
+        log.info("CommentService: '{}' 게시글의 댓글 트리 조회 완료 (최상위 댓글 {}건)", article.getTitle(), commentTree.size());
+        return commentTree;
     }
 
     /**

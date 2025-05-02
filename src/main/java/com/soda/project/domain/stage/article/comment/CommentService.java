@@ -3,29 +3,19 @@ package com.soda.project.domain.stage.article.comment;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
-import com.soda.member.enums.MemberRole;
-import com.soda.member.service.MemberService;
 import com.soda.project.application.stage.article.comment.builder.CommentHierarchyBuilder;
-import com.soda.project.domain.Project;
-import com.soda.project.domain.error.ProjectErrorCode;
-import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.stage.article.Article;
-import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.project.domain.stage.article.comment.dto.CommentCreateResponse;
 import com.soda.project.domain.stage.article.comment.dto.CommentDTO;
-import com.soda.project.domain.stage.article.comment.dto.CommentUpdateRequest;
 import com.soda.project.domain.stage.article.comment.dto.CommentUpdateResponse;
 import com.soda.project.domain.stage.article.comment.error.CommentErrorCode;
-import com.soda.project.infrastructure.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Transactional(readOnly = true)
@@ -33,10 +23,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentService {
 
-    private final CommentRepository commentRepository;
-    private final MemberService memberService;
-    private final MemberProjectService memberProjectService;
-    private final ArticleService articleService;
     private final CommentProvider commentProvider;
     private final CommentHierarchyBuilder commentHierarchyBuilder;
 
@@ -81,57 +67,21 @@ public class CommentService {
 
     /**
      * 댓글 수정
-     * @param userId 댓글을 수정하는 사용자 ID
-     * @param request 댓글 수정 요청 정보
-     * @param commentId 수정할 댓글 ID
-     * @return 수정된 댓글의 정보
-     * @throws GeneralException 댓글을 작성한 사용자가 아닌 경우 예외 발생
      */
     @LoggableEntityAction(action = "UPDATE", entityClass = Comment.class)
     @Transactional
-    public CommentUpdateResponse updateComment(Long userId, CommentUpdateRequest request, Long commentId) {
-        Comment comment = getCommentAndValidateMember(userId, commentId);
-
-        checkIfUserIsCommentAuthor(comment.getMember(), comment);
-
-        comment.update(request.getContent());
-
+    public CommentUpdateResponse updateCommentContent(Comment comment, String newContent) {
+        log.debug("CommentService: 댓글 수정 시작 commentId={}", comment.getId());
+        comment.update(newContent);
+        log.info("CommentService: 댓글 수정 완료 commentId={}", comment.getId());
         return CommentUpdateResponse.fromEntity(comment);
-    }
-
-    /**
-     * 댓글 조회하고, 해당 댓글을 작성한 사용자가 맞는지 확인
-     * @param userId 댓글 조회하는 사용자 ID
-     * @param commentId 조회할 댓글 ID
-     * @return 조회된 댓글 객체
-     * @throws GeneralException 댓글을 찾을 수 없거나 삭제된 댓글인 경우 예외 발생
-     */
-    private Comment getCommentAndValidateMember(Long userId, Long commentId) {
-        // 로그인한 사용자 확인
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-
-        // 댓글 조회
-        return commentRepository.findByIdAndIsDeletedFalse(commentId)
-                .orElseThrow(() -> new GeneralException(CommentErrorCode.COMMENT_NOT_FOUND));
-    }
-
-    /**
-     * 현재 로그인한 사용자가 댓글 작성자인지 확인
-     * @param member 로그인한 사용자 정보
-     * @param comment 댓글 정보
-     * @throws GeneralException 댓글 작성자가 아닌 경우 예외 발생
-     */
-    private void checkIfUserIsCommentAuthor(Member member, Comment comment) {
-        if(!comment.getMember().getId().equals(member.getId())) {
-            throw new GeneralException(CommentErrorCode.FORBIDDEN_ACTION);
-        }
     }
 
     public Optional<Comment> findOptionalParentComment(Long parentCommentId) {
         if (parentCommentId == null) {
             return Optional.empty();
         }
-        return commentRepository.findByIdAndIsDeletedFalse(parentCommentId);
+        return commentProvider.findById(parentCommentId);
     }
 
     public Comment findCommentById(Long commentId) {

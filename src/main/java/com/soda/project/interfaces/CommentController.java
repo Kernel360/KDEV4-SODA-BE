@@ -45,7 +45,7 @@ public class CommentController {
     public ResponseEntity<ApiResponseForm<CommentUpdateResponse>> updateComment(HttpServletRequest user,
                                                                                 @RequestBody CommentUpdateRequest request, @PathVariable Long commentId) {
         Long userId = (Long) user.getAttribute("memberId");
-        CommentUpdateResponse response = commentService.updateComment(userId, request, commentId);
+        CommentUpdateResponse response = commentFacade.updateComment(userId, commentId, request);
         return ResponseEntity.ok(ApiResponseForm.success(response, "댓글 수정 성공"));
     }
 }

@@ -10,9 +10,7 @@ import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.project.domain.stage.article.comment.Comment;
 import com.soda.project.domain.stage.article.comment.CommentService;
-import com.soda.project.domain.stage.article.comment.dto.CommentCreateRequest;
-import com.soda.project.domain.stage.article.comment.dto.CommentCreateResponse;
-import com.soda.project.domain.stage.article.comment.dto.CommentDTO;
+import com.soda.project.domain.stage.article.comment.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -62,5 +60,14 @@ public class CommentFacade {
         commentValidator.validateCommentAuthor(member, comment);
 
         commentService.markCommentAsDeleted(comment);
+    }
+
+    public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Comment comment = commentService.findCommentById(commentId);
+
+        commentValidator.validateCommentAuthor(member, comment);
+
+        return commentService.updateCommentContent(comment, request.getContent());
     }
 }

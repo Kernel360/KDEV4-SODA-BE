@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -21,5 +22,10 @@ public class CommentProviderImpl implements CommentProvider {
     @Override
     public List<Comment> findAllByArticle(Article article) {
         return commentRepository.findAllByArticle(article);
+    }
+
+    @Override
+    public Optional<Comment> findById(Long commentId) {
+        return commentRepository.findByIdAndIsDeletedFalse(commentId);
     }
 }

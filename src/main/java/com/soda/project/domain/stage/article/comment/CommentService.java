@@ -70,19 +70,13 @@ public class CommentService {
 
     /**
      * 댓글 삭제
-     * @param userId 삭제하는 사용자 ID
-     * @param commentId 삭제할 댓글 ID
-     * @throws GeneralException 댓글을 작성한 사용자가 아닌 경우 예외 발생
      */
     @LoggableEntityAction(action = "DELETE", entityClass = Comment.class)
     @Transactional
-    public void deleteComment(Long userId, Long commentId) {
-        Comment comment = getCommentAndValidateMember(userId, commentId);
-
-        checkIfUserIsCommentAuthor(comment.getMember(), comment);
-
-        // isDeleted = true
+    public void markCommentAsDeleted(Comment comment) {
+        log.debug("CommentService: 댓글 삭제(상태변경) 시작 commentId={}", comment.getId());
         comment.delete();
+        log.info("CommentService: 댓글 삭제(상태변경) 완료 commentId={}", comment.getId());
     }
 
     /**
@@ -140,4 +134,8 @@ public class CommentService {
         return commentRepository.findByIdAndIsDeletedFalse(parentCommentId);
     }
 
+    public Comment findCommentById(Long commentId) {
+        return commentProvider.findById(commentId)
+                .orElseThrow(() -> new GeneralException(CommentErrorCode.COMMENT_NOT_FOUND));
+    }
 }

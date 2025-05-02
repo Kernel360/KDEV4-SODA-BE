@@ -54,4 +54,13 @@ public class CommentFacade {
 
         return commentService.getCommentList(article);
     }
+
+    public void deleteComment(Long userId, Long commentId) {
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Comment comment = commentService.findCommentById(commentId);
+
+        commentValidator.validateCommentAuthor(member, comment);
+
+        commentService.markCommentAsDeleted(comment);
+    }
 }

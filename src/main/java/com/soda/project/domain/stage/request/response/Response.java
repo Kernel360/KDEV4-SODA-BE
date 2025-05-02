@@ -57,12 +57,29 @@ public class Response extends BaseEntity {
                 .status(ResponseStatus.APPROVED)
                 .build();
 
-        approval.approveApproverRequest(request);
+        approval.approveApproverRequest();
 
         return approval;
     }
 
-    private void approveApproverRequest(Request request) {
+    public static Response createReject(Member member, Request request, String comment) {
+        Response rejection = Response.builder()
+                .member(member)
+                .request(request)
+                .comment(comment)
+                .status(ResponseStatus.REJECTED)
+                .build();
+
+        request.reject();
+
+        return rejection;
+    }
+
+    public void updateResponse(String comment) {
+        this.comment = comment;
+    }
+
+    private void approveApproverRequest() {
         if (request.isOneRemainUntilApproved(request)) {
             request.approved();
         } else {
@@ -74,8 +91,15 @@ public class Response extends BaseEntity {
         this.comment = comment;
     }
 
-    public void delete() {
+    public void delete(Long count) {
         markAsDeleted();
+        checkAndchangeStatusToPending(count);
+    }
+
+    private void checkAndchangeStatusToPending(Long count) {
+        if(count == 0) {
+            request.changeStatusToPending();
+        }
     }
 
     public void addLinks(List<ResponseLink> newLinks) {

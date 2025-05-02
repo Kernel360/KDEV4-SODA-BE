@@ -1,5 +1,6 @@
 package com.soda.project.application.stage.article.comment;
 
+import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.member.entity.Member;
 import com.soda.member.service.MemberService;
 import com.soda.project.application.stage.article.comment.builder.CommentHierarchyBuilder;
@@ -65,7 +66,8 @@ public class CommentFacade {
         commentService.markCommentAsDeleted(comment);
     }
 
-    public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
+    @LoggableEntityAction(action = "UPDATE", entityClass = Comment.class)
+    public CommentUpdateResponse updateComment(Long userId, CommentUpdateRequest request, Long commentId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Comment comment = commentService.findCommentById(commentId);
 

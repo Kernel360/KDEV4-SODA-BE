@@ -62,7 +62,6 @@ public class CommentService {
     /**
      * 댓글 수정
      */
-    @LoggableEntityAction(action = "UPDATE", entityClass = Comment.class)
     @Transactional
     public CommentUpdateResponse updateCommentContent(Comment comment, String newContent) {
         log.debug("CommentService: 댓글 수정 시작 commentId={}", comment.getId());

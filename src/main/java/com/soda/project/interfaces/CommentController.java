@@ -1,8 +1,7 @@
 package com.soda.project.interfaces;
 
-import com.soda.project.application.stage.article.comment.CommentFacade;
-import com.soda.project.domain.stage.article.comment.CommentService;
 import com.soda.global.response.ApiResponseForm;
+import com.soda.project.application.stage.article.comment.CommentFacade;
 import com.soda.project.domain.stage.article.comment.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import java.util.List;
 public class CommentController {
 
     private final CommentFacade commentFacade;
-    private final CommentService commentService;
 
     @PostMapping("/comments")
     public ResponseEntity<ApiResponseForm<CommentCreateResponse>> createComment(HttpServletRequest user, @RequestBody CommentCreateRequest request) {
@@ -45,7 +43,7 @@ public class CommentController {
     public ResponseEntity<ApiResponseForm<CommentUpdateResponse>> updateComment(HttpServletRequest user,
                                                                                 @RequestBody CommentUpdateRequest request, @PathVariable Long commentId) {
         Long userId = (Long) user.getAttribute("memberId");
-        CommentUpdateResponse response = commentFacade.updateComment(userId, commentId, request);
+        CommentUpdateResponse response = commentFacade.updateComment(userId, request, commentId);
         return ResponseEntity.ok(ApiResponseForm.success(response, "댓글 수정 성공"));
     }
 }

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class ResponseProviderImpl implements ResponseProvider {
-    private ResponseRepository responseRepository;
+    private final ResponseRepository responseRepository;
 
     @Override
     public Response store(Response response) {

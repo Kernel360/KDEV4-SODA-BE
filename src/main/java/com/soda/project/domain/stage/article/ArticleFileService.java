@@ -2,7 +2,7 @@ package com.soda.project.domain.stage.article;
 
 import com.soda.project.domain.stage.article.dto.ArticleFileDTO;
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
-import com.soda.project.infrastructure.ArticleFileRepository;
+import com.soda.project.infrastructure.stage.article.ArticleFileRepository;
 import com.soda.global.response.GeneralException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

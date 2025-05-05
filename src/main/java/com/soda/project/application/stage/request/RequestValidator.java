@@ -2,8 +2,8 @@ package com.soda.project.application.stage.request;
 
 import com.soda.global.response.GeneralException;
 import com.soda.project.domain.stage.request.Request;
-import com.soda.project.domain.stage.request.enums.RequestStatus;
-import com.soda.project.domain.stage.request.error.RequestErrorCode;
+import com.soda.project.domain.stage.request.RequestStatus;
+import com.soda.project.domain.stage.request.RequestErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

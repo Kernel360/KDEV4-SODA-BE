@@ -9,7 +9,7 @@ import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.RequestService;
 import com.soda.project.domain.stage.request.response.Response;
 import com.soda.project.domain.stage.request.response.ResponseService;
-import com.soda.project.domain.stage.request.response.dto.*;
+import com.soda.project.interfaces.stage.request.response.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

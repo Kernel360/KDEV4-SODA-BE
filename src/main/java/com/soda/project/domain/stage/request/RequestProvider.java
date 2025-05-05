@@ -1,7 +1,7 @@
 package com.soda.project.domain.stage.request;
 
-import com.soda.project.domain.stage.request.dto.GetMemberRequestCondition;
-import com.soda.project.domain.stage.request.dto.GetRequestCondition;
+import com.soda.project.interfaces.stage.request.dto.GetMemberRequestCondition;
+import com.soda.project.interfaces.stage.request.dto.GetRequestCondition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

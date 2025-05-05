@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.request.response;
 
-import com.soda.project.domain.stage.request.response.dto.ResponseDTO;
+import com.soda.project.interfaces.stage.request.response.dto.ResponseDTO;
 
 import java.util.List;
 

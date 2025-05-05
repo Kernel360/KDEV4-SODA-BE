@@ -3,7 +3,7 @@ package com.soda.project.application.stage.request.response.validator;
 import com.soda.global.response.GeneralException;
 import com.soda.member.enums.MemberRole;
 import com.soda.project.domain.stage.request.response.Response;
-import com.soda.project.domain.stage.request.response.error.ResponseErrorCode;
+import com.soda.project.domain.stage.request.response.ResponseErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

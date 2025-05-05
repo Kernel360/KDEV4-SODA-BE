@@ -4,7 +4,7 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
 import com.soda.project.domain.Project;
-import com.soda.project.domain.error.ProjectErrorCode;
+import com.soda.project.domain.ProjectErrorCode;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.comment.Comment;
 import com.soda.project.domain.stage.article.comment.error.CommentErrorCode;

@@ -1,8 +1,8 @@
 package com.soda.project.domain.stage.article;
 
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
-import com.soda.project.infrastructure.ArticleLinkRepository;
-import com.soda.project.infrastructure.ArticleRepository;
+import com.soda.project.infrastructure.stage.article.ArticleLinkRepository;
+import com.soda.project.infrastructure.stage.article.ArticleRepository;
 import com.soda.common.link.dto.LinkUploadRequest;
 import com.soda.common.link.strategy.LinkStrategy;
 import com.soda.global.response.GeneralException;

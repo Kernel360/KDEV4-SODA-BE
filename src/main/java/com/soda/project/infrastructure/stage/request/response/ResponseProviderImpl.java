@@ -3,9 +3,8 @@ package com.soda.project.infrastructure.stage.request.response;
 import com.soda.global.response.GeneralException;
 import com.soda.project.domain.stage.request.response.Response;
 import com.soda.project.domain.stage.request.response.ResponseProvider;
-import com.soda.project.domain.stage.request.response.dto.ResponseDTO;
-import com.soda.project.domain.stage.request.response.error.ResponseErrorCode;
-import com.soda.project.infrastructure.ResponseRepository;
+import com.soda.project.interfaces.stage.request.response.dto.ResponseDTO;
+import com.soda.project.domain.stage.request.response.ResponseErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

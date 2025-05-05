@@ -1,7 +1,7 @@
 package com.soda.project.infrastructure;
 
 import com.soda.project.domain.Project;
-import com.soda.project.domain.enums.ProjectStatus;
+import com.soda.project.domain.ProjectStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

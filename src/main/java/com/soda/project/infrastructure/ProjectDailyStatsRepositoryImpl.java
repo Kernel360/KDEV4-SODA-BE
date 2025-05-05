@@ -5,7 +5,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.soda.project.domain.stats.QProjectDailyStats;
-import com.soda.project.domain.dto.ProjectStatsCondition.TimeUnit;
+import com.soda.project.interfaces.dto.ProjectStatsCondition.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

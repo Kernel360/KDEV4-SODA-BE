@@ -60,4 +60,8 @@ public class RequestFacade {
     public List<RequestDTO> findAllByStageId(Long stageId) {
         return requestService.findAllByStageId(stageId);
     }
+
+    public RequestDTO findById(Long requestId) {
+        return requestService.findById(requestId);
+    }
 }

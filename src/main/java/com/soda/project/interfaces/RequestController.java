@@ -72,7 +72,7 @@ public class RequestController {
 
     @GetMapping("requests/{requestId}")
     public ResponseEntity<ApiResponseForm<?>> getRequest(@PathVariable Long requestId) {
-        RequestDTO requestDTO = requestService.findById(requestId);
+        RequestDTO requestDTO = requestFacade.findById(requestId);
         return ResponseEntity.ok(ApiResponseForm.success(requestDTO));
     }
 

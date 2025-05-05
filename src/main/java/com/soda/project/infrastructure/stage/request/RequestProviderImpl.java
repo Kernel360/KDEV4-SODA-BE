@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -35,5 +36,10 @@ public class RequestProviderImpl implements RequestProvider {
     @Override
     public List<Request> findAllByStage_IdAndIsDeletedFalse(Long stageId) {
         return requestRepository.findAllByStage_IdAndIsDeletedFalse(stageId);
+    }
+
+    @Override
+    public Optional<Request> findById(Long requestId) {
+        return requestRepository.findById(requestId);
     }
 }

@@ -16,4 +16,9 @@ public class RequestValidator {
             throw new GeneralException(RequestErrorCode.REQUEST_NOT_REJECTED);
         }
     }
+
+    public void validaRequestWriter(Long memberId, Request request) {
+        boolean isRequestWriter = request.getMember().getId().equals(memberId);
+        if (!isRequestWriter) { throw new GeneralException(RequestErrorCode.USER_NOT_WRITE_REQUEST); }
+    }
 }

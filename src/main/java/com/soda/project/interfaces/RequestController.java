@@ -81,7 +81,7 @@ public class RequestController {
                                                             @PathVariable Long requestId,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        RequestUpdateResponse requestUpdateResponse = requestService.updateRequest(memberId, requestId, requestUpdateRequest);
+        RequestUpdateResponse requestUpdateResponse = requestFacade.updateRequest(memberId, requestId, requestUpdateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestUpdateResponse));
     }
 

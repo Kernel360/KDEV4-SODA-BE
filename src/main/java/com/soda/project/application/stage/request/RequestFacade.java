@@ -64,4 +64,13 @@ public class RequestFacade {
     public RequestDTO findById(Long requestId) {
         return requestService.findById(requestId);
     }
+
+    @LoggableEntityAction(action = "UPDATE", entityClass = Request.class)
+    @Transactional
+    public RequestUpdateResponse updateRequest(Long memberId, Long requestId, RequestUpdateRequest requestUpdateRequest) {
+        Request request = requestService.getRequestOrThrow(requestId);
+        requestValidator.validaRequestWriter(memberId, request);
+
+        return requestService.updateRequest(request, requestUpdateRequest);
+    }
 }

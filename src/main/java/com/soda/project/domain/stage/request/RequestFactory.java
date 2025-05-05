@@ -9,6 +9,7 @@ import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.request.dto.MemberAssignDTO;
 import com.soda.project.domain.stage.request.dto.ReRequestCreateRequest;
 import com.soda.project.domain.stage.request.dto.RequestCreateRequest;
+import com.soda.project.domain.stage.request.dto.RequestUpdateRequest;
 import com.soda.project.domain.stage.request.link.RequestLink;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -58,5 +59,16 @@ public class RequestFactory {
         }
 
         request.addApprovers(ApproverDesignation.designateApprover(request, approvers));
+    }
+
+    public Request updateRequest(Request request, RequestUpdateRequest requestUpdateRequest) {
+        request.updateContents(requestUpdateRequest.getTitle(), requestUpdateRequest.getContent());
+        if(requestUpdateRequest.getLinks() != null) {
+            request.addLinks(linkService.buildLinks("request", request, requestUpdateRequest.getLinks()));
+        }
+        if(requestUpdateRequest.getMembers() != null) {
+            designateApprover(requestUpdateRequest.getMembers(), request);
+        }
+        return request;
     }
 }

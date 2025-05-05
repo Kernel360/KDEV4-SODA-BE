@@ -94,23 +94,20 @@ public class Request extends BaseEntity {
                 .build();
     }
 
-    public void updateTitle(String title) {
-        this.title = title;
+    public void updateContents(String title, String content) {
+        if(title != null) {
+            this.title = title;
+        }
+        if(content != null) {
+            this.content = content;
+        }
     }
-    public void updateContent(String content) {
-        this.content = content;
-    }
+
     public void addLinks(List<RequestLink> newLinks) {
         if (this.links == null) {
             this.links = new ArrayList<>();
         }
         this.links.addAll(newLinks);
-    }
-    public void addFiles(List<RequestFile> newFiles) {
-        if (this.files == null) {
-            this.files = new ArrayList<>();
-        }
-        this.files.addAll(newFiles);
     }
 
     public void delete() {

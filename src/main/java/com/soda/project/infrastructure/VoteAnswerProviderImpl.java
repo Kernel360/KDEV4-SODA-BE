@@ -36,4 +36,9 @@ public class VoteAnswerProviderImpl implements VoteAnswerProvider {
                 .filter(StringUtils::hasText)
                 .toList();
     }
+
+    @Override
+    public boolean existsByVote_IdAndMember_Id(Long voteId, Long userId) {
+        return voteAnswerRepository.existsByVote_IdAndMember_Id(voteId, userId);
+    }
 }

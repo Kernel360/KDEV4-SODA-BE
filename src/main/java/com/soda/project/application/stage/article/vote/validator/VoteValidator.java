@@ -1,6 +1,5 @@
 package com.soda.project.application.stage.article.vote.validator;
 
-import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
@@ -12,12 +11,10 @@ import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import com.soda.project.domain.stage.article.vote.Vote;
-import com.soda.project.domain.stage.article.vote.VoteAnswerService;
+import com.soda.project.domain.stage.article.vote.VoteAnswerProvider;
 import com.soda.project.domain.stage.article.vote.VoteItem;
 import com.soda.project.interfaces.dto.stage.article.vote.VoteCreateRequest;
 import com.soda.project.interfaces.dto.stage.article.vote.VoteSubmitRequest;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,7 +30,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class VoteValidator {
-    private final VoteAnswerService voteAnswerService;
+    private final VoteAnswerProvider voteAnswerProvider;
     private final CompanyProjectService companyProjectService;
     private final MemberProjectService memberProjectService;
 
@@ -108,7 +105,7 @@ public class VoteValidator {
     }
 
     private void validateNotAlreadyVoted(Long voteId, Long userId) {
-        if (voteAnswerService.hasUserVoted(voteId, userId)) {
+        if (voteAnswerProvider.hasUserVoted(voteId, userId)) {
             log.warn("유효성 검증 실패: User ID {} 는 이미 Vote ID {} 에 투표했습니다.", userId, voteId);
             throw new GeneralException(VoteErrorCode.ALREADY_VOTED);
         }

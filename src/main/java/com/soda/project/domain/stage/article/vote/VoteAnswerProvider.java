@@ -12,4 +12,6 @@ public interface VoteAnswerProvider {
     int countAnswersByVote(Long voteId);
 
     List<String> findTextAnswersByVote(Long voteId);
+
+    boolean existsByVote_IdAndMember_Id(Long voteId, Long userId);
 }

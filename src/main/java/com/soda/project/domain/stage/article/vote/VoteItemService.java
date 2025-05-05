@@ -1,8 +1,7 @@
 package com.soda.project.domain.stage.article.vote;
 
-import com.soda.project.domain.stage.article.error.VoteErrorCode;
-import com.soda.project.infrastructure.VoteItemRepository;
 import com.soda.global.response.GeneralException;
+import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ public class VoteItemService {
 
     private final VoteItemFactory voteItemFactory;
     private final VoteItemProvider voteItemProvider;
-    private final VoteItemRepository voteItemRepository;
 
     /**
      * Vote 항목들 저장

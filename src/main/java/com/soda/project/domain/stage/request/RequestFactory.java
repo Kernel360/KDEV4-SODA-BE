@@ -6,6 +6,7 @@ import com.soda.member.domain.member.MemberProvider;
 import com.soda.member.entity.Member;
 import com.soda.member.error.MemberErrorCode;
 import com.soda.project.domain.stage.Stage;
+import com.soda.project.domain.stage.request.approver.ApproverDesignation;
 import com.soda.project.interfaces.stage.request.dto.MemberAssignDTO;
 import com.soda.project.interfaces.stage.request.dto.ReRequestCreateRequest;
 import com.soda.project.interfaces.stage.request.dto.RequestCreateRequest;

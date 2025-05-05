@@ -1,7 +1,8 @@
-package com.soda.project.domain.stage.request;
+package com.soda.project.domain.stage.request.approver;
 
 import com.soda.common.BaseEntity;
 import com.soda.member.entity.Member;
+import com.soda.project.domain.stage.request.Request;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;

@@ -1,4 +1,4 @@
-package com.soda.project.domain.stage.request;
+package com.soda.project.domain.stage.request.approver;
 
 import com.soda.global.response.ErrorCode;
 import org.springframework.http.HttpStatus;

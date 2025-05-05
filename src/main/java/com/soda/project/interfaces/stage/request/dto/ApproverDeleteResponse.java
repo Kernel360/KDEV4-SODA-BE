@@ -1,6 +1,6 @@
 package com.soda.project.interfaces.stage.request.dto;
 
-import com.soda.project.domain.stage.request.ApproverDesignation;
+import com.soda.project.domain.stage.request.approver.ApproverDesignation;
 import lombok.Builder;
 import lombok.Getter;
 

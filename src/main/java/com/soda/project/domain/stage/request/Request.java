@@ -4,6 +4,7 @@ import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
 import com.soda.member.entity.Member;
 import com.soda.project.domain.stage.Stage;
+import com.soda.project.domain.stage.request.approver.ApproverDesignation;
 import com.soda.project.interfaces.stage.request.dto.ReRequestCreateRequest;
 import com.soda.project.interfaces.stage.request.dto.RequestCreateRequest;
 import com.soda.project.domain.stage.request.file.RequestFile;

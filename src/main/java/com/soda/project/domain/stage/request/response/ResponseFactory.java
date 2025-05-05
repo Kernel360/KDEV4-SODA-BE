@@ -13,6 +13,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class ResponseFactory {
+    private final static String DOMAIN_TYPE = "response";
 
     private final LinkService linkService;
 
@@ -21,7 +22,7 @@ public class ResponseFactory {
 
         Response approval = Response.createApprove(member, request, comment);
 
-        List<ResponseLink> links = linkService.buildLinks("response", approval, linkContents);
+        List<ResponseLink> links = linkService.buildLinks(DOMAIN_TYPE, approval, linkContents);
         approval.addLinks(links);
 
         return approval;
@@ -32,7 +33,7 @@ public class ResponseFactory {
 
         Response rejection = Response.createReject(member, request, comment);
 
-        List<ResponseLink> links = linkService.buildLinks("response", rejection, linkContents);
+        List<ResponseLink> links = linkService.buildLinks(DOMAIN_TYPE, rejection, linkContents);
         rejection.addLinks(links);
 
         return rejection;
@@ -43,7 +44,7 @@ public class ResponseFactory {
 
         response.updateResponse(comment);
 
-        List<ResponseLink> links = linkService.buildLinks("response", response, linkContents);
+        List<ResponseLink> links = linkService.buildLinks(DOMAIN_TYPE, response, linkContents);
         response.addLinks(links);
 
         return response;

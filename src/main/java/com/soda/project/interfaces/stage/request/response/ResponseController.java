@@ -6,7 +6,6 @@ import com.soda.common.link.dto.LinkDeleteResponse;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.project.application.stage.request.response.ResponseFacade;
-import com.soda.project.domain.stage.request.response.ResponseService;
 import com.soda.project.interfaces.stage.request.response.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ import java.util.List;
 public class ResponseController {
     private final ResponseFacade responseFacade;
 
-    private final ResponseService responseService;
     private final FileService fileService;
     private final LinkService linkService;
 

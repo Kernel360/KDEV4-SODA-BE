@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -37,8 +38,8 @@ public class ResponseProviderImpl implements ResponseProvider {
     }
 
     @Override
-    public Response findById(Long responseId) {
-        return getResponseOrThrow(responseId);
+    public Response getResponseOrThrow(Long responseId) {
+        return responseRepository.findById(responseId).orElseThrow(() -> new GeneralException(ResponseErrorCode.RESPONSE_NOT_FOUND));
     }
 
     @Override
@@ -46,7 +47,8 @@ public class ResponseProviderImpl implements ResponseProvider {
         return responseRepository.countNotDeletedByRequestId(response.getRequest().getId());
     }
 
-    private Response getResponseOrThrow(Long responseId) {
-        return responseRepository.findById(responseId).orElseThrow(() -> new GeneralException(ResponseErrorCode.RESPONSE_NOT_FOUND));
+    @Override
+    public Optional<Response> findById(Long responseId) {
+        return responseRepository.findById(responseId);
     }
 }

@@ -37,6 +37,11 @@ public class RequestService {
     private final LinkService linkService;
     private final FileService fileService;
     private final S3Service s3Service;
+
+    private final RequestFactory requestFactory;
+
+    private final RequestProvider requestProvider;
+
     private final RequestRepository requestRepository;
     private final MemberRepository memberRepository;
     private final StageRepository stageRepository;
@@ -50,16 +55,9 @@ public class RequestService {
     */
     @LoggableEntityAction(action = "CREATE", entityClass = Request.class)
     @Transactional
-    public RequestCreateResponse createRequest(Long memberId, RequestCreateRequest requestCreateRequest) {
-        Member member = getMemberWithProjectOrThrow(memberId);
-        Stage stage = getStageOrThrow(requestCreateRequest.getStageId());
-
-        // 현재 프로젝트에 속한 "개발사"의 멤버가 아니고, 어드민도 아니면 USER_NOT_IN_PROJECT_DEV 반환
-        validateProjectAuthority(member, requestCreateRequest.getProjectId());
-
-        Request request = createRequest(requestCreateRequest, member, stage);
-
-        return RequestCreateResponse.fromEntity(request);
+    public RequestCreateResponse createRequest(Member member, Stage stage, RequestCreateRequest requestCreateRequest) {
+        Request request = requestFactory.createRequest(member, stage, requestCreateRequest);
+        return RequestCreateResponse.fromEntity(requestProvider.store(request));
     }
 
     @LoggableEntityAction(action = "CREATE", entityClass = Request.class)
@@ -136,10 +134,6 @@ public class RequestService {
         return RequestDeleteResponse.fromEntity(request);
     }
 
-    @Transactional
-    public void reject(Request request) {
-        request.reject();
-    }
 
 
     // 분리한 메서드들
@@ -198,14 +192,6 @@ public class RequestService {
         if(requestUpdateRequest.getMembers() != null) {
             designateApprover(requestUpdateRequest.getMembers(), request);
         }
-    }
-
-    public Request createRequest(RequestCreateRequest dto, Member member, Stage stage) {
-        Request request = buildRequest(dto.getTitle(), dto.getContent(), dto.getParentId(), member, stage);
-        List<RequestLink> requestLinks = linkService.buildLinks("request", request, dto.getLinks());
-        request.addLinks(requestLinks);
-        designateApprover(dto.getMembers(), request);
-        return requestRepository.save(request);
     }
 
     private Request createReRequest(ReRequestCreateRequest dto, Long requestId, Member member, Stage stage) {

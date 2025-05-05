@@ -319,4 +319,8 @@ public class StageService {
         log.info("스테이지 ID 목록 조회 완료: {}개", stageIds.size());
         return stageIds;
     }
+
+    public Stage getStageOrThrow(Long stageId) {
+        return stageRepository.findById(stageId).orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
+    }
 }

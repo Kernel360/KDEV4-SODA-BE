@@ -7,9 +7,10 @@ import com.soda.common.link.dto.LinkUploadRequest;
 import com.soda.common.link.dto.LinkUploadResponse;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
-import com.soda.project.domain.stage.request.dto.*;
+import com.soda.project.application.stage.request.RequestFacade;
 import com.soda.project.domain.stage.request.ApproverDesignationService;
 import com.soda.project.domain.stage.request.RequestService;
+import com.soda.project.domain.stage.request.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,8 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class RequestController {
+    private final RequestFacade requestFacade;
+
     private final RequestService requestService;
     private final ApproverDesignationService approverDesignationService;
     private final FileService fileService;
@@ -32,7 +35,7 @@ public class RequestController {
     public ResponseEntity<ApiResponseForm<?>> createRequest(@RequestBody RequestCreateRequest requestCreateRequest,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        RequestCreateResponse requestCreateResponse = requestService.createRequest(memberId, requestCreateRequest);
+        RequestCreateResponse requestCreateResponse = requestFacade.createRequest(memberId, requestCreateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestCreateResponse));
     }
 

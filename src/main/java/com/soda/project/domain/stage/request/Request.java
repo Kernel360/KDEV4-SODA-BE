@@ -4,6 +4,7 @@ import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
 import com.soda.member.entity.Member;
 import com.soda.project.domain.stage.Stage;
+import com.soda.project.domain.stage.request.dto.RequestCreateRequest;
 import com.soda.project.domain.stage.request.enums.RequestStatus;
 import com.soda.project.domain.stage.request.file.RequestFile;
 import com.soda.project.domain.stage.request.link.RequestLink;
@@ -69,6 +70,17 @@ public class Request extends BaseEntity {
         this.content = content;
         this.files = files;
         this.links = links;
+    }
+
+    public static Request createRequest(Member member, Stage stage, RequestCreateRequest requestCreateRequest) {
+        return Request.builder()
+                .member(member)
+                .stage(stage)
+                .title(requestCreateRequest.getTitle())
+                .content(requestCreateRequest.getContent())
+                .parentId(requestCreateRequest.getParentId())
+                .status(RequestStatus.PENDING)
+                .build();
     }
 
     public void updateTitle(String title) {

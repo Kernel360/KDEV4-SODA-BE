@@ -28,7 +28,6 @@ public class VoteService {
     private final VoteAnswerService voteAnswerService;
     private final VoteAnswerItemService voteAnswerItemService;
 
-    @Transactional
     public VoteCreateResponse createVoteAndItems(Article article, String title, boolean allowMultipleSelection,
                                                  boolean allowTextAnswer, LocalDateTime deadLine, List<String> itemTexts) {
         log.info("Vote 생성 및 저장 시작 (VoteService): articleId={}", article.getId());
@@ -38,7 +37,6 @@ public class VoteService {
 
         if (!allowTextAnswer && !CollectionUtils.isEmpty(itemTexts)) {
             List<VoteItem> createdItems = voteItemService.createVoteItems(savedVote, itemTexts);
-
             if (createdItems != null) {
                 savedVote.getVoteItems().clear(); // 기존 collection 초기화
                 savedVote.getVoteItems().addAll(createdItems);

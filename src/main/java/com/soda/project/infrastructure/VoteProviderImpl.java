@@ -17,6 +17,6 @@ public class VoteProviderImpl implements VoteProvider {
 
     @Override
     public boolean existsByArticleIdAndIsDeletedFalse(Long articleId) {
-        return voteRepository.existsByArticleIdAndIsDeletedFalse(articleId);
+        return voteRepository.existsByArticle_IdAndIsDeletedFalse(articleId);
     }
 }

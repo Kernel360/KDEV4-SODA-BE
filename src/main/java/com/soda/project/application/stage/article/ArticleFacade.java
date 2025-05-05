@@ -7,9 +7,11 @@ import com.soda.project.application.stage.article.vote.validator.VoteValidator;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
+import com.soda.project.domain.stage.article.vote.Vote;
 import com.soda.project.domain.stage.article.vote.VoteService;
 import com.soda.project.interfaces.dto.stage.article.vote.VoteCreateRequest;
 import com.soda.project.interfaces.dto.stage.article.vote.VoteCreateResponse;
+import com.soda.project.interfaces.dto.stage.article.vote.VoteViewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,10 +28,9 @@ public class ArticleFacade {
     private final VoteValidator voteValidator;
 
     @Transactional
-    public VoteCreateResponse createVoteForArticle(Long userId, Long articleId, String userRole, VoteCreateRequest request) {
+    public VoteCreateResponse createVoteForArticle(Long articleId, Long userId, VoteCreateRequest request) {
         Member member = memberService.findMemberById(userId);
         Article article = articleService.validateArticle(articleId);
-
         if (voteService.doesActiveVoteExistForArticle(articleId)) {
             throw new GeneralException(VoteErrorCode.VOTE_ALREADY_EXISTS);
         }
@@ -38,5 +39,17 @@ public class ArticleFacade {
 
         return voteService.createVoteAndItems(article, request.getTitle(), request.getAllowMultipleSelection(),
                 request.getAllowTextAnswer(), request.getDeadLine(), request.getVoteItems());
+    }
+
+    public VoteViewResponse getVoteInfoForArticle(Long articleId, Long userId) {
+        Member member = memberService.findWithProjectsById(userId);
+        Article article = articleService.validateArticle(articleId);
+
+        Vote vote = article.getVote();
+
+        if (vote == null || vote.getIsDeleted()) {
+            return null;
+        }
+        return VoteViewResponse.from(vote);
     }
 }

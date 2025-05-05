@@ -351,20 +351,6 @@ public class ArticleService {
         return MyArticleListResponse.from(articleId, title, projId, projName, stgId, stgName, createdAt);
     }
 
-    public VoteViewResponse getVoteInfoForArticle(Long articleId) {
-        Article article = validateArticle(articleId);
-        Vote vote = article.getVote();
-
-        if (vote == null || vote.getIsDeleted()) {
-            log.warn("[ArticleService] 게시글 ID {} 에 연결된 활성 투표가 없습니다.", articleId);
-            // vote 없으면 null
-            return null;
-        }
-
-        log.info("[ArticleService] 게시글 ID {} 투표 정보 조회 완료.", articleId);
-        return VoteViewResponse.from(vote);
-    }
-
     @Transactional
     public VoteSubmitResponse submitVoteForArticle(Long articleId, Long userId, String userRole, VoteSubmitRequest request) {
         log.info("[투표 제출 시작] 게시글 ID: {}, 사용자 ID: {}, 역할(문자열): {}", articleId, userId, userRole);

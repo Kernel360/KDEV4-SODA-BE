@@ -1,12 +1,12 @@
 package com.soda.project.interfaces;
 
-import com.soda.project.application.stage.article.ArticleFacade;
-import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.common.file.dto.*;
 import com.soda.common.file.service.FileService;
 import com.soda.common.link.dto.LinkDeleteResponse;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
+import com.soda.project.application.stage.article.ArticleFacade;
+import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.project.interfaces.dto.stage.article.*;
 import com.soda.project.interfaces.dto.stage.article.vote.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -132,14 +132,14 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<VoteCreateResponse>> createVote(@PathVariable Long articleId, HttpServletRequest request,
                                                                           @Valid @RequestBody VoteCreateRequest voteRequest) {
         Long userId = (Long) request.getAttribute("memberId");
-        String userRole = (String) request.getAttribute("userRole").toString();
-        VoteCreateResponse response = articleFacade.createVoteForArticle(articleId, userId, userRole, voteRequest);
+        VoteCreateResponse response = articleFacade.createVoteForArticle(articleId, userId, voteRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "투표 생성 성공"));
     }
 
     @GetMapping("/articles/{articleId}/vote")
-    public ResponseEntity<ApiResponseForm<VoteViewResponse>> getVoteInfo(@PathVariable Long articleId) {
-        VoteViewResponse response = articleService.getVoteInfoForArticle(articleId);
+    public ResponseEntity<ApiResponseForm<VoteViewResponse>> getVoteInfo(@PathVariable Long articleId, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("memberId");
+        VoteViewResponse response = articleFacade.getVoteInfoForArticle(articleId, userId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

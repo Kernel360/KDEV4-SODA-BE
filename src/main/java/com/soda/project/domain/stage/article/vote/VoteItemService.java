@@ -24,11 +24,7 @@ public class VoteItemService {
 
     /**
      * Vote 항목들 저장
-     * @param vote 항목들 저장할 Vote
-     * @param itemTexts 생성할 항목들 텍스트
-     * @return VoteItem 엔티티 리스트
      */
-    @Transactional
     public List<VoteItem> createVoteItems(Vote vote, List<String> itemTexts) {
         if (CollectionUtils.isEmpty(itemTexts)) {
             log.debug("생성할 투표 항목 텍스트 목록이 비어있습니다. voteId={}", vote.getId());

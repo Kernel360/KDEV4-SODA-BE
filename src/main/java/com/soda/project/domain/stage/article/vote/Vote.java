@@ -48,6 +48,17 @@ public class Vote extends BaseEntity {
         this.article = article;
     }
 
+    protected static Vote create(String title, boolean allowMultipleSelection, boolean allowTextAnswer,
+                                 LocalDateTime deadLine, Article article) {
+        return Vote.builder()
+                .title(title)
+                .allowMultipleSelection(allowMultipleSelection)
+                .allowTextAnswer(allowTextAnswer)
+                .deadLine(deadLine)
+                .article(article)
+                .build();
+    }
+
     public void addVoteItem(VoteItem voteItem) {
         this.voteItems.add(voteItem);
     }

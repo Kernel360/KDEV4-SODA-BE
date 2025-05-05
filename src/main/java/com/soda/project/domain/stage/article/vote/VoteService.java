@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,76 +22,36 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class VoteService {
 
+    private final VoteProvider voteProvider;
     private final VoteRepository voteRepository;
     private final VoteItemService voteItemService;
     private final VoteAnswerService voteAnswerService;
     private final VoteAnswerItemService voteAnswerItemService;
 
     @Transactional
-    public VoteCreateResponse createVote(Article article, VoteCreateRequest request) {
-        log.info("Vote 생성 시작 (VoteService): articleId={}", article.getId());
+    public VoteCreateResponse createVoteAndItems(Article article, String title, boolean allowMultipleSelection,
+                                                  boolean allowTextAnswer, LocalDateTime deadLine, List<String> itemTexts) {
+        log.info("Vote 생성 및 저장 시작 (VoteService): articleId={}", article.getId());
 
-        validateVoteRequest(request);
+        Vote vote = Vote.create(title, allowMultipleSelection, allowTextAnswer, deadLine, article);
+        Vote savedVote = voteProvider.store(vote);
 
-        Vote vote = Vote.builder()
-                .title(request.getTitle())
-                .allowMultipleSelection(request.getAllowMultipleSelection())
-                .allowTextAnswer(request.getAllowTextAnswer())
-                .deadLine(request.getDeadLine())
-                .article(article)
-                .build();
+        if (!allowTextAnswer && !CollectionUtils.isEmpty(itemTexts)) {
+            List<VoteItem> createdItems = voteItemService.createVoteItems(savedVote, itemTexts);
 
-        // vote 저장
-        Vote savedVote = voteRepository.save(vote);
-        log.debug("Vote 엔티티 저장 완료 (VoteService) : voteId = {}", savedVote.getId());
-
-        if (!CollectionUtils.isEmpty(request.getVoteItems())) {
-            List<VoteItem> createdItems = voteItemService.createVoteItems(savedVote, request.getVoteItems());
-            // 메모리 상태 동기화
             if (createdItems != null) {
-                createdItems.forEach(savedVote::addVoteItem);
+                savedVote.getVoteItems().clear(); // 기존 collection 초기화
+                savedVote.getVoteItems().addAll(createdItems);
             }
         }
-
         log.info("Vote 생성 최종 완료 (VoteService): voteId={}, articleId={}", savedVote.getId(), article.getId());
 
         // 응답 DTO 생성 및 반환
         return VoteCreateResponse.from(savedVote);
     }
 
-    private void validateVoteRequest(VoteCreateRequest request) {
-        boolean hasItems = !CollectionUtils.isEmpty(request.getVoteItems());
-        boolean textAllowed = request.getAllowTextAnswer();
-
-        // 1. 항목 선택 투표 시 항목 필수 검증
-        if (!textAllowed && !hasItems) {
-            log.warn("유효성 검증 실패: 항목 선택 투표에는 항목이 필수입니다.");
-            throw new GeneralException(VoteErrorCode.VOTE_ITEM_REQUIRED);
-        }
-
-        // 2. 텍스트 답변 투표 시 항목 불가 검증
-        if (textAllowed && hasItems) {
-            log.warn("유효성 검증 실패: 텍스트 답변 투표에는 항목을 포함할 수 없습니다.");
-            throw new GeneralException(VoteErrorCode.VOTE_CANNOT_HAVE_BOTH_ITEMS_AND_TEXT);
-        }
-
-        // 3. 항목 중복 검사 (항목이 있는 경우에만)
-        if (hasItems) {
-            List<String> itemTexts = request.getVoteItems();
-            // Set을 이용하여 중복 제거 후 크기 비교
-            Set<String> distinctItems = new HashSet<>(itemTexts);
-            if (distinctItems.size() != itemTexts.size()) {
-                log.warn("유효성 검증 실패: 투표 항목 요청에 중복된 내용이 있습니다. Items: {}", itemTexts);
-                throw new GeneralException(VoteErrorCode.VOTE_DUPLICATE_ITEM_TEXT);
-            }
-            log.debug("투표 항목 중복 검증 통과. {}개 항목 유효.", distinctItems.size());
-        }
-
-        log.debug("투표 생성 요청 데이터 유효성 검증 통과");
-    }
-
     public boolean doesActiveVoteExistForArticle(Long articleId) {
-        return voteRepository.existsByArticleIdAndIsDeletedFalse(articleId);
+        return voteProvider.existsByArticleIdAndIsDeletedFalse(articleId);
     }
 
     public Vote findVoteById(Long voteId) {

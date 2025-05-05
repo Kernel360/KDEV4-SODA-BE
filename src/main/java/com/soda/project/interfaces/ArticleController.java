@@ -1,5 +1,6 @@
 package com.soda.project.interfaces;
 
+import com.soda.project.application.stage.article.ArticleFacade;
 import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.common.file.dto.*;
 import com.soda.common.file.service.FileService;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArticleController {
 
+    private final ArticleFacade articleFacade;
     private final ArticleService articleService;
     private final FileService fileService;
     private final LinkService linkService;
@@ -131,7 +133,7 @@ public class ArticleController {
                                                                           @Valid @RequestBody VoteCreateRequest voteRequest) {
         Long userId = (Long) request.getAttribute("memberId");
         String userRole = (String) request.getAttribute("userRole").toString();
-        VoteCreateResponse response = articleService.createVoteForArticle(articleId, userId, userRole, voteRequest);
+        VoteCreateResponse response = articleFacade.createVoteForArticle(articleId, userId, userRole, voteRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "투표 생성 성공"));
     }
 

@@ -19,6 +19,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class VoteItemService {
 
+    private final VoteItemProvider voteItemProvider;
     private final VoteItemRepository voteItemRepository;
 
     /**
@@ -38,14 +39,11 @@ public class VoteItemService {
 
         // 1. 각 항목에 대한 VoteItem 생성
         List<VoteItem> voteItems = itemTexts.stream()
-                .map(text -> VoteItem.builder()
-                        .text(text)
-                        .vote(vote)
-                        .build())
+                .map(text -> VoteItem.create(text, vote))
                 .toList();
 
         // 2. DB에 저장
-        List<VoteItem> savedVoteItems = voteItemRepository.saveAll(voteItems);
+        List<VoteItem> savedVoteItems = voteItemProvider.storeAll(voteItems);
 
         log.info("VoteItem 생성 및 저장 완료: voteId={}, savedCount={}", vote.getId(), savedVoteItems.size());
         return savedVoteItems;

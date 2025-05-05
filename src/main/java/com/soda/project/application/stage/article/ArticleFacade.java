@@ -91,4 +91,17 @@ public class ArticleFacade {
         vote.addVoteItem(savedItem);
         return VoteItemAddResponse.from(savedItem);
     }
+
+    public VoteResultResponse getVoteResults(Long articleId, Long userId) {
+        Member member = memberService.findWithProjectsById(userId); // 권한 체크 위해
+        Article article = articleService.validateArticle(articleId);
+        Vote vote = article.getVote();
+        if (vote == null || vote.getIsDeleted()) {
+            throw new GeneralException(VoteErrorCode.VOTE_NOT_FOUND);
+        }
+
+        voteValidator.validateResultViewPermission(member, article.getStage().getProject());
+
+        return voteService.getVoteResultData(vote);
+    }
 }

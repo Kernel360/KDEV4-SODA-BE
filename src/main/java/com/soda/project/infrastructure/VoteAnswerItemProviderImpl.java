@@ -9,7 +9,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class VoteAnswerItemProviderImpl implements VoteAnswerItemProvider {
-    private VoteAnswerItemRepository voteAnswerItemRepository;
+    private final VoteAnswerItemRepository voteAnswerItemRepository;
 
     @Override
     public Map<Long, Long> countItemsByVote(Long voteId) {

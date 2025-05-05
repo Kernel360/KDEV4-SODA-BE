@@ -1,21 +1,22 @@
 package com.soda.project.domain.stage.article.vote;
 
+import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
-import com.soda.project.infrastructure.VoteRepository;
-import com.soda.global.response.GeneralException;
-import com.soda.project.interfaces.dto.stage.article.vote.*;
+import com.soda.project.interfaces.dto.stage.article.vote.VoteCreateResponse;
+import com.soda.project.interfaces.dto.stage.article.vote.VoteResultResponse;
+import com.soda.project.interfaces.dto.stage.article.vote.VoteSubmitRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -27,8 +28,7 @@ public class VoteService {
     private final VoteAnswerFactory voteAnswerFactory;
     private final VoteAnswerProvider voteAnswerProvider;
     private final VoteItemService voteItemService;
-    private final VoteAnswerService voteAnswerService;
-    private final VoteAnswerItemService voteAnswerItemService;
+    private final VoteAnswerItemProvider voteAnswerItemProvider;
 
     public VoteCreateResponse createVoteAndItems(Article article, String title, boolean allowMultipleSelection,
                                                  boolean allowTextAnswer, LocalDateTime deadLine, List<String> itemTexts) {
@@ -70,18 +70,11 @@ public class VoteService {
         return savedAnswer;
     }
 
-    @Transactional
-    public VoteItemAddResponse addVoteItemToVote(Vote vote, String itemText) {
-        VoteItem savedItem = voteItemService.createAndSaveVoteItem(vote, itemText);
-        vote.addVoteItem(savedItem);
-        return VoteItemAddResponse.from(savedItem);
-    }
-
     public VoteResultResponse getVoteResultData(Vote vote) {
         log.debug("[결과 집계 시작(VoteService)] Vote ID: {}", vote.getId());
 
-        // 1. 총 참여자 수 조회 (VoteAnswerService 사용)
-        int totalParticipants = voteAnswerService.countAnswers(vote);
+        // 1. 총 참여자 수 조회
+        int totalParticipants = voteAnswerProvider.countAnswersByVote(vote.getId());
         log.debug("Vote ID {} 총 참여자 수: {}", vote.getId(), totalParticipants);
 
         Map<Long, Long> itemCounts = Collections.emptyMap();
@@ -89,12 +82,12 @@ public class VoteService {
 
         // 2. 투표 유형에 따라 결과 집계 (각 서비스 사용)
         if (!vote.isAllowTextAnswer()) { // 항목 투표
-            // 항목별 득표 수 집계 (VoteAnswerItemService 사용)
-            itemCounts = voteAnswerItemService.countItemsByVote(vote.getId());
+            // 항목별 득표 수 집계
+            itemCounts = voteAnswerItemProvider.countItemsByVote(vote.getId());
             log.debug("Vote ID {} 항목별 집계 결과: {}", vote.getId(), itemCounts);
         } else { // 텍스트 투표
             // 텍스트 답변 목록 조회
-            textAnswers = voteAnswerService.findTextAnswers(vote);
+            textAnswers = voteAnswerProvider.findTextAnswersByVote(vote.getId());
             log.debug("Vote ID {} 텍스트 답변 {}개 조회", vote.getId(), textAnswers.size());
         }
 

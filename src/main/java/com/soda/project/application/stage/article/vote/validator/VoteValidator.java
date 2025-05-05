@@ -8,6 +8,7 @@ import com.soda.member.enums.MemberRole;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.company.CompanyProjectService;
 import com.soda.project.domain.company.enums.CompanyProjectRole;
+import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import com.soda.project.domain.stage.article.vote.Vote;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 public class VoteValidator {
     private final VoteAnswerService voteAnswerService;
     private final CompanyProjectService companyProjectService;
+    private final MemberProjectService memberProjectService;
 
     public void validateCreateRequest(VoteCreateRequest request) {
         boolean hasItems = !CollectionUtils.isEmpty(request.getVoteItems());
@@ -293,4 +295,18 @@ public class VoteValidator {
         log.debug("항목 추가 중복 검증 통과: voteId={}, itemText='{}'", vote.getId(), itemText);
     }
 
+    public void validateResultViewPermission(Member member, Project project) {
+        if (member.getRole() == MemberRole.ADMIN) {
+            log.debug("투표 결과 조회 권한 확인: 관리자(ADMIN)이므로 허용.");
+            return; // 관리자는 항상 허용
+        }
+        boolean isProjectMember = memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
+
+        if (!isProjectMember) {
+            log.warn("투표 결과 조회 권한 없음: 사용자(ID:{})가 프로젝트(ID:{}) 멤버가 아닙니다.", member.getId(), project.getId());
+            throw new GeneralException(VoteErrorCode.VOTE_PERMISSION_DENIED); // 또는 RESULT_VIEW_PERMISSION_DENIED
+        }
+
+        log.debug("투표 결과 조회 권한 확인 완료: 프로젝트 멤버(ID:{})이므로 허용.", member.getId());
+    }
 }

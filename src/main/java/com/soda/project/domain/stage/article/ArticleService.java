@@ -1,12 +1,10 @@
 package com.soda.project.domain.stage.article;
 
 import com.querydsl.core.Tuple;
-import com.soda.project.domain.stage.article.dto.*;
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import com.soda.project.domain.stage.article.vote.Vote;
 import com.soda.project.domain.stage.article.vote.VoteService;
-import com.soda.project.domain.stage.article.vote.dto.*;
 import com.soda.project.infrastructure.ArticleRepository;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
@@ -23,6 +21,8 @@ import com.soda.project.domain.company.CompanyProjectService;
 import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.ProjectService;
 import com.soda.project.domain.stage.StageService;
+import com.soda.project.interfaces.dto.stage.article.*;
+import com.soda.project.interfaces.dto.stage.article.vote.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

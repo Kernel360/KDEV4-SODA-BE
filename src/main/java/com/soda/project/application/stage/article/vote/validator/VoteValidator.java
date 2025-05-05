@@ -1,10 +1,8 @@
 package com.soda.project.application.stage.article.vote.validator;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.entity.Member;
-import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
-import com.soda.project.domain.stage.article.vote.dto.VoteCreateRequest;
+import com.soda.project.interfaces.dto.stage.article.vote.VoteCreateRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;

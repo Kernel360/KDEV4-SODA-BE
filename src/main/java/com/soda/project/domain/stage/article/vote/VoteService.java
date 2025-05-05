@@ -2,9 +2,9 @@ package com.soda.project.domain.stage.article.vote;
 
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
-import com.soda.project.domain.stage.article.vote.dto.*;
 import com.soda.project.infrastructure.VoteRepository;
 import com.soda.global.response.GeneralException;
+import com.soda.project.interfaces.dto.stage.article.vote.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class VoteService {
 
     @Transactional
     public VoteCreateResponse createVoteAndItems(Article article, String title, boolean allowMultipleSelection,
-                                                  boolean allowTextAnswer, LocalDateTime deadLine, List<String> itemTexts) {
+                                                 boolean allowTextAnswer, LocalDateTime deadLine, List<String> itemTexts) {
         log.info("Vote 생성 및 저장 시작 (VoteService): articleId={}", article.getId());
 
         Vote vote = Vote.create(title, allowMultipleSelection, allowTextAnswer, deadLine, article);

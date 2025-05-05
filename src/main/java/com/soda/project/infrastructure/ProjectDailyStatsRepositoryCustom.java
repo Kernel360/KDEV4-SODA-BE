@@ -1,7 +1,7 @@
 package com.soda.project.infrastructure;
 
 import com.querydsl.core.Tuple;
-import com.soda.project.domain.dto.ProjectStatsCondition;
+import com.soda.project.interfaces.dto.ProjectStatsCondition;
 
 import java.time.LocalDate;
 import java.util.List;

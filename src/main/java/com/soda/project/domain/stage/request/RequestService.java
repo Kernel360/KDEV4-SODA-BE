@@ -81,7 +81,7 @@ public class RequestService {
 
 
     public List<RequestDTO> findAllByStageId(Long stageId) {
-        return requestRepository.findAllByStage_IdAndIsDeletedFalse(stageId).stream()
+        return requestProvider.findAllByStage_IdAndIsDeletedFalse(stageId).stream()
                 .map(RequestDTO::fromEntity)
                 .collect(Collectors.toList());
     }

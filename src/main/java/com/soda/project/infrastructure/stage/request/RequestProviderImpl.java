@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class RequestProviderImpl implements RequestProvider {
@@ -28,5 +30,10 @@ public class RequestProviderImpl implements RequestProvider {
     @Override
     public Page<Request> searchByMemberCondition(Long memberId, GetMemberRequestCondition condition, Pageable pageable) {
         return requestRepository.searchByMemberCondition(memberId, condition, pageable);
+    }
+
+    @Override
+    public List<Request> findAllByStage_IdAndIsDeletedFalse(Long stageId) {
+        return requestRepository.findAllByStage_IdAndIsDeletedFalse(stageId);
     }
 }

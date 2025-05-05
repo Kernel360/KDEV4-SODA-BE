@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class RequestFacade {
@@ -53,5 +55,9 @@ public class RequestFacade {
 
     public Page<RequestDTO> findMemberRequests(Long memberId, GetMemberRequestCondition condition, Pageable pageable) {
         return requestService.findMemberRequests(memberId, condition, pageable);
+    }
+
+    public List<RequestDTO> findAllByStageId(Long stageId) {
+        return requestService.findAllByStageId(stageId);
     }
 }

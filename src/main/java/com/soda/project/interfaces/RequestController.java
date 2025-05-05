@@ -66,7 +66,7 @@ public class RequestController {
 
     @GetMapping("/stages/{stageId}/requests")
     public ResponseEntity<ApiResponseForm<?>> getAllRequests(@PathVariable Long stageId) {
-        List<RequestDTO> requestDTOList = requestService.findAllByStageId(stageId);
+        List<RequestDTO> requestDTOList = requestFacade.findAllByStageId(stageId);
         return ResponseEntity.ok(ApiResponseForm.success(requestDTOList));
     }
 

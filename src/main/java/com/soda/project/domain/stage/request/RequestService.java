@@ -75,7 +75,7 @@ public class RequestService {
     }
 
     public Page<RequestDTO> findMemberRequests(Long memberId, GetMemberRequestCondition condition, Pageable pageable) {
-        return requestRepository.searchByMemberCondition(memberId, condition, pageable)
+        return requestProvider.searchByMemberCondition(memberId, condition, pageable)
                 .map(RequestDTO::fromEntity);
     }
 

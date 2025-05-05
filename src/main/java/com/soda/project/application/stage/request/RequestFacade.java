@@ -50,4 +50,8 @@ public class RequestFacade {
     public Page<RequestDTO> findRequests(Long projectId, GetRequestCondition condition, Pageable pageable) {
         return requestService.findRequests(projectId, condition, pageable);
     }
+
+    public Page<RequestDTO> findMemberRequests(Long memberId, GetMemberRequestCondition condition, Pageable pageable) {
+        return requestService.findMemberRequests(memberId, condition, pageable);
+    }
 }

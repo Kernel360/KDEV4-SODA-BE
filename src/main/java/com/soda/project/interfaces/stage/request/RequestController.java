@@ -9,7 +9,6 @@ import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.project.application.stage.request.RequestFacade;
 import com.soda.project.domain.stage.request.ApproverDesignationService;
-import com.soda.project.domain.stage.request.RequestService;
 import com.soda.project.interfaces.stage.request.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,6 @@ import java.util.List;
 public class RequestController {
     private final RequestFacade requestFacade;
 
-    private final RequestService requestService;
     private final ApproverDesignationService approverDesignationService;
     private final FileService fileService;
     private final LinkService linkService;

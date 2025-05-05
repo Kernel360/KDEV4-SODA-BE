@@ -1,16 +1,8 @@
 package com.soda.project.domain.stage.request;
 
-import com.soda.common.file.service.FileService;
-import com.soda.common.file.service.S3Service;
-import com.soda.common.link.service.LinkService;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Member;
-import com.soda.member.repository.MemberRepository;
 import com.soda.project.domain.stage.Stage;
-import com.soda.project.infrastructure.stage.request.ApproverDesignationRepository;
-import com.soda.project.infrastructure.stage.request.RequestLinkRepository;
-import com.soda.project.infrastructure.stage.request.RequestRepository;
-import com.soda.project.infrastructure.stage.StageRepository;
 import com.soda.project.interfaces.stage.request.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,19 +15,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class RequestService {
-    private final LinkService linkService;
-    private final FileService fileService;
-    private final S3Service s3Service;
 
     private final RequestFactory requestFactory;
 
     private final RequestProvider requestProvider;
-
-    private final RequestRepository requestRepository;
-    private final MemberRepository memberRepository;
-    private final StageRepository stageRepository;
-    private final RequestLinkRepository requestLinkRepository;
-    private final ApproverDesignationRepository approverDesignationRepository;
 
 
     public RequestCreateResponse createRequest(Member member, Stage stage, RequestCreateRequest requestCreateRequest) {

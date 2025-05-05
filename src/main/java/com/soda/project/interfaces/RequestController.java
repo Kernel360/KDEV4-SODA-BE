@@ -89,7 +89,7 @@ public class RequestController {
     public ResponseEntity<ApiResponseForm<?>> deleteRequest(@PathVariable Long requestId,
                                                             HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        RequestDeleteResponse requestDeleteResponse = requestService.deleteRequest(memberId, requestId);
+        RequestDeleteResponse requestDeleteResponse = requestFacade.deleteRequest(memberId, requestId);
         return ResponseEntity.ok(ApiResponseForm.success(requestDeleteResponse));
     }
 

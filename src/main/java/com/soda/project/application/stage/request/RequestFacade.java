@@ -19,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RequestFacade {
     private final RequestService requestService;
     private final MemberService memberService;
@@ -49,6 +50,24 @@ public class RequestFacade {
         return requestService.createReRequest(requestId, member, stage, reRequestCreateRequest);
     }
 
+    @LoggableEntityAction(action = "UPDATE", entityClass = Request.class)
+    @Transactional
+    public RequestUpdateResponse updateRequest(Long memberId, Long requestId, RequestUpdateRequest requestUpdateRequest) {
+        Request request = requestService.getRequestOrThrow(requestId);
+        requestValidator.validaRequestWriter(memberId, request);
+
+        return requestService.updateRequest(request, requestUpdateRequest);
+    }
+
+    @LoggableEntityAction(action = "DELETE", entityClass = Request.class)
+    @Transactional
+    public RequestDeleteResponse deleteRequest(Long memberId, Long requestId) {
+        Request request = requestService.getRequestOrThrow(requestId);
+        requestValidator.validaRequestWriter(memberId, request);
+
+        return requestService.deleteRequest(request);
+    }
+
     public Page<RequestDTO> findRequests(Long projectId, GetRequestCondition condition, Pageable pageable) {
         return requestService.findRequests(projectId, condition, pageable);
     }
@@ -63,14 +82,5 @@ public class RequestFacade {
 
     public RequestDTO findById(Long requestId) {
         return requestService.findById(requestId);
-    }
-
-    @LoggableEntityAction(action = "UPDATE", entityClass = Request.class)
-    @Transactional
-    public RequestUpdateResponse updateRequest(Long memberId, Long requestId, RequestUpdateRequest requestUpdateRequest) {
-        Request request = requestService.getRequestOrThrow(requestId);
-        requestValidator.validaRequestWriter(memberId, request);
-
-        return requestService.updateRequest(request, requestUpdateRequest);
     }
 }

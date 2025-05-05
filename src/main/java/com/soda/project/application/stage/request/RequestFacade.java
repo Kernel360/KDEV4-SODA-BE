@@ -8,10 +8,10 @@ import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.StageService;
 import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.RequestService;
-import com.soda.project.domain.stage.request.dto.ReRequestCreateRequest;
-import com.soda.project.domain.stage.request.dto.RequestCreateRequest;
-import com.soda.project.domain.stage.request.dto.RequestCreateResponse;
+import com.soda.project.domain.stage.request.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,5 +45,9 @@ public class RequestFacade {
         requestValidator.validateRequestStatus(parentRequest);
 
         return requestService.createReRequest(requestId, member, stage, reRequestCreateRequest);
+    }
+
+    public Page<RequestDTO> findRequests(Long projectId, GetRequestCondition condition, Pageable pageable) {
+        return requestService.findRequests(projectId, condition, pageable);
     }
 }

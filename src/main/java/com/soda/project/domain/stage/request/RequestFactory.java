@@ -7,6 +7,7 @@ import com.soda.member.entity.Member;
 import com.soda.member.error.MemberErrorCode;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.request.dto.MemberAssignDTO;
+import com.soda.project.domain.stage.request.dto.ReRequestCreateRequest;
 import com.soda.project.domain.stage.request.dto.RequestCreateRequest;
 import com.soda.project.domain.stage.request.link.RequestLink;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,17 @@ public class RequestFactory {
         designateApprover(requestCreateRequest.getMembers(), request);
 
         return request;
+    }
+
+    public Request createReRequest(Long requestId, Member member, Stage stage, ReRequestCreateRequest reRequestCreateRequest) {
+        Request reRequest = Request.createReRequest(requestId, member, stage, reRequestCreateRequest);
+
+        List<RequestLink> links = linkService.buildLinks("request", reRequest, reRequestCreateRequest.getLinks());
+        reRequest.addLinks(links);
+
+        designateApprover(reRequestCreateRequest.getMembers(), reRequest);
+
+        return reRequest;
     }
 
     private void designateApprover(List<MemberAssignDTO> dtos, Request request) {

@@ -44,7 +44,7 @@ public class RequestController {
                                                               @RequestBody ReRequestCreateRequest reRequestCreateRequest,
                                                               HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        RequestCreateResponse requestCreateResponse = requestService.createReRequest(memberId, requestId, reRequestCreateRequest);
+        RequestCreateResponse requestCreateResponse = requestFacade.createReRequest(memberId, requestId, reRequestCreateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(requestCreateResponse));
     }
 

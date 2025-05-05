@@ -53,26 +53,14 @@ public class RequestService {
     어떤 member가 어떤 Stage에서 승인요청을 생성했는지를 request 데이터에 넣어줘야함.
     Request 데이터 생성 전에, 요청한 member가 현재 프로젝트에 속한 "개발사"의 멤버이거나 ADMIN유저인지 확인해야함.
     */
-    @LoggableEntityAction(action = "CREATE", entityClass = Request.class)
-    @Transactional
     public RequestCreateResponse createRequest(Member member, Stage stage, RequestCreateRequest requestCreateRequest) {
         Request request = requestFactory.createRequest(member, stage, requestCreateRequest);
         return RequestCreateResponse.fromEntity(requestProvider.store(request));
     }
 
-    @LoggableEntityAction(action = "CREATE", entityClass = Request.class)
-    @Transactional
-    public RequestCreateResponse createReRequest(Long memberId, Long requestId, ReRequestCreateRequest reRequestCreateRequest) {
-        Request parentRequest = getRequestOrThrow(requestId);
-        Member member = getMemberWithProjectOrThrow(memberId);
-        Stage stage = getStageOrThrow(parentRequest.getStage().getId());
-
-        validateProjectAuthority(member, parentRequest.getStage().getProject().getId());
-        validateRequestStatus(parentRequest);
-
-        Request reRequest = createReRequest(reRequestCreateRequest, requestId, member, stage);
-
-        return RequestCreateResponse.fromEntity(reRequest);
+    public RequestCreateResponse createReRequest(Long requestId, Member member, Stage stage, ReRequestCreateRequest reRequestCreateRequest) {
+        Request reRequest = requestFactory.createReRequest(requestId, member, stage, reRequestCreateRequest);
+        return RequestCreateResponse.fromEntity(requestProvider.store(reRequest));
     }
 
     private void validateRequestStatus(Request parentRequest) {

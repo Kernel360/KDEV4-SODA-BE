@@ -4,6 +4,7 @@ import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
 import com.soda.member.entity.Member;
 import com.soda.project.domain.stage.Stage;
+import com.soda.project.domain.stage.request.dto.ReRequestCreateRequest;
 import com.soda.project.domain.stage.request.dto.RequestCreateRequest;
 import com.soda.project.domain.stage.request.enums.RequestStatus;
 import com.soda.project.domain.stage.request.file.RequestFile;
@@ -78,7 +79,17 @@ public class Request extends BaseEntity {
                 .stage(stage)
                 .title(requestCreateRequest.getTitle())
                 .content(requestCreateRequest.getContent())
-                .parentId(requestCreateRequest.getParentId())
+                .status(RequestStatus.PENDING)
+                .build();
+    }
+
+    public static Request createReRequest(Long requestId, Member member, Stage stage, ReRequestCreateRequest reRequestCreateRequest) {
+        return Request.builder()
+                .member(member)
+                .stage(stage)
+                .title(reRequestCreateRequest.getTitle())
+                .content(reRequestCreateRequest.getContent())
+                .parentId(requestId)
                 .status(RequestStatus.PENDING)
                 .build();
     }

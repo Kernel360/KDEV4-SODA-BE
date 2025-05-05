@@ -1,9 +1,13 @@
 package com.soda.project.infrastructure;
 
+import com.soda.global.response.GeneralException;
+import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import com.soda.project.domain.stage.article.vote.Vote;
 import com.soda.project.domain.stage.article.vote.VoteProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -18,5 +22,10 @@ public class VoteProviderImpl implements VoteProvider {
     @Override
     public boolean existsByArticleIdAndIsDeletedFalse(Long articleId) {
         return voteRepository.existsByArticle_IdAndIsDeletedFalse(articleId);
+    }
+
+    @Override
+    public Optional<Vote> findById(Long voteId) {
+        return voteRepository.findById(voteId);
     }
 }

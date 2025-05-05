@@ -147,8 +147,7 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<VoteSubmitResponse>> submitVote(@PathVariable Long articleId, HttpServletRequest request,
                                                                           @Valid @RequestBody VoteSubmitRequest voteSubmitRequest) {
         Long userId = (Long) request.getAttribute("memberId");
-        String userRole = (String) request.getAttribute("userRole").toString();
-        VoteSubmitResponse response = articleService.submitVoteForArticle(articleId, userId, userRole, voteSubmitRequest);
+        VoteSubmitResponse response = articleFacade.submitVoteForArticle(articleId, userId, voteSubmitRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "투표하기 성공"));
     }
 

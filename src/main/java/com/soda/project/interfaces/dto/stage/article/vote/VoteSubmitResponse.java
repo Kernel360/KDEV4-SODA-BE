@@ -1,5 +1,6 @@
 package com.soda.project.interfaces.dto.stage.article.vote;
 
+import com.soda.project.domain.stage.article.vote.VoteAnswer;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,12 +15,12 @@ public class VoteSubmitResponse {
     private Long voteAnswerId;
     private List<Long> selectedItemIds;
 
-    public static VoteSubmitResponse from(VoteSubmitResponse response) {
+    public static VoteSubmitResponse from(VoteAnswer savedAnswer, List<Long> submittedItemIds) {
         return VoteSubmitResponse.builder()
-                .voteId(response.voteId)
-                .voterId(response.voterId)
-                .voteAnswerId(response.voteAnswerId)
-                .selectedItemIds(response.selectedItemIds)
+                .voteId(savedAnswer.getVote().getId())
+                .voterId(savedAnswer.getMember().getId())
+                .voteAnswerId(savedAnswer.getId())
+                .selectedItemIds(submittedItemIds)
                 .build();
     }
 }

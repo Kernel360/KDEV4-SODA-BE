@@ -9,6 +9,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +73,56 @@ public class VoteAnswer extends BaseEntity {
         this.markAsDeleted();
         if (this.selectedItems != null) {
             this.selectedItems.forEach(VoteAnswerItem::delete);
+        }
+    }
+
+    public static VoteAnswer create(Vote vote, Member member, String textAnswer, List<VoteItem> selectedItems) {
+        validateVoteStateAndInput(vote, textAnswer, selectedItems);
+
+        VoteAnswer voteAnswer = VoteAnswer.builder()
+                .vote(vote)
+                .member(member)
+                .textAnswer(textAnswer)
+                .build();
+
+        if (!vote.isAllowTextAnswer() && !CollectionUtils.isEmpty(selectedItems)) {
+            for (VoteItem item : selectedItems) {
+                VoteAnswerItem answerItem = VoteAnswerItem.create(voteAnswer, item);
+                voteAnswer.selectedItems.add(answerItem);
+            }
+        }
+
+        return voteAnswer;
+    }
+
+    private static void validateVoteStateAndInput(Vote vote, String textAnswer, List<VoteItem> selectedItems) {
+        // 1. 투표 마감 확인
+        if (vote.isClosed()) {
+            throw new GeneralException(VoteErrorCode.VOTE_ALREADY_CLOSED);
+        }
+
+        boolean hasText = StringUtils.hasText(textAnswer);
+        boolean hasItems = !CollectionUtils.isEmpty(selectedItems);
+
+        // 2. 투표 유형에 따른 입력값 검증
+        if (vote.isAllowTextAnswer()) { // 텍스트 답변 허용 투표
+            if (!hasText) { // 텍스트 답변 필수
+                throw new GeneralException(VoteErrorCode.INVALID_VOTE_INPUT);
+            }
+            if (hasItems) { // 항목 선택 불가
+                throw new GeneralException(VoteErrorCode.INVALID_VOTE_INPUT);
+            }
+        } else { // 항목 선택 투표
+            if (!hasItems) { // 항목 선택 필수
+                throw new GeneralException(VoteErrorCode.INVALID_VOTE_INPUT);
+            }
+            if (hasText) { // 텍스트 답변 불가
+                throw new GeneralException(VoteErrorCode.INVALID_VOTE_INPUT);
+            }
+            // 단일 선택 검증
+            if (!vote.isAllowMultipleSelection() && selectedItems.size() > 1) {
+                throw new GeneralException(VoteErrorCode.VOTE_MULTIPLE_SELECTION_NOT_ALLOWED);
+            }
         }
     }
 }

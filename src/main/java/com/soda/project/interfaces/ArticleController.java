@@ -155,7 +155,7 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<VoteItemAddResponse>> addVoteItem(@PathVariable Long articleId, HttpServletRequest request,
                                                                             @Valid @RequestBody VoteItemAddRequest voteItemAddRequest) {
         Long userId = (Long) request.getAttribute("memberId");
-        VoteItemAddResponse response = articleService.addVoteItem(articleId, userId, voteItemAddRequest);
+        VoteItemAddResponse response = articleFacade.addVoteItem(articleId, userId, voteItemAddRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "투표 항목 추가 성공"));
     }
 

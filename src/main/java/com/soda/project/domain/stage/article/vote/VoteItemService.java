@@ -19,6 +19,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class VoteItemService {
 
+    private final VoteItemFactory voteItemFactory;
     private final VoteItemProvider voteItemProvider;
     private final VoteItemRepository voteItemRepository;
 
@@ -34,12 +35,10 @@ public class VoteItemService {
         log.info("VoteItem 생성 시작: voteId={}, itemCount={}", vote.getId(), itemTexts.size());
 
         // 1. 각 항목에 대한 VoteItem 생성
-        List<VoteItem> voteItems = itemTexts.stream()
-                .map(text -> VoteItem.create(text, vote))
-                .toList();
+        List<VoteItem> voteItemsToSave = voteItemFactory.createItems(vote, itemTexts);
 
         // 2. DB에 저장
-        List<VoteItem> savedVoteItems = voteItemProvider.storeAll(voteItems);
+        List<VoteItem> savedVoteItems = voteItemProvider.storeAll(voteItemsToSave);
 
         log.info("VoteItem 생성 및 저장 완료: voteId={}, savedCount={}", vote.getId(), savedVoteItems.size());
         return savedVoteItems;
@@ -49,7 +48,7 @@ public class VoteItemService {
         if (CollectionUtils.isEmpty(itemIds)) {
             return new ArrayList<>();
         }
-        List<VoteItem> foundItems = voteItemRepository.findAllById(itemIds);
+        List<VoteItem> foundItems = voteItemProvider.findAllById(itemIds);
 
         if (foundItems.size() != itemIds.size()) {
             log.warn("요청된 VoteItem ID 목록에 존재하지 않는 ID가 포함되어 있습니다. Requested: {}, Found count: {}",
@@ -63,14 +62,10 @@ public class VoteItemService {
 
     @Transactional
     public VoteItem createAndSaveVoteItem (Vote vote, String itemText) {
-        VoteItem voteItem = VoteItem.builder()
-                .vote(vote)
-                .text(itemText)
-                .build();
-        VoteItem savedItem = voteItemRepository.save(voteItem);
+        VoteItem voteItem = voteItemFactory.createItem(vote, itemText);
+        VoteItem savedItem = voteItemProvider.storeAll(List.of(voteItem)).get(0);
 
-        log.info("단일 VoteItem 생성 및 저장 완료 (VoteItemService). Vote ID: {}, Item ID: {}, Text: {}",
-                vote.getId(), savedItem.getId(), itemText);
+        log.info("단일 VoteItem 생성 및 저장 완료 (VoteItemService). Item ID: {}", savedItem.getId());
         return savedItem;
     }
 

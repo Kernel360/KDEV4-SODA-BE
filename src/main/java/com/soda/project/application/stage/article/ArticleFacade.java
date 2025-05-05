@@ -76,4 +76,19 @@ public class ArticleFacade {
 
         return VoteSubmitResponse.from(savedAnswer, request.getSelectedItemIds());
     }
+
+    @Transactional
+    public VoteItemAddResponse addVoteItem(Long articleId, Long userId, VoteItemAddRequest request) {
+        Member member = memberService.findWithProjectsById(userId);
+        Article article = articleService.validateArticle(articleId);
+        Vote vote = article.getVote();
+        if (vote == null || vote.getIsDeleted()) {
+            throw new GeneralException(VoteErrorCode.VOTE_NOT_FOUND);
+        }
+        voteValidator.validateVoteItemAddition(vote, member, article.getMember(), article.getStage().getProject(), request.getItemText());
+
+        VoteItem savedItem = voteItemService.createAndSaveVoteItem(vote, request.getItemText());
+        vote.addVoteItem(savedItem);
+        return VoteItemAddResponse.from(savedItem);
+    }
 }

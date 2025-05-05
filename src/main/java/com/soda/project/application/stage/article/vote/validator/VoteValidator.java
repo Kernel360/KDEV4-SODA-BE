@@ -1,5 +1,6 @@
 package com.soda.project.application.stage.article.vote.validator;
 
+import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
@@ -14,6 +15,8 @@ import com.soda.project.domain.stage.article.vote.VoteAnswerService;
 import com.soda.project.domain.stage.article.vote.VoteItem;
 import com.soda.project.interfaces.dto.stage.article.vote.VoteCreateRequest;
 import com.soda.project.interfaces.dto.stage.article.vote.VoteSubmitRequest;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -109,7 +112,7 @@ public class VoteValidator {
         }
     }
 
-    private void validateVotingPermission(Member author, Member currentUser, Project project) {
+    public void validateVotingPermission(Member author, Member currentUser, Project project) {
         boolean permitted = false;
         MemberRole authorRole = author.getRole();
         MemberRole currentUserRole = currentUser.getRole();
@@ -204,6 +207,90 @@ public class VoteValidator {
             throw new GeneralException(VoteErrorCode.VOTE_PERMISSION_DENIED);
         }
         log.debug("투표 생성 권한 검증 통과");
+    }
+
+    public void validateVoteItemAddition(Vote vote, Member requester, Member author, Project project, String itemText) {
+        log.debug("투표 항목 추가 유효성 검증 시작: voteId={}, requesterId={}, itemText='{}'",
+                vote.getId(), requester.getId(), itemText);
+
+        // 1. 투표 상태 검증 (마감 X, 텍스트 전용 X)
+        validateVoteForAddingItem(vote);
+
+        // 2. 항목 추가 권한 검증
+        validateVoteItemAddPermission(requester, author, project);
+
+        // 3. 항목 중복 검증
+        checkDuplicateVoteItem(vote, itemText);
+
+        log.debug("투표 항목 추가 유효성 검증 통과");
+    }
+
+    private void validateVoteForAddingItem(Vote vote) {
+        if (vote.isClosed()) {
+            log.warn("항목 추가 검증 실패: Vote ID {} 는 이미 마감되었습니다.", vote.getId());
+            throw new GeneralException(VoteErrorCode.VOTE_ALREADY_CLOSED);
+        }
+        if (vote.isAllowTextAnswer()) {
+            log.warn("항목 추가 검증 실패: Vote ID {} 는 텍스트 답변 전용 투표입니다.", vote.getId());
+            throw new GeneralException(VoteErrorCode.CANNOT_ADD_ITEM_TO_TEXT_VOTE);
+        }
+        log.debug("항목 추가를 위한 투표 상태 검증 통과: voteId={}", vote.getId());
+    }
+
+    private void validateVoteItemAddPermission(Member requester, Member author, Project project) {
+        boolean permitted = false;
+        MemberRole requesterRoleEnum = requester.getRole();
+        MemberRole authorRoleEnum = author.getRole();
+
+        // 1. 요청자 본인이 작성자인 경우 허용
+        if (requester.getId().equals(author.getId())) {
+            permitted = true;
+            log.debug("항목 추가 권한 확인: 작성자 본인(ID:{})이므로 허용.", requester.getId());
+        }
+        // 2. 요청자가 ADMIN인 경우 허용
+        else if (requesterRoleEnum == MemberRole.ADMIN) {
+            permitted = true;
+            log.debug("항목 추가 권한 확인: 요청자(ID:{})가 ADMIN이므로 허용.", requester.getId());
+        }
+        // 3. 작성자가 ADMIN인 경우 (요청자는 ADMIN 아님) 허용
+        else if (authorRoleEnum == MemberRole.ADMIN) {
+            permitted = true;
+            log.debug("항목 추가 권한 확인: 작성자가 ADMIN이므로 요청자(ID:{}, Role:{}) 허용.", requester.getId(), requesterRoleEnum);
+        }
+        // 4. 교차 회사 역할 검증 (둘 다 ADMIN이 아닌 경우)
+        else {
+            Company requesterCompany = requester.getCompany();
+            Company authorCompany = author.getCompany();
+            if (requesterCompany == null || authorCompany == null) {
+                log.warn("[항목 추가 권한 확인 실패] 요청자 또는 작성자의 회사 정보가 없습니다.");
+                throw new GeneralException(VoteErrorCode.VOTE_PERMISSION_DENIED); // 적절한 에러 코드
+            }
+
+            CompanyProjectRole requesterProjectRole = companyProjectService.getCompanyRoleInProject(requesterCompany, project);
+            CompanyProjectRole authorProjectRole = companyProjectService.getCompanyRoleInProject(authorCompany, project);
+
+            if ((authorProjectRole == CompanyProjectRole.DEV_COMPANY && requesterProjectRole == CompanyProjectRole.CLIENT_COMPANY) ||
+                    (authorProjectRole == CompanyProjectRole.CLIENT_COMPANY && requesterProjectRole == CompanyProjectRole.DEV_COMPANY)) {
+                permitted = true;
+                log.debug("항목 추가 권한 확인 완료 (교차 회사 역할): Author Role({}), Requester Role({})", authorProjectRole, requesterProjectRole);
+            }
+        }
+
+        if (!permitted) {
+            log.warn("항목 추가 권한 없음: 조건 불만족. Requester ID: {}, Author ID: {}", requester.getId(), author.getId());
+            throw new GeneralException(VoteErrorCode.CANNOT_ADD_ITEM_TO_TEXT_VOTE);
+        }
+    }
+
+    private void checkDuplicateVoteItem(Vote vote, String itemText) {
+        // isDeleted=false 인 항목들만 대상으로 중복 검사
+        boolean isDuplicate = vote.getVoteItems().stream()
+                .anyMatch(item -> !item.getIsDeleted() && item.getText().equals(itemText));
+        if (isDuplicate) {
+            log.warn("항목 추가 검증 실패: Vote ID {} 에 이미 '{}' 항목이 존재합니다.", vote.getId(), itemText);
+            throw new GeneralException(VoteErrorCode.VOTE_DUPLICATE_ITEM_TEXT);
+        }
+        log.debug("항목 추가 중복 검증 통과: voteId={}, itemText='{}'", vote.getId(), itemText);
     }
 
 }

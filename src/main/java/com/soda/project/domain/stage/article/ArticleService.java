@@ -351,69 +351,6 @@ public class ArticleService {
         return MyArticleListResponse.from(articleId, title, projId, projName, stgId, stgName, createdAt);
     }
 
-    @Transactional
-    public VoteItemAddResponse addVoteItem(Long articleId, Long userId, VoteItemAddRequest request) {
-        log.info("[항목 추가 시작(ArticleService)] Article ID: {}, User ID: {}, Item Text: {}",
-                articleId, userId, request.getItemText());
-
-
-        Article article = validateArticle(articleId);
-        Vote vote = article.getVote();
-        Stage stage = article.getStage();
-        Project project = stage.getProject();
-
-        Member requester = memberService.findByIdAndIsDeletedFalse(userId); // 요청자 정보
-        Member author = article.getMember();
-
-        checkVoteItemAddPermission(requester, author, project);
-
-        VoteItemAddResponse addedItem = voteService.addVoteItemToVote(vote, request.getItemText());
-        log.info("[항목 추가 성공(ArticleService)] Article ID: {}, New Item ID: {}", articleId, addedItem.getItemId());
-        return addedItem;
-    }
-
-    private void checkVoteItemAddPermission(Member requester, Member author, Project project) {
-        // 1. 작성자 본인 확인
-        if (requester.getId().equals(author.getId())) {
-            log.debug("항목 추가 권한 확인: 작성자 본인이므로 허용.");
-            return; // 작성자 본인은 통과
-        }
-
-        // 2. 작성자가 ADMIN인 경우 -> 모든 사용자(회사 역할 무관) 추가 허용
-        if (requester.getRole() == MemberRole.ADMIN) {
-            log.debug("항목 추가 권한 확인: 요청자(ID:{})가 ADMIN이므로 허용.", requester.getId());
-            return;
-        }
-
-        // 2-2. 작성자가 ADMIN인 경우 (그리고 요청자는 ADMIN이 아님) -> 허용
-        if (author.getRole() == MemberRole.ADMIN) {
-            log.debug("항목 추가 권한 확인: 작성자가 ADMIN이므로 요청자(ID:{}, Role:{}) 허용.", requester.getId(), requester.getRole());
-            return; 
-        }
-
-        // 3. 고객사/개발사 유효성 검증
-        Company requesterCompany = requester.getCompany();
-        Company authorCompany = author.getCompany();
-
-        CompanyProjectRole requesterRole = companyProjectService.getCompanyRoleInProject(requesterCompany, project);
-        CompanyProjectRole authorRole = companyProjectService.getCompanyRoleInProject(authorCompany, project);
-
-        boolean permitted = false;
-        if (authorRole == CompanyProjectRole.DEV_COMPANY && requesterRole == CompanyProjectRole.CLIENT_COMPANY) {
-            permitted = true;
-        } else if (authorRole == CompanyProjectRole.CLIENT_COMPANY && requesterRole == CompanyProjectRole.DEV_COMPANY) {
-            permitted = true;
-        }
-
-        // 권한 없는 경우 예외 발생
-        if (!permitted) {
-            log.warn("항목 추가 권한 없음: 작성자 회사 역할({})과 요청자 회사 역할({})이 교차 조건 불만족.", authorRole, requesterRole);
-            throw new GeneralException(VoteErrorCode.VOTE_PERMISSION_DENIED);
-        }
-
-        log.debug("항목 추가 권한 확인 완료 (교차 회사 역할): Author Role({}), Requester Role({})", authorRole, requesterRole);
-    }
-
     public VoteResultResponse getVoteResults(Long articleId, Long userId) {
         log.info("[결과 조회 시작(ArticleService) - 조건 없음/빌더 사용] Article ID: {}, User ID: {}", articleId, userId);
 

@@ -72,28 +72,14 @@ public class ProjectService {
     /**
      * 기존 프로젝트에 개발사 및 해당 개발사의 담당자/참여자를 지정하는 메서드
      */
-    public void assignCompaniesAndMembersFromAssignments(List<CompanyAssignment> assignments,
-                                                         Project project, CompanyProjectRole companyRole) {
-        log.info("{} 역할 회사 및 구성원 지정 시작 (ProjectService): 프로젝트 ID = {}, assignmentCount={}",
-                companyRole.getDescription(), project.getId(), assignments.size());
-        if (CollectionUtils.isEmpty(assignments)) return;
-
-        MemberProjectRole managerRole = determineTargetManagerRole(companyRole);
-        MemberProjectRole memberRole = determineTargetMemberRole(companyRole);
-
-        for (CompanyAssignment assignment : assignments) {
-            Company company = companyService.getCompany(assignment.getCompanyId());
-            companyProjectService.assignCompanyToProject(company, project, companyRole);
-
-            List<Member> managers = memberService.findByIds(assignment.getManagerIds());
-            memberProjectService.assignMembersToProject(company, managers, project, managerRole);
-
-            if (!CollectionUtils.isEmpty(assignment.getMemberIds())) {
-                List<Member> members = memberService.findByIds(assignment.getMemberIds());
-                memberProjectService.assignMembersToProject(company, members, project, memberRole);
-            }
-        }
-        log.info("모든 {} 역할 회사 및 구성원 지정 완료 (ProjectService): 프로젝트 ID = {}", companyRole.getDescription(), project.getId());
+    public void assignDevCompanyAndMembers(Project project, List<Company> devCompanies, List<Member> devManagers, List<Member> devMembers) {
+        log.info("[ProjectService] 개발사 및 멤버 할당 시작: projectId={}", project.getId());
+        // 1. Project 엔티티 메서드 호출하여 연관관계 설정 (메모리)
+        project.assignDevCompanies(devCompanies);
+        project.assignDevMembers(devManagers, devMembers);
+        // 2. 변경된 Project 엔티티 저장
+        projectProvider.store(project);
+        log.info("[ProjectService] 개발사 및 멤버 할당 및 저장 완료: projectId={}", project.getId());
     }
 
     /**
@@ -148,62 +134,30 @@ public class ProjectService {
 
     /**
      * 프로젝트에 회사 및 멤버 추가
-     * @param userRole 요청한 사용자의 역할 (ADMIN만 추가 가능)
-     * @param projectId 추가할 프로젝트 ID
-     * @param request 추가할 회사 및 멤버 정보 DTO
-     * @return 회사 및 멤버가 추가된 프로젝트 정보 DTO
-     * @throws GeneralException 프로젝트가 존재하지 않거나 ADMIN 아닌 경우
      */
-    @Transactional
-    public ProjectCompanyAddResponse addCompanyToProject(String userRole, Long projectId, ProjectCompanyAddRequest request) {
-        // 프로젝트 유효성 검사
-        Project project = getValidProject(projectId);
+    public void addCompanyAndMembersToProject(Project project, Company company, CompanyProjectRole companyRole,
+                                              List<Member> managers, List<Member> members) {
+        log.info("[ProjectService] 회사({}) 및 멤버 추가 시작: projectId={}, role={}",
+                company.getName(), project.getId(), companyRole);
 
-        // ADMIN인지 유효성 검사
-        validateAdminRole(userRole);
-
-        // 요청 정보 추출
-        Company company = companyService.getCompany(request.getCompanyId());
-        CompanyProjectRole companyRole = request.getRole();
-        List<Long> managerIds = request.getManagerIds();
-        List<Long> memberIds = request.getMemberIds() != null ? request.getMemberIds() : Collections.emptyList();
-
-        // 멤버들이 회사 소속인지 검증
-        List<Member> managers = memberService.findByIds(managerIds);
-        List<Member> members = memberService.findByIds(memberIds);
-        validateMembersBelongToCompany(managers, company);
-        validateMembersBelongToCompany(members, company);
-
-        // 회사 할당
-        companyProjectService.assignCompanyToProject(company, project, companyRole);
-        log.info("회사-프로젝트 연결 완료: projectId={}, companyId={}, role={}", projectId, company.getId(), companyRole);
-
-        // 역할 할당
-        MemberProjectRole targetManagerRole = determineTargetManagerRole(companyRole);
-        MemberProjectRole targetMemberRole = determineTargetMemberRole(companyRole);
-        log.debug("자동 결정된 멤버 역할: managerRole={}, memberRole={}", targetManagerRole, targetMemberRole);
-
-        memberProjectService.assignMembersToProject(company, managers, project, targetManagerRole);
-        log.info("담당자 {}명 프로젝트 연결 완료", managers.size());
-        if (!members.isEmpty()) {
-            memberProjectService.assignMembersToProject(company, members, project, targetMemberRole);
-            log.info("참여자 {}명 프로젝트 연결 완료", members.size());
+        // 1. 역할에 따라 Project 엔티티 메서드 호출하여 연관관계 설정
+        if (companyRole == CompanyProjectRole.CLIENT_COMPANY) {
+            project.assignClientCompanies(List.of(company));
+            project.assignClientMembers(managers, members);
+        } else if (companyRole == CompanyProjectRole.DEV_COMPANY) {
+            project.assignDevCompanies(List.of(company));
+            project.assignDevMembers(managers, members);
+        } else {
+            log.error("지원하지 않는 회사 역할입니다: {}", companyRole);
         }
-
-        log.info("프로젝트에 회사 및 멤버 추가 완료: projectId={}, companyId={}, companyRole={}, managerCount={}, memberCount={}",
-                projectId, company.getId(), companyRole, managers.size(), members.size());
-
-        // response 생성
-        return buildResponse(project, company, companyRole, managers, members);
+        // 2. 변경된 Project 엔티티 저장
+        projectProvider.store(project);
+        log.info("[ProjectService] 회사({}) 및 멤버 추가 및 저장 완료: projectId={}, role={}",
+                company.getName(), project.getId(), companyRole);
     }
 
     /**
      * 프로젝트에 참여 중인 회사 삭제 메서드 (회사 삭제되면 해당 회사의 멤버도 자동 삭제)
-     *
-     * @param userRole 요청자의 역할 (ADMIN만 가능)
-     * @param projectId 삭제할 회사가 참여 중인 프로젝트 ID
-     * @param companyId 삭제할 회사 ID
-     * @throws GeneralException ADMIN이 아니거나 유효한 프로젝트가 아닌 경우
      */
     @Transactional
     public void deleteCompanyFromProject(String userRole, Long projectId, Long companyId) {
@@ -223,11 +177,6 @@ public class ProjectService {
 
     /**
      * 해당 프로젝트에 멤버를 추가하는 메서드
-     *
-     * @param userRole 추가하려는 사용자 역할
-     * @param projectId 추가하려는 프로젝트 ID
-     * @param request 추가하려는 request
-     * @return add response
      */
     @Transactional
     public ProjectMemberAddResponse addMemberToProject(String userRole, Long projectId, ProjectMemberAddRequest request) {
@@ -295,10 +244,6 @@ public class ProjectService {
 
     /**
      * 프로젝트에서 해당 멤버를 삭제하는 메서드
-     *
-     * @param userRole 요청한 사용자 역할
-     * @param projectId 멤버 삭제하려는 프로젝트 ID
-     * @param memberId 삭제하려는 멤버 ID
      */
     @Transactional
     public void deleteMemberFromProject(String userRole, Long projectId, Long memberId) {
@@ -313,12 +258,7 @@ public class ProjectService {
     }
 
     /**
-     * 특정 프로젝트의 멤버 목록을 필터링하여 조회합니다. (수정된 로직)
-     *
-     * @param projectId 대상 프로젝트 ID
-     * @param pageable 페이징 및 정렬 정보
-     * @return 필터링 및 페이징된 멤버 정보 응답 페이지
-     * @throws GeneralException 프로젝트를 찾을 수 없는 경우
+     * 특정 프로젝트의 멤버 목록을 필터링하여 조회합니다.
      */
     public Page<ProjectMemberResponse> getProjectMembers(
             Long projectId,
@@ -382,24 +322,6 @@ public class ProjectService {
                 });
     }
 
-    // ADMIN 또는 해당 프로젝트에 참여 중인 USER 경우 허용하는 메소드
-    private void validateAdminOrUser(Member member, String userRole, Project project) {
-        if (ADMIN_ROLE.equals(userRole)) {
-            return;
-        }
-
-        if (USER_ROLE.equals(userRole)) {
-            MemberProjectRole roleInProject = memberProjectService.getMemberRoleInProject(member, project);
-
-            if (roleInProject != null) {
-                return;
-            }
-        }
-
-        // 권한이 없는 경우 오류 발생
-        log.warn("프로젝트 상태 변경 권한 없음: userId={}, userRole={}, projectId={}", member.getId(), userRole, project.getId());
-        throw new GeneralException(ProjectErrorCode.NO_PERMISSION_TO_UPDATE_STATUS);
-    }
 
     private void validateMembersBelongToCompany(List<Member> members, Company company) {
         if (CollectionUtils.isEmpty(members)) {
@@ -413,18 +335,6 @@ public class ProjectService {
                 throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_SPECIFIED_COMPANY);
             }
         }
-    }
-
-    private ProjectCompanyAddResponse buildResponse(Project project, Company company, CompanyProjectRole companyRole,
-                                                    List<Member> managers, List<Member> members) {
-        // response 생성
-        return ProjectCompanyAddResponse.from(
-                project.getId(),
-                company,
-                companyRole,
-                managers,
-                members != null ? members : Collections.emptyList()
-        );
     }
 
     private MemberProjectRole determineTargetMemberRole(CompanyProjectRole companyRole) {

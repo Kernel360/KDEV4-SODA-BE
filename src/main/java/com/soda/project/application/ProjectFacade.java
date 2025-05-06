@@ -10,11 +10,9 @@ import com.soda.project.application.validator.ProjectValidator;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectService;
 import com.soda.project.domain.ProjectStatus;
-import com.soda.project.domain.company.CompanyProjectFactory;
 import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.event.ProjectCreatedEvent;
 import com.soda.project.interfaces.dto.*;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -24,8 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -93,11 +90,16 @@ public class ProjectFacade {
         Project project = projectService.getValidProject(projectId);
 
         projectValidator.validateDevAssignments(request, project);
-        projectService.assignCompaniesAndMembersFromAssignments(
-                request.getDevAssignments(),
+        Map<Long, Company> devCompanyMap = new HashMap<>();
+        Map<Long, Member> devManagerMap = new HashMap<>();
+        Map<Long, Member> devMemberMap = new HashMap<>();
+
+        projectService.assignDevCompanyAndMembers(
                 project,
-                CompanyProjectRole.DEV_COMPANY
-        );
+                new ArrayList<>(devCompanyMap.values()),
+                new ArrayList<>(devManagerMap.values()),
+                new ArrayList<>(devMemberMap.values())
+        );;
 
         if (project.getStatus() == ProjectStatus.CONTRACT) {
             project.changeStatus(ProjectStatus.IN_PROGRESS);
@@ -172,5 +174,21 @@ public class ProjectFacade {
 
         projectService.updateProjectInfo(project, request.getTitle(), request.getDescription(), request.getStartDate(), request.getEndDate());
         return ProjectInfoUpdateResponse.from(project);
+    }
+
+    @Transactional
+    public ProjectCompanyAddResponse addCompanyToProject(String userRole, Long projectId, ProjectCompanyAddRequest request) {
+        projectValidator.validateAdminRole(userRole);
+        Project project = projectService.getValidProject(projectId);
+
+        Company company = companyService.getCompany(request.getCompanyId());
+        List<Member> managers = request.getManagerIds() != null ? memberService.findMembersByIdsAndCompany(request.getManagerIds(), company) : Collections.emptyList();
+        List<Member> members = request.getMemberIds() != null ? memberService.findMembersByIdsAndCompany(request.getMemberIds(), company) : Collections.emptyList();
+
+        projectService.addCompanyAndMembersToProject(
+                project, company, request.getRole(), managers, members
+        );
+
+        return ProjectCompanyAddResponse.from(project.getId(), company, request.getRole(), managers, members);
     }
 }

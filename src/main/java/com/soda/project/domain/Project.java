@@ -77,7 +77,7 @@ public class Project extends BaseEntity {
         }
     }
 
-    private void assignClientMembers(List<Member> clientManagers, List<Member> clientMembers) {
+    protected void assignClientMembers(List<Member> clientManagers, List<Member> clientMembers) {
         if (clientManagers != null) {
         List<MemberProject> clientManagerProjects = clientManagers.stream()
                 .map(member -> MemberProject.createClientManager(member, this))
@@ -92,7 +92,7 @@ public class Project extends BaseEntity {
         }
     }
 
-    private void assignClientCompanies(List<Company> clientCompanies) {
+    protected void assignClientCompanies(List<Company> clientCompanies) {
         if (!CollectionUtils.isEmpty(clientCompanies)) {
             List<CompanyProject> clientCompanyProjects = clientCompanies.stream()
                     .distinct()
@@ -102,7 +102,7 @@ public class Project extends BaseEntity {
         }
     }
 
-    private void assignDevMembers(List<Member> devManagers, List<Member> devMembers) {
+    protected void assignDevMembers(List<Member> devManagers, List<Member> devMembers) {
         if (devManagers != null) {
             List<MemberProject> devManagerProjects = devManagers.stream()
                     .map(member -> MemberProject.createDevManager(member, this))
@@ -117,7 +117,7 @@ public class Project extends BaseEntity {
         }
     }
 
-    private void assignDevCompanies(List<Company> devCompanies) {
+    protected void assignDevCompanies(List<Company> devCompanies) {
         if (!CollectionUtils.isEmpty(devCompanies)) {
             List<CompanyProject> devCompanyProjects = devCompanies.stream()
                     .distinct()

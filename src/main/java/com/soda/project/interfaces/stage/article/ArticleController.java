@@ -1,13 +1,14 @@
 package com.soda.project.interfaces.stage.article;
 
-import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.common.file.dto.*;
 import com.soda.common.file.service.FileService;
 import com.soda.common.link.dto.LinkDeleteResponse;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
-import com.soda.project.domain.stage.article.dto.*;
-import com.soda.project.domain.stage.article.vote.dto.*;
+import com.soda.project.application.stage.article.ArticleFacade;
+import com.soda.project.domain.stage.article.ArticleService;
+import com.soda.project.interfaces.dto.stage.article.*;
+import com.soda.project.interfaces.dto.stage.article.vote.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArticleController {
 
+    private final ArticleFacade articleFacade;
     private final ArticleService articleService;
     private final FileService fileService;
     private final LinkService linkService;
@@ -130,14 +132,14 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<VoteCreateResponse>> createVote(@PathVariable Long articleId, HttpServletRequest request,
                                                                           @Valid @RequestBody VoteCreateRequest voteRequest) {
         Long userId = (Long) request.getAttribute("memberId");
-        String userRole = (String) request.getAttribute("userRole").toString();
-        VoteCreateResponse response = articleService.createVoteForArticle(articleId, userId, userRole, voteRequest);
+        VoteCreateResponse response = articleFacade.createVoteForArticle(articleId, userId, voteRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "투표 생성 성공"));
     }
 
     @GetMapping("/articles/{articleId}/vote")
-    public ResponseEntity<ApiResponseForm<VoteViewResponse>> getVoteInfo(@PathVariable Long articleId) {
-        VoteViewResponse response = articleService.getVoteInfoForArticle(articleId);
+    public ResponseEntity<ApiResponseForm<VoteViewResponse>> getVoteInfo(@PathVariable Long articleId, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("memberId");
+        VoteViewResponse response = articleFacade.getVoteInfoForArticle(articleId, userId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -145,8 +147,7 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<VoteSubmitResponse>> submitVote(@PathVariable Long articleId, HttpServletRequest request,
                                                                           @Valid @RequestBody VoteSubmitRequest voteSubmitRequest) {
         Long userId = (Long) request.getAttribute("memberId");
-        String userRole = (String) request.getAttribute("userRole").toString();
-        VoteSubmitResponse response = articleService.submitVoteForArticle(articleId, userId, userRole, voteSubmitRequest);
+        VoteSubmitResponse response = articleFacade.submitVoteForArticle(articleId, userId, voteSubmitRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "투표하기 성공"));
     }
 
@@ -154,14 +155,14 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<VoteItemAddResponse>> addVoteItem(@PathVariable Long articleId, HttpServletRequest request,
                                                                             @Valid @RequestBody VoteItemAddRequest voteItemAddRequest) {
         Long userId = (Long) request.getAttribute("memberId");
-        VoteItemAddResponse response = articleService.addVoteItem(articleId, userId, voteItemAddRequest);
+        VoteItemAddResponse response = articleFacade.addVoteItem(articleId, userId, voteItemAddRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "투표 항목 추가 성공"));
     }
 
     @GetMapping("/articles/{articleId}/vote-results")
     public ResponseEntity<ApiResponseForm<VoteResultResponse>> getVoteResults(@PathVariable Long articleId, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("memberId");
-        VoteResultResponse response = articleService.getVoteResults(articleId, userId);
+        VoteResultResponse response = articleFacade.getVoteResults(articleId, userId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

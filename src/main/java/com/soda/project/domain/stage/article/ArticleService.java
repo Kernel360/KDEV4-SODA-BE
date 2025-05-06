@@ -1,19 +1,14 @@
 package com.soda.project.domain.stage.article;
 
 import com.querydsl.core.Tuple;
-import com.soda.project.domain.stage.article.dto.*;
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
-import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import com.soda.project.domain.stage.article.vote.Vote;
 import com.soda.project.domain.stage.article.vote.VoteService;
-import com.soda.project.domain.stage.article.vote.dto.*;
 import com.soda.project.infrastructure.stage.article.ArticleRepository;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
-import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
-import com.soda.project.domain.company.enums.CompanyProjectRole;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.service.MemberService;
 import com.soda.project.domain.Project;
@@ -23,6 +18,8 @@ import com.soda.project.domain.company.CompanyProjectService;
 import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.ProjectService;
 import com.soda.project.domain.stage.StageService;
+import com.soda.project.interfaces.dto.stage.article.*;
+import com.soda.project.interfaces.dto.stage.article.vote.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -303,39 +300,6 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 특정 게시물에 투표를 생성
-     * @param articleId 투표 생성할 게시글 ID
-     * @param userId 요청 사용자 ID
-     * @param userRole 요청 사용자의 역할
-     * @param request 투표 생성 정보 DTO
-     * @return 생성된 투표 정보 DTO
-     */
-    @Transactional
-    public VoteCreateResponse createVoteForArticle(Long articleId, Long userId, String userRole, VoteCreateRequest request) {
-        log.info("게시글 {} 에 투표 생성 요청 시작 (ArticleService): userId={}", articleId, userId);
-
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Article article = validateArticle(articleId);
-        Project project = article.getStage().getProject();
-
-        if (!article.getMember().getId().equals(userId)) {
-            log.warn("권한 없음: 게시글 작성자가 아닌 사용자가 투표 생성을 시도. articleId={}, userId={}", articleId, userId);
-            throw new GeneralException(ArticleErrorCode.NO_PERMISSION_TO_MODIFY_ARTICLE);
-        }
-
-        // 기존에 투표가 존재하는지 확인
-        if (voteService.doesActiveVoteExistForArticle(articleId)) {
-            log.warn("게시글 {} 에 이미 활성 투표가 존재합니다.", articleId);
-            throw new GeneralException(VoteErrorCode.VOTE_ALREADY_EXISTS);
-        }
-
-        VoteCreateResponse voteResponse = voteService.createVote(article, request);
-        log.info("게시글 {} 에 투표 생성 완료 (ArticleService): voteId={}", articleId, voteResponse.getVoteId());
-
-        return voteResponse;
-    }
-
     public Page<MyArticleListResponse> getMyArticles(Long userId, Long projectId, Pageable pageable) {
         log.info("사용자 ID {}가 작성한 게시글 목록 조회 시작. 프로젝트 필터 ID: {}", userId, projectId != null ? projectId : "없음");
 
@@ -382,153 +346,6 @@ public class ArticleService {
 
         // DTO 생성
         return MyArticleListResponse.from(articleId, title, projId, projName, stgId, stgName, createdAt);
-    }
-
-    public VoteViewResponse getVoteInfoForArticle(Long articleId) {
-        Article article = validateArticle(articleId);
-        Vote vote = article.getVote();
-
-        if (vote == null || vote.getIsDeleted()) {
-            log.warn("[ArticleService] 게시글 ID {} 에 연결된 활성 투표가 없습니다.", articleId);
-            // vote 없으면 null
-            return null;
-        }
-
-        log.info("[ArticleService] 게시글 ID {} 투표 정보 조회 완료.", articleId);
-        return VoteViewResponse.from(vote);
-    }
-
-    @Transactional
-    public VoteSubmitResponse submitVoteForArticle(Long articleId, Long userId, String userRole, VoteSubmitRequest request) {
-        log.info("[투표 제출 시작] 게시글 ID: {}, 사용자 ID: {}, 역할(문자열): {}", articleId, userId, userRole);
-        Article article = validateArticle(articleId);
-
-        Vote vote = article.getVote();
-        Long voteId = vote.getId();
-        log.debug("[투표 제출] 게시글 ID {} 에 연결된 투표 ID: {}", articleId, voteId);
-
-        Stage stage = article.getStage();
-        Project project = stage.getProject();
-
-        Member currentUser = memberService.findMemberByIdAndCompany(userId); // 로그인한 사용자 확인
-        Member author = article.getMember(); // 게시글 작성자 확인
-
-        // 작성자 본인 투표 금지
-        if (userId.equals(author.getId())) {
-            log.warn("작성자(ID:{})가 자신의 게시글(ID:{}) 투표에 참여하려고 시도했습니다.", userId, articleId);
-            throw new GeneralException(VoteErrorCode.CANNOT_VOTE_ON_OWN_ARTICLE);
-        }
-
-        // 투표 가능한지 유효성 검사
-        Company authorMemberCompany = author.getCompany();
-
-        CompanyProjectRole currentUserProjectRole =null;
-        CompanyProjectRole authorCompanyProjectRole = null;
-
-        if (currentUser.getRole() != MemberRole.ADMIN) {
-            Company currentMemberCompany = currentUser.getCompany();
-            currentUserProjectRole = companyProjectService.getCompanyRoleInProject(currentMemberCompany, project);
-        } else {
-            log.info("투표자가 관리자이므로 회사 검증을 하지 않습니다.");
-        }
-
-        if (author.getRole() != MemberRole.ADMIN) {
-            authorCompanyProjectRole = companyProjectService.getCompanyRoleInProject(authorMemberCompany, project);
-        } else {
-            log.info("작성자가 관리자 이므로 회사 역할 검증을 하지 않습니다.");
-        }
-        
-        checkVotingPermission(author.getRole(), currentUser.getRole(), currentUserProjectRole, authorCompanyProjectRole);
-
-        log.info("[투표 제출] VoteService 호출 시작 - voteId: {}, userId: {}", voteId, userId);
-        VoteSubmitResponse response = voteService.processVoteSubmit(voteId, userId, request);
-
-        return VoteSubmitResponse.from(response);
-    }
-
-    private void checkVotingPermission(MemberRole authorRole, MemberRole currentUserRole, CompanyProjectRole currentUserProjectRole, CompanyProjectRole authorCompanyProjectRole) {
-        boolean permitted = false;
-
-        // 작성자가 ADMIN > 고객사/개발사 둘 다 투표 가능
-        if (authorRole == MemberRole.ADMIN || currentUserRole == MemberRole.ADMIN) {
-            permitted = true;
-            log.debug("[투표 권한 확인] 작성자가 ADMIN이므로 투표 허용됨.");
-        } else {
-            if (authorCompanyProjectRole == CompanyProjectRole.DEV_COMPANY && currentUserProjectRole == CompanyProjectRole.CLIENT_COMPANY) {
-                permitted = true;
-            } else if (authorCompanyProjectRole == CompanyProjectRole.CLIENT_COMPANY && currentUserProjectRole == CompanyProjectRole.DEV_COMPANY) {
-                permitted = true;
-            }
-        }
-
-        if (!permitted) {
-            log.warn("[투표 권한 없음] 작성자 회사 역할: {}, 투표자 회사 역할: {}", authorCompanyProjectRole, currentUserProjectRole);
-            throw new GeneralException(VoteErrorCode.VOTE_PERMISSION_DENIED);
-        }
-        log.debug("[투표 권한 확인 완료] 허용됨: 작성자 회사 역할({}), 투표자 회사 역할({})", authorCompanyProjectRole, currentUserProjectRole);
-    }
-
-    @Transactional
-    public VoteItemAddResponse addVoteItem(Long articleId, Long userId, VoteItemAddRequest request) {
-        log.info("[항목 추가 시작(ArticleService)] Article ID: {}, User ID: {}, Item Text: {}",
-                articleId, userId, request.getItemText());
-
-
-        Article article = validateArticle(articleId);
-        Vote vote = article.getVote();
-        Stage stage = article.getStage();
-        Project project = stage.getProject();
-
-        Member requester = memberService.findByIdAndIsDeletedFalse(userId); // 요청자 정보
-        Member author = article.getMember();
-
-        checkVoteItemAddPermission(requester, author, project);
-
-        VoteItemAddResponse addedItem = voteService.addVoteItemToVote(vote, request.getItemText());
-        log.info("[항목 추가 성공(ArticleService)] Article ID: {}, New Item ID: {}", articleId, addedItem.getItemId());
-        return addedItem;
-    }
-
-    private void checkVoteItemAddPermission(Member requester, Member author, Project project) {
-        // 1. 작성자 본인 확인
-        if (requester.getId().equals(author.getId())) {
-            log.debug("항목 추가 권한 확인: 작성자 본인이므로 허용.");
-            return; // 작성자 본인은 통과
-        }
-
-        // 2. 작성자가 ADMIN인 경우 -> 모든 사용자(회사 역할 무관) 추가 허용
-        if (requester.getRole() == MemberRole.ADMIN) {
-            log.debug("항목 추가 권한 확인: 요청자(ID:{})가 ADMIN이므로 허용.", requester.getId());
-            return;
-        }
-
-        // 2-2. 작성자가 ADMIN인 경우 (그리고 요청자는 ADMIN이 아님) -> 허용
-        if (author.getRole() == MemberRole.ADMIN) {
-            log.debug("항목 추가 권한 확인: 작성자가 ADMIN이므로 요청자(ID:{}, Role:{}) 허용.", requester.getId(), requester.getRole());
-            return; 
-        }
-
-        // 3. 고객사/개발사 유효성 검증
-        Company requesterCompany = requester.getCompany();
-        Company authorCompany = author.getCompany();
-
-        CompanyProjectRole requesterRole = companyProjectService.getCompanyRoleInProject(requesterCompany, project);
-        CompanyProjectRole authorRole = companyProjectService.getCompanyRoleInProject(authorCompany, project);
-
-        boolean permitted = false;
-        if (authorRole == CompanyProjectRole.DEV_COMPANY && requesterRole == CompanyProjectRole.CLIENT_COMPANY) {
-            permitted = true;
-        } else if (authorRole == CompanyProjectRole.CLIENT_COMPANY && requesterRole == CompanyProjectRole.DEV_COMPANY) {
-            permitted = true;
-        }
-
-        // 권한 없는 경우 예외 발생
-        if (!permitted) {
-            log.warn("항목 추가 권한 없음: 작성자 회사 역할({})과 요청자 회사 역할({})이 교차 조건 불만족.", authorRole, requesterRole);
-            throw new GeneralException(VoteErrorCode.VOTE_PERMISSION_DENIED);
-        }
-
-        log.debug("항목 추가 권한 확인 완료 (교차 회사 역할): Author Role({}), Requester Role({})", authorRole, requesterRole);
     }
 
     public VoteResultResponse getVoteResults(Long articleId, Long userId) {

@@ -12,7 +12,7 @@ import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.project.domain.stage.article.comment.Comment;
 import com.soda.project.domain.stage.article.comment.CommentService;
-import com.soda.project.domain.stage.article.comment.dto.*;
+import com.soda.project.interfaces.dto.stage.article.comment.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

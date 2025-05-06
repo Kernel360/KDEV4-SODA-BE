@@ -14,4 +14,8 @@ public interface VoteAnswerRepository extends JpaRepository<VoteAnswer, Long> {
     int countByVote(Vote vote);
 
     List<VoteAnswer> findByVote(Vote vote);
+
+    int countByVote_IdAndIsDeletedFalse(Long voteId);
+
+    List<VoteAnswer> findByVote_IdAndIsDeletedFalse(Long voteId);
 }

@@ -2,7 +2,7 @@ package com.soda.project.interfaces.stage.article.comment;
 
 import com.soda.global.response.ApiResponseForm;
 import com.soda.project.application.stage.article.comment.CommentFacade;
-import com.soda.project.domain.stage.article.comment.dto.*;
+import com.soda.project.interfaces.dto.stage.article.comment.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

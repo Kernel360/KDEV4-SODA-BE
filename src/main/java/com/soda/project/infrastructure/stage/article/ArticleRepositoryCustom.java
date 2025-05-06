@@ -1,7 +1,7 @@
 package com.soda.project.infrastructure.stage.article;
 
 import com.querydsl.core.Tuple;
-import com.soda.project.domain.stage.article.dto.ArticleSearchCondition;
+import com.soda.project.interfaces.dto.stage.article.ArticleSearchCondition;
 import com.soda.project.domain.stage.article.Article;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

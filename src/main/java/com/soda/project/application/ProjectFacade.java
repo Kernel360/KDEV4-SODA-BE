@@ -34,7 +34,6 @@ public class ProjectFacade {
     private final CompanyService companyService;
     private final MemberService memberService;
     private final ProjectService projectService;
-    private final CompanyProjectFactory companyProjectFactory;
     private final ProjectValidator projectValidator;
     private final ApplicationEventPublisher eventPublisher;
     private final ProjectResponseBuilder projectResponseBuilder;
@@ -144,5 +143,13 @@ public class ProjectFacade {
         Page<Tuple> tuplePage = projectService.findMyCompanyProjectsData(userId, company.getId(), pageable);
         // 3. DTO 변환
         return projectResponseBuilder.createMyProjectListResponsePage(tuplePage, false);
+    }
+
+    @LoggableEntityAction(action = "DELETE", entityClass = Project.class)
+    @Transactional
+    public void deleteProject(Long projectId, String userRole) {
+        projectValidator.validateAdminRole(userRole);
+        Project project = projectService.getValidProject(projectId);
+        projectService.deleteProject(project);
     }
 }

@@ -41,4 +41,10 @@ public class ProjectProviderImpl implements ProjectProvider {
     public Page<Tuple> findMyCompanyProjectsData(Long userId, Long companyId, Pageable pageable) {
         return projectRepository.findMyCompanyProjectsData(userId, companyId, pageable);
     }
+
+    @Override
+    public void delete(Project project) {
+        project.delete();
+        projectRepository.save(project);
+    }
 }

@@ -174,25 +174,10 @@ public class ProjectService {
 
     /**
      * 프로젝트 삭제
-     *
-     * @param projectId 삭제할 프로젝트 ID
-     * @throws GeneralException 프로젝트가 존재하지 않거나 이미 삭제된 경우
      */
-    @LoggableEntityAction(action = "DELETE", entityClass = Project.class)
-    @Transactional
-    public void deleteProject(Long projectId) {
-        // 프로젝트 유효성 검사
-        Project project = getValidProject(projectId);
-
-        // TODO ADMIN만 프로젝트 삭제 가능 (로그 오류 발생해서 추후 수정 가능하면 유효성 검사 추가 예정)
-        //validateAdminRole(userRole);
-
-        // 프로젝트 삭제 (연관된 memberProject, companyProject 함께 삭제)
-        project.delete();
-        companyProjectService.deleteCompanyProjects(project);
-        memberProjectService.deleteMemberProjects(project);
-
-        log.info("프로젝트 삭제 완료: projectId={}", projectId);
+    public void deleteProject(Project project) {
+        projectProvider.delete(project);
+        log.info("ProjectService: 프로젝트 삭제 완료: projectId={}", project.getId());
     }
 
     /**

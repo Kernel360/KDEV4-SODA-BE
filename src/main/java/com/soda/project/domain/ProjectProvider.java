@@ -18,4 +18,6 @@ public interface ProjectProvider {
     Page<Tuple> findMyProjectsData(ProjectSearchCondition projectSearchCondition, Long userId, Pageable pageable);
 
     Page<Tuple> findMyCompanyProjectsData(Long userId, Long companyId, Pageable pageable);
+
+    void delete(Project project);
 }

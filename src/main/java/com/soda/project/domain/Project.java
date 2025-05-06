@@ -102,8 +102,35 @@ public class Project extends BaseEntity {
         }
     }
 
+    private void assignDevMembers(List<Member> devManagers, List<Member> devMembers) {
+        if (devManagers != null) {
+            List<MemberProject> devManagerProjects = devManagers.stream()
+                    .map(member -> MemberProject.createDevManager(member, this))
+                    .toList();
+            this.memberProjects.addAll(devManagerProjects);
+        }
+        if (devMembers != null) {
+            List<MemberProject> devMemberProjects = devMembers.stream()
+                    .map(member -> MemberProject.createDevMember(member, this))
+                    .toList();
+            this.memberProjects.addAll(devMemberProjects);
+        }
+    }
+
+    private void assignDevCompanies(List<Company> devCompanies) {
+        if (!CollectionUtils.isEmpty(devCompanies)) {
+            List<CompanyProject> devCompanyProjects = devCompanies.stream()
+                    .distinct()
+                    .map(company -> CompanyProject.createDevCompany(company, this))
+                    .toList();
+            this.companyProjects.addAll(devCompanyProjects);
+        }
+    }
+
     public void delete() {
         this.markAsDeleted();
+        this.companyProjects.forEach(CompanyProject::delete);
+        this.memberProjects.forEach(MemberProject::delete);
     }
 
     public void updateProjectInfo(String title, String description, LocalDateTime startDate, LocalDateTime endDate) {

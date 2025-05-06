@@ -75,7 +75,7 @@ public class ProjectController {
     @DeleteMapping("/{projectId}")
     public ResponseEntity<Void> deleteProject(HttpServletRequest request, @PathVariable Long projectId) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        projectService.deleteProject(projectId);
+        projectFacade.deleteProject(projectId, userRole);
         return ResponseEntity.noContent().build();
     }
 

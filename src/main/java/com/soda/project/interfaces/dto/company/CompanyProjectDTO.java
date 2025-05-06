@@ -1,6 +1,6 @@
 package com.soda.project.interfaces.dto.company;
 
-import com.soda.member.domain.Company;
+import com.soda.member.domain.company.Company;
 import com.soda.project.domain.company.enums.CompanyProjectRole;
 import com.soda.project.domain.company.CompanyProject;
 import com.soda.project.domain.Project;

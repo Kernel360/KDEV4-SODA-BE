@@ -1,4 +1,4 @@
-package com.soda.member.domain;
+package com.soda.member.domain.company;
 
 import com.soda.member.interfaces.dto.CompanyCreationStatRaw;
 

@@ -6,8 +6,8 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.soda.project.domain.member.enums.MemberProjectRole;
 import com.soda.project.domain.member.MemberProject;
+import com.soda.project.domain.member.enums.MemberProjectRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,8 +19,8 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
-import static com.soda.member.domain.QCompany.company;
 import static com.soda.member.domain.QMember.member;
+import static com.soda.member.domain.company.QCompany.company;
 import static com.soda.project.domain.member.QMemberProject.memberProject;
 
 @Repository

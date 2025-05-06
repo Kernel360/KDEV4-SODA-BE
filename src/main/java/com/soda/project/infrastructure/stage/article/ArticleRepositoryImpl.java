@@ -4,7 +4,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.soda.member.domain.QCompany;
+import com.soda.member.domain.company.QCompany;
 import com.soda.project.interfaces.dto.stage.article.ArticleSearchCondition;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.enums.ArticleStatus;
@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Optional;
 
 
-import static com.soda.member.domain.QCompany.company;
 import static com.soda.member.domain.QMember.member;
+import static com.soda.member.domain.company.QCompany.company;
 import static com.soda.project.domain.QProject.project;
 import static com.soda.project.domain.stage.QStage.stage;
 import static com.soda.project.domain.stage.article.QArticle.article;
@@ -104,7 +104,7 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
                 .selectFrom(article)
                 .leftJoin(article.stage, stage).fetchJoin()    // Fetch Join 유지 또는 필요시 제거/변경
                 .leftJoin(article.member, member).fetchJoin()    // Fetch Join 유지 또는 필요시 제거/변경
-                .leftJoin(member.company, QCompany.company).fetchJoin() // Company 정보도 필요하면 Fetch Join
+                .leftJoin(member.company, company).fetchJoin() // Company 정보도 필요하면 Fetch Join
                 .where(
                         stage.project.id.eq(projectId),
                         article.isDeleted.isFalse(),

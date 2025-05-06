@@ -1,7 +1,7 @@
 package com.soda.member.infrastructure;
 
-import com.soda.member.domain.Company;
-import com.soda.member.domain.CompanyProvider;
+import com.soda.member.domain.company.Company;
+import com.soda.member.domain.company.CompanyProvider;
 import com.soda.member.interfaces.dto.CompanyCreationStatRaw;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

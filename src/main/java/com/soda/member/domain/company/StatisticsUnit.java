@@ -1,4 +1,4 @@
-package com.soda.member.domain;
+package com.soda.member.domain.company;
 
 import lombok.Getter;
 

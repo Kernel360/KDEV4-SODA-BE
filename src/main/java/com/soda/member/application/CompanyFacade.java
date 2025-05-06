@@ -1,9 +1,9 @@
 package com.soda.member.application;
 
 import com.soda.global.log.data.annotation.LoggableEntityAction;
-import com.soda.member.domain.Company;
-import com.soda.member.domain.CompanyService;
-import com.soda.member.domain.CompanyStatsService;
+import com.soda.member.domain.company.Company;
+import com.soda.member.domain.company.CompanyService;
+import com.soda.member.domain.company.CompanyStatsService;
 import com.soda.member.interfaces.dto.CompanyCreationTrend;
 import com.soda.member.interfaces.dto.company.*;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,7 @@
-package com.soda.member.domain;
+package com.soda.member.domain.company;
 
 import com.soda.common.BaseEntity;
+import com.soda.member.domain.Member;
 import com.soda.member.interfaces.dto.company.CompanyCreateRequest;
 import com.soda.member.interfaces.dto.company.CompanyUpdateRequest;
 import jakarta.persistence.CascadeType;

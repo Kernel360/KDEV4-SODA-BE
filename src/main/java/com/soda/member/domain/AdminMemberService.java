@@ -1,6 +1,7 @@
 package com.soda.member.domain;
 
 import com.soda.global.response.GeneralException;
+import com.soda.member.domain.company.Company;
 import com.soda.member.interfaces.dto.AdminUpdateUserRequestDto;
 import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
 import com.soda.member.interfaces.dto.member.admin.MemberListDto;

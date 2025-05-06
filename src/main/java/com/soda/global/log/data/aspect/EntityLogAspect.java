@@ -13,7 +13,7 @@ import com.soda.global.log.data.domain.DataLog;
 import com.soda.global.log.data.domain.DataLogRepository;
 import com.soda.member.interfaces.dto.company.CompanyResponse;
 import com.soda.member.interfaces.dto.company.MemberResponse;
-import com.soda.member.domain.Company;
+import com.soda.member.domain.company.Company;
 import com.soda.member.domain.Member;
 import com.soda.project.interfaces.dto.ProjectDTO;
 import com.soda.project.interfaces.stage.dto.StageResponse;

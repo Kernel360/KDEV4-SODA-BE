@@ -4,7 +4,7 @@ import com.querydsl.core.Tuple;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.application.CompanyFacade;
-import com.soda.member.domain.Company;
+import com.soda.member.domain.company.Company;
 import com.soda.member.domain.Member;
 import com.soda.member.domain.MemberService;
 import com.soda.project.domain.company.CompanyProjectService;

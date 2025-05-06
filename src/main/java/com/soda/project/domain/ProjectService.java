@@ -74,13 +74,9 @@ public class ProjectService {
      */
     public void assignCompaniesAndMembersFromAssignments(List<CompanyAssignment> assignments,
                                                          Project project, CompanyProjectRole companyRole) {
-        log.info("{} 역할 회사 및 구성원 지정 시작: 프로젝트 ID = {}, assignmentCount={}",
+        log.info("{} 역할 회사 및 구성원 지정 시작 (ProjectService): 프로젝트 ID = {}, assignmentCount={}",
                 companyRole.getDescription(), project.getId(), assignments.size());
-
-        if (CollectionUtils.isEmpty(assignments)) {
-            log.warn("지정할 {} 회사 정보가 없습니다. 프로젝트 ID = {}", companyRole.getDescription(), project.getId());
-            return;
-        }
+        if (CollectionUtils.isEmpty(assignments)) return;
 
         MemberProjectRole managerRole = determineTargetManagerRole(companyRole);
         MemberProjectRole memberRole = determineTargetMemberRole(companyRole);
@@ -96,9 +92,8 @@ public class ProjectService {
                 List<Member> members = memberService.findByIds(assignment.getMemberIds());
                 memberProjectService.assignMembersToProject(company, members, project, memberRole);
             }
-            log.info("회사 ID {} 및 소속 멤버 지정 완료: 프로젝트 ID = {}", assignment.getCompanyId(), project.getId());
         }
-        log.info("모든 {} 역할 회사 및 구성원 지정 완료: 프로젝트 ID = {}", companyRole.getDescription(), project.getId());
+        log.info("모든 {} 역할 회사 및 구성원 지정 완료 (ProjectService): 프로젝트 ID = {}", companyRole.getDescription(), project.getId());
     }
 
     /**
@@ -124,152 +119,23 @@ public class ProjectService {
 
     /**
      * 전체 프로젝트 목록 조회하는 메서드
-     * 프로젝트 상태에 따라 필터링해서 반환할 수 있음
-     * @return ProjectListResponse 형식으로 프로젝트 목록 반환
      */
-    public Page<ProjectListResponse> getAllProjects(ProjectSearchCondition projectSearchCondition, Pageable pageable) {
-
-        Page<ProjectListResponse> projectList = projectRepository.searchProjects(projectSearchCondition, pageable);
-
-        log.info("프로젝트 검색/조회 완료: 조회된 페이지 크기 = {}, 총 프로젝트 수 = {}",
-                projectList.getSize(),
-                projectList.getTotalElements());
-
-        return projectList;
+    public Page<ProjectListResponse> getAllProjects(ProjectSearchCondition condition, Pageable pageable) {
+        return projectProvider.searchProjects(condition, pageable);
     }
 
     /**
      * 특정 사용자가 참여한 프로젝트 목록 조회 메서드
-     *
-     * @param userId 조회하려는 사용자 ID
-     * @param userRole 조회하려는 사용자의 역할
-     * @param pageable 페이지네이션
-     * @return ProjectListResponse 형식으로 참여 중 프로젝트 목록 반환
      */
-    public Page<MyProjectListResponse> getMyProjects(ProjectSearchCondition projectSearchCondition, Long userId, String userRole, Pageable pageable) {
-        log.info("사용자 프로젝트 조회 시작: 사용자 ID = {}, 사용자 역할 = {}", userId, userRole);
-
-        if (!USER_ROLE.equals(userRole)) {
-            log.warn("사용자 ID = {}가 USER_ROLE이 아님. 프로젝트 목록 조회 불가", userId);
-            return Page.empty(pageable);
-        }
-
-        Page<Tuple> tuplePage = projectRepository.findMyProjectsData(projectSearchCondition, userId, pageable);
-        if (tuplePage.isEmpty()) {
-            log.info("사용자 ID {}가 참여한 프로젝트가 없습니다. 빈 페이지 반환.", userId);
-        } else {
-            log.debug("사용자 ID {}의 프로젝트 데이터(Tuple) 조회 완료. 변환 시작...", userId);
-        }
-
-        Page<MyProjectListResponse> responsePage = tuplePage.map(tuple -> mapTupleToMyProjectListResponse(tuple, true)); // memberRole 필수
-
-        log.info("사용자 참여 프로젝트 조회 및 DTO 변환 완료 (서비스): 사용자 ID = {}, 조회된 프로젝트 수 = {}", userId, responsePage.getTotalElements());
-        return responsePage;
-    }
-
-    public Page<MyProjectListResponse> getMyCompanyProjects(Long userId, Pageable pageable) {
-        log.info("사용자 ID {}의 회사 참여 프로젝트 목록 조회 시작 (서비스, 단일 DTO 사용)", userId);
-
-        Member member = memberService.findMemberById(userId);
-        Company company = member.getCompany();
-
-        if (company == null) {
-            log.warn("사용자 ID {} 는 회사에 소속되어 있지 않습니다. 빈 목록 반환.", userId);
-            return Page.empty(pageable);
-        }
-        Long companyId = company.getId();
-        log.info("사용자 ID {}의 회사 ID {} 확인 완료. 프로젝트 데이터 조회 시작.", userId, companyId);
-
-        Page<Tuple> tuplePage = projectRepository.findMyCompanyProjectsData(userId, companyId, pageable);
-        if (tuplePage.isEmpty()) {
-            log.info("회사 ID {}가 참여한 프로젝트가 없습니다. 빈 페이지 반환.", companyId);
-        } else {
-            log.debug("회사 ID {}의 프로젝트 데이터(Tuple) 조회 완료 (기준 사용자 ID: {}). 변환 시작...", companyId, userId);
-        }
-
-        Page<MyProjectListResponse> responsePage = tuplePage.map(tuple -> mapTupleToMyProjectListResponse(tuple, false)); // memberRole 선택적
-
-        log.info("회사 ID {} 참여 프로젝트 목록 조회 및 DTO 변환 완료 (서비스, 단일 DTO 사용): {}개 조회됨", companyId, responsePage.getTotalElements());
-        return responsePage;
-    }
-
-    private MyProjectListResponse mapTupleToMyProjectListResponse(Tuple tuple, boolean isMemberRoleRequired) {
-        Project project = tuple.get(0, Project.class);
-        CompanyProjectRole companyRole = tuple.get(1, CompanyProjectRole.class);
-        MemberProjectRole memberRole = tuple.get(2, MemberProjectRole.class); // getMyCompanyProjects의 경우 null일 수 있음
-
-        // 필수 데이터 누락 체크
-        if (project == null || companyRole == null) {
-            log.error("Tuple에서 필수 데이터 누락 (Project 또는 CompanyRole): tuple={}", tuple);
-            throw new IllegalStateException("프로젝트 데이터 조회 중 오류 발생 (필수 데이터 누락)");
-        }
-        // memberRole 필수 여부 체크
-        if (isMemberRoleRequired && memberRole == null) {
-            log.error("Tuple에서 필수 데이터 누락 (MemberRole): tuple={}", tuple);
-            throw new IllegalStateException("프로젝트 데이터 조회 중 오류 발생 (멤버 역할 누락)");
-        }
-
-        return MyProjectListResponse.from(project, companyRole, memberRole);
+    public Page<Tuple> findMyProjectsData(ProjectSearchCondition condition, Long userId, Pageable pageable) {
+        return projectProvider.findMyProjectsData(condition, userId, pageable);
     }
 
     /**
-     * 개별 프로젝트 상세 정보 조회하는 메서드
-     *
-     * @param userId 요청을 보낸 사용자 ID
-     * @param userRole 요청을 보낸 사용자의 역할
-     * @param projectId 조회할 프로젝트 ID
-     * @return ProjectViewResponse 프로젝트 상세 응답
+     * 사용자의 회사가 참여한 프로젝트 목록 조회
      */
-    public ProjectViewResponse getProject(Long userId, String userRole, Long projectId) {
-        log.info("개별 프로젝트 조회 요청 시작: projectId={}, userId={}, userRole={}", projectId, userId, userRole);
-
-        // 1. 프로젝트 유효성 검사
-        Project project = getValidProject(projectId);
-        log.debug("프로젝트 확인 완료: projectId={}", projectId);
-
-        // 2. 사용자 정보 조회
-        Member member = memberService.findMemberById(userId);
-        log.debug("사용자 확인 완료: userId={}", userId);
-
-        // 3. 접근 권한 확인 (예외 대신 boolean 반환)
-        boolean hasAccess = checkProjectAccess(member, userRole, project);
-
-        // 4. 접근 권한이 없는 경우 null 반환
-        if (!hasAccess) {
-            log.warn("프로젝트 접근 권한 없음: projectId={}, userId={}", projectId, userId);
-            return null; // 예외 대신 null 반환
-        }
-
-        // 5. 접근 권한이 있는 경우, 상세 정보 조회 및 응답 생성
-        log.info("프로젝트 접근 권한 확인 완료. 상세 정보 생성 시작: projectId={}, userId={}", projectId, userId);
-        ProjectViewResponse response = buildProjectViewResponse(project, member, userRole);
-        log.info("프로젝트 상세 응답 DTO 생성 완료: projectId={}", projectId);
-
-        return response;
-    }
-
-    private boolean checkProjectAccess(Member member, String userRole, Project project) {
-        // 1. ADMIN 역할은 항상 접근 가능
-        if (ADMIN_ROLE.equals(userRole)) {
-            log.debug("ADMIN({}) 접근 허용: projectId={}, userId={}", userRole, project.getId(), member.getId());
-            return true;
-        }
-
-        // 2. USER 역할인 경우, 프로젝트 참여 여부 확인
-        if (USER_ROLE.equals(userRole)) {
-            MemberProjectRole roleInProject = memberProjectService.getMemberRoleInProject(member, project);
-            boolean isParticipant = (roleInProject != null);
-            if (isParticipant) {
-                log.debug("프로젝트 참여자({}) 접근 허용: projectId={}, userId={}, role={}", userRole, project.getId(), member.getId(), roleInProject);
-            } else {
-                log.debug("프로젝트 접근 불가 (미참여 USER): projectId={}, userId={}", project.getId(), member.getId());
-            }
-            return isParticipant; // 참여 여부(true/false) 반환
-        }
-
-        // 3. ADMIN 또는 USER 역할이 아닌 경우, 접근 불가
-        log.warn("알 수 없는 사용자 역할({})로 프로젝트 접근 시도됨 (접근 불가 처리): projectId={}, userId={}", userRole, project.getId(), member.getId());
-        return false;
+    public Page<Tuple> findMyCompanyProjectsData(Long userId, Long companyId, Pageable pageable) {
+        return projectProvider.findMyCompanyProjectsData(userId, companyId, pageable);
     }
 
 
@@ -595,80 +461,6 @@ public class ProjectService {
                     log.error("프로젝트를 찾을 수 없음: 프로젝트 ID = {}", projectId);
                     return new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);
                 });
-    }
-
-    private ProjectViewResponse buildProjectViewResponse(Project project, Member member, String userRole) {
-        // 회사 이름 조회
-        List<String> devCompanyNames = companyProjectService.getCompanyNamesByRole(project, CompanyProjectRole.DEV_COMPANY);
-        List<String> clientCompanyNames = companyProjectService.getCompanyNamesByRole(project, CompanyProjectRole.CLIENT_COMPANY);
-
-        // 현재 사용자의 프로젝트 내 역할 조회
-        String currentMemberProjectRole = determineMemberProjectRole(member, project, userRole);
-        String currentCompanyProjectRole = determineCompanyProjectRole(member, project, userRole);
-
-        // 역할별 멤버 목록 조회
-        List<Member> devManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_MANAGER);
-        List<Member> devMembers = memberProjectService.getMembersByRole(project, MemberProjectRole.DEV_PARTICIPANT);
-        List<Member> clientManagers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_MANAGER);
-        List<Member> clientMembers = memberProjectService.getMembersByRole(project, MemberProjectRole.CLI_PARTICIPANT);
-
-        List<String> devManagerNames = extractMemberNames(devManagers);
-        List<String> devMemberNames = extractMemberNames(devMembers);
-        List<String> clientManagerNames = extractMemberNames(clientManagers);
-        List<String> clientMemberNames = extractMemberNames(clientMembers);
-
-        return ProjectViewResponse.from(
-                project,
-                currentMemberProjectRole,
-                currentCompanyProjectRole,
-                clientCompanyNames,
-                clientManagerNames,
-                clientMemberNames,
-                devCompanyNames,
-                devManagerNames,
-                devMemberNames
-        );
-    }
-
-    // 참여자 이름 가져오기
-    private List<String> extractMemberNames(List<Member> members) {
-        if (members == null || members.isEmpty()) {
-            return List.of();
-        }
-        return members.stream()
-                .map(Member::getName)
-                .collect(Collectors.toList());
-    }
-
-    // 현재 사용자가 재직 중인 company project role
-    private String determineCompanyProjectRole(Member member, Project project, String userRole) {
-        if (USER_ROLE.equals(userRole)) {
-            if (member == null || member.getCompany() == null) {
-                log.warn("회사 역할 결정 불가: 사용자 또는 회사 정보 없음. memberId={}, projectId={}",
-                        (member != null ? member.getId() : "null"), project.getId());
-                return "No Company Info";
-            }
-            CompanyProjectRole role = companyProjectService.getCompanyRoleInProject(member.getCompany(), project);
-            return (role != null) ? role.getDescription() : "Unknown Role";
-        } else if (ADMIN_ROLE.equals(userRole)) {
-            return ADMIN_ROLE;
-        }
-
-        log.warn("알 수 없는 사용자 company 역할({}) 감지됨: memberId={}, projectId={}", userRole, member.getId(), project.getId());
-        return "Unknown Role";
-    }
-
-    // 현재 사용자의 프로젝트 역할
-    private String determineMemberProjectRole(Member member, Project project, String userRole) {
-        if (USER_ROLE.equals(userRole)) {
-            MemberProjectRole role = memberProjectService.getMemberRoleInProject(member, project);
-            return (role != null) ? role.getDescription() : "Unknown Role";
-        } else if (ADMIN_ROLE.equals(userRole)) {
-            return ADMIN_ROLE;
-        }
-
-        log.warn("알 수 없는 사용자 역할({}) 감지됨: memberId={}, projectId={}", userRole, member.getId(), project.getId());
-        return "Unknown Role";
     }
 
     // ADMIN 또는 해당 프로젝트에 참여 중인 USER 경우 허용하는 메소드

@@ -4,13 +4,13 @@ import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
+import com.soda.member.enums.MemberRole;
 import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectErrorCode;
-import com.soda.project.domain.company.CompanyProjectService;
 import com.soda.project.domain.member.MemberProjectRole;
-import com.soda.member.enums.MemberRole;
+import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.interfaces.dto.CompanyAssignment;
 import com.soda.project.interfaces.dto.DevCompanyAssignmentRequest;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class ProjectValidator {
 
     private final CompanyService companyService;
     private final MemberService memberService;
-    private final CompanyProjectService companyProjectService;
+    private final MemberProjectService memberProjectService;
 
     public void validateProjectAuthority(Member member, Long projectId) {
         if (!isCliInCurrentProject(projectId, member) && !isAdmin(member.getRole())) {
@@ -96,6 +96,18 @@ public class ProjectValidator {
             if (member.getCompany() == null || !member.getCompany().getId().equals(expectedCompanyId)) {
                 throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_SPECIFIED_COMPANY);
             }
+        }
+    }
+
+    public void validateProjectAccessPermission(Member member, Project project) {
+        // 1. 관리자 확인
+        if (member.getRole() == MemberRole.ADMIN) {
+            return;
+        }
+        // 2. 프로젝트 멤버 확인
+        boolean isParticipant = memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
+        if (!isParticipant) {
+            throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
         }
     }
 }

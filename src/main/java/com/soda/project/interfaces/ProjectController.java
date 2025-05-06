@@ -42,7 +42,7 @@ public class ProjectController {
     @GetMapping("")
     public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getAllProjects(@ModelAttribute ProjectSearchCondition projectSearchCondition,
                                                                                      @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<ProjectListResponse> projectList = projectService.getAllProjects(projectSearchCondition, pageable);
+        Page<ProjectListResponse> projectList = projectFacade.getAllProjects(projectSearchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(projectList));
     }
 
@@ -51,7 +51,7 @@ public class ProjectController {
                                                                                       @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) request.getAttribute("memberId");
         String userRole = (String) request.getAttribute("userRole").toString();
-        Page<MyProjectListResponse> response = projectService.getMyProjects(projectSearchCondition, userId, userRole, pageable);
+        Page<MyProjectListResponse> response = projectFacade.getMyProjects(projectSearchCondition, userId, userRole, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -59,7 +59,7 @@ public class ProjectController {
     public ResponseEntity<ApiResponseForm<ProjectViewResponse>> getProject(HttpServletRequest request, @PathVariable Long projectId) {
         Long userId = (Long) request.getAttribute("memberId");
         String userRole = (String) request.getAttribute("userRole").toString();
-        ProjectViewResponse response = projectService.getProject(userId, userRole, projectId);
+        ProjectViewResponse response = projectFacade.getProject(userId, userRole, projectId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -132,7 +132,7 @@ public class ProjectController {
     public ResponseEntity<ApiResponseForm<Page<MyProjectListResponse>>> getMyCompanyProjects (HttpServletRequest request,
                                                                           @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) request.getAttribute("memberId");
-        Page<MyProjectListResponse> response = projectService.getMyCompanyProjects(userId, pageable);
+        Page<MyProjectListResponse> response = projectFacade.getMyCompanyProjects(userId, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

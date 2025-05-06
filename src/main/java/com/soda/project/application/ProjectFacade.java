@@ -1,24 +1,23 @@
 package com.soda.project.application;
 
+import com.querydsl.core.Tuple;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
-import com.soda.project.ProjectResponseBuilder;
 import com.soda.project.application.validator.ProjectValidator;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectService;
 import com.soda.project.domain.ProjectStatus;
-import com.soda.project.domain.company.CompanyProject;
 import com.soda.project.domain.company.CompanyProjectFactory;
 import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.event.ProjectCreatedEvent;
-import com.soda.project.domain.member.MemberProject;
-import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.interfaces.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -111,5 +110,39 @@ public class ProjectFacade {
         List<Company> assignedCompanies = companyService.findCompaniesByIds(assignedCompanyIds);
 
         return projectResponseBuilder.createDevCompanyAssignmentResponse(project, assignedCompanies);
+    }
+
+    public Page<ProjectListResponse> getAllProjects(ProjectSearchCondition request, Pageable pageable) {
+        return projectService.getAllProjects(request, pageable);
+    }
+
+    public Page<MyProjectListResponse> getMyProjects(ProjectSearchCondition request, Long userId, String userRole, Pageable pageable) {
+        // 1. 권한 검증
+        if (!"USER".equals(userRole)) return Page.empty(pageable);
+        // 2. 데이터 조회
+        Page<Tuple> tuplePage = projectService.findMyProjectsData(request, userId, pageable);
+        // 3. DTO 변환
+        return projectResponseBuilder.createMyProjectListResponsePage(tuplePage, true);
+    }
+
+    public ProjectViewResponse getProject(Long userId, String userRole, Long projectId) {
+        // 1. 엔티티 조회
+        Member member = memberService.findWithProjectsById(userId);
+        Project project = projectService.getValidProject(projectId);
+        // 2. 접근 권한 검증
+        projectValidator.validateProjectAccessPermission(member, project);
+        // 3. 응답 DTO 생성
+        return projectResponseBuilder.createProjectViewResponse(project, member, userRole);
+    }
+
+    public Page<MyProjectListResponse> getMyCompanyProjects(Long userId, Pageable pageable) {
+        // 1. 사용자 및 회사 정보 조회
+        Member member = memberService.findMemberById(userId);
+        Company company = member.getCompany();
+        if (company == null) return Page.empty(pageable);
+        // 2. 데이터 조회
+        Page<Tuple> tuplePage = projectService.findMyCompanyProjectsData(userId, company.getId(), pageable);
+        // 3. DTO 변환
+        return projectResponseBuilder.createMyProjectListResponsePage(tuplePage, false);
     }
 }

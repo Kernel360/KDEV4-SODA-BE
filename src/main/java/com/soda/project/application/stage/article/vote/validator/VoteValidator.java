@@ -6,7 +6,7 @@ import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.company.CompanyProjectService;
-import com.soda.project.domain.company.enums.CompanyProjectRole;
+import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;

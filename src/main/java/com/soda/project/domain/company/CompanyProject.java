@@ -2,7 +2,6 @@ package com.soda.project.domain.company;
 
 import com.soda.common.BaseEntity;
 import com.soda.member.entity.Company;
-import com.soda.project.domain.company.enums.CompanyProjectRole;
 import com.soda.project.domain.Project;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

@@ -3,7 +3,6 @@ package com.soda.project.domain.company;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.project.domain.Project;
-import com.soda.project.domain.company.enums.CompanyProjectRole;
 import com.soda.project.domain.ProjectErrorCode;
 import com.soda.project.infrastructure.CompanyProjectRepository;
 import lombok.RequiredArgsConstructor;

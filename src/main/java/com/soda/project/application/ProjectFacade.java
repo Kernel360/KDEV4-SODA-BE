@@ -5,13 +5,18 @@ import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
+import com.soda.project.ProjectResponseBuilder;
 import com.soda.project.application.validator.ProjectValidator;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectService;
+import com.soda.project.domain.ProjectStatus;
+import com.soda.project.domain.company.CompanyProject;
+import com.soda.project.domain.company.CompanyProjectFactory;
+import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.event.ProjectCreatedEvent;
-import com.soda.project.interfaces.dto.CompanyAssignment;
-import com.soda.project.interfaces.dto.ProjectCreateRequest;
-import com.soda.project.interfaces.dto.ProjectCreateResponse;
+import com.soda.project.domain.member.MemberProject;
+import com.soda.project.domain.member.MemberProjectRole;
+import com.soda.project.interfaces.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -30,8 +35,10 @@ public class ProjectFacade {
     private final CompanyService companyService;
     private final MemberService memberService;
     private final ProjectService projectService;
+    private final CompanyProjectFactory companyProjectFactory;
     private final ProjectValidator projectValidator;
     private final ApplicationEventPublisher eventPublisher;
+    private final ProjectResponseBuilder projectResponseBuilder;
 
     @LoggableEntityAction(action = "CREATE", entityClass = Project.class)
     @Transactional
@@ -73,12 +80,36 @@ public class ProjectFacade {
         
         publishProjectCreatedEvent(savedProject);
 
-        // 6. 응답 DTO 생성 및 반환
         return ProjectCreateResponse.from(savedProject);
     }
 
     private void publishProjectCreatedEvent(Project project) {
         LocalDate creationDate = project.getCreatedAt().toLocalDate();
         eventPublisher.publishEvent(new ProjectCreatedEvent(creationDate));
+    }
+
+    @Transactional
+    public DevCompanyAssignmentResponse assignDevCompany(Long projectId, String userRole, DevCompanyAssignmentRequest request) {
+        projectValidator.validateAdminRole(userRole);
+        Project project = projectService.getValidProject(projectId);
+
+        projectValidator.validateDevAssignments(request, project);
+        projectService.assignCompaniesAndMembersFromAssignments(
+                request.getDevAssignments(),
+                project,
+                CompanyProjectRole.DEV_COMPANY
+        );
+
+        if (project.getStatus() == ProjectStatus.CONTRACT) {
+            project.changeStatus(ProjectStatus.IN_PROGRESS);
+        }
+
+        List<Long> assignedCompanyIds = request.getDevAssignments().stream()
+                .map(CompanyAssignment::getCompanyId)
+                .distinct()
+                .collect(Collectors.toList());
+        List<Company> assignedCompanies = companyService.findCompaniesByIds(assignedCompanyIds);
+
+        return projectResponseBuilder.createDevCompanyAssignmentResponse(project, assignedCompanies);
     }
 }

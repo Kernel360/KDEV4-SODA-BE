@@ -2,20 +2,35 @@ package com.soda.project.application.validator;
 
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
+import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
+import com.soda.member.service.CompanyService;
+import com.soda.member.service.MemberService;
+import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectErrorCode;
-import com.soda.project.domain.member.enums.MemberProjectRole;
+import com.soda.project.domain.company.CompanyProjectService;
+import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.member.enums.MemberRole;
+import com.soda.project.interfaces.dto.CompanyAssignment;
+import com.soda.project.interfaces.dto.DevCompanyAssignmentRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
 public class ProjectValidator {
 
     private static final String ADMIN_ROLE = "ADMIN";
+
+    private final CompanyService companyService;
+    private final MemberService memberService;
+    private final CompanyProjectService companyProjectService;
 
     public void validateProjectAuthority(Member member, Long projectId) {
         if (!isCliInCurrentProject(projectId, member) && !isAdmin(member.getRole())) {
@@ -44,6 +59,43 @@ public class ProjectValidator {
     public void validateAdminRole(String userRole) {
         if (!ADMIN_ROLE.equals(userRole)) {
             throw new GeneralException(ProjectErrorCode.UNAUTHORIZED_USER);
+        }
+    }
+
+    public void validateDevAssignments(DevCompanyAssignmentRequest request, Project project) {
+        List<CompanyAssignment> assignments = request.getDevAssignments();
+
+        // 각 assignment 에 대해 유효성 검증 수행
+        for (CompanyAssignment assignment : assignments) {
+            validateSingleAssignment(assignment, project);
+        }
+    }
+
+    public void validateSingleAssignment(CompanyAssignment assignment, Project project) {
+        if (assignment == null || assignment.getCompanyId() == null) {
+            throw new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND);
+        }
+        if (CollectionUtils.isEmpty(assignment.getManagerIds())) {
+            throw new GeneralException(ProjectErrorCode.MEMBER_LIST_EMPTY);
+        }
+        Company company = companyService.getCompany(assignment.getCompanyId());
+        List<Long> allMemberIds = Stream.concat(
+                assignment.getManagerIds().stream(),
+                (assignment.getMemberIds() != null ? assignment.getMemberIds().stream() : Stream.empty())
+        ).distinct().collect(Collectors.toList());
+        if (!allMemberIds.isEmpty()) {
+            List<Member> members = memberService.findByIds(allMemberIds);
+            validateMembersBelongToCompany(members, company);
+        }
+    }
+
+    private void validateMembersBelongToCompany(List<Member> members, Company company) {
+        if (CollectionUtils.isEmpty(members)) return;
+        Long expectedCompanyId = company.getId();
+        for (Member member : members) {
+            if (member.getCompany() == null || !member.getCompany().getId().equals(expectedCompanyId)) {
+                throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_SPECIFIED_COMPANY);
+            }
         }
     }
 }

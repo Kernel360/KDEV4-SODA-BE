@@ -35,7 +35,7 @@ public class ProjectController {
                                                                                           HttpServletRequest request,
                                                                                           @Valid @RequestBody DevCompanyAssignmentRequest devCompanyAssignmentRequest) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        DevCompanyAssignmentResponse response = projectService.assignDevCompany(projectId, userRole, devCompanyAssignmentRequest);
+        DevCompanyAssignmentResponse response = projectFacade.assignDevCompany(projectId, userRole, devCompanyAssignmentRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "project에 개발사 지정 성공"));
     }
 

@@ -6,7 +6,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.soda.project.domain.member.enums.MemberProjectRole;
+import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.domain.member.MemberProject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

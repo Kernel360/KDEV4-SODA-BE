@@ -8,11 +8,10 @@ import com.soda.member.entity.Member;
 import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.domain.company.CompanyProjectService;
-import com.soda.project.domain.company.enums.CompanyProjectRole;
+import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.member.MemberProject;
 import com.soda.project.domain.member.MemberProjectService;
-import com.soda.project.domain.member.enums.MemberProjectRole;
-import com.soda.project.domain.stage.StageService;
+import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.infrastructure.ProjectDailyStatsRepository;
 import com.soda.project.infrastructure.ProjectRepository;
 import com.soda.project.interfaces.dto.*;
@@ -50,7 +49,7 @@ public class ProjectService {
     private final ProjectDailyStatsRepository projectDailyStatsRepository;
 
     /**
-     * 프로젝트를 생성하는 메서드입니다.
+     * 프로젝트를 생성하는 메서드
      */
     public Project createAndStoreProject(
             String title, String description, LocalDateTime startDate, LocalDateTime endDate,
@@ -72,47 +71,55 @@ public class ProjectService {
 
     /**
      * 기존 프로젝트에 개발사 및 해당 개발사의 담당자/참여자를 지정하는 메서드
-     *
-     * @param projectId 프로젝트 ID (기존에 존재하는 프로젝트)
-     * @param userRole 현재 요청자의 역할 (ADMIN만 허용)
-     * @param request 개발사 및 구성원 지정 요청 정보를 담은 DTO
-     * @return 개발사 이름, 담당자 목록, 일반 참여자 목록이 포함된 응답 DTO
-     * @throws GeneralException 프로젝트가 존재하지 않거나, 요청자가 ADMIN 아닐 경우 예외 발생
      */
-    // TODO 우선 log 안달고 진행
-    @Transactional
-    public DevCompanyAssignmentResponse assignDevCompany(Long projectId, String userRole, DevCompanyAssignmentRequest request) {
-        log.info("개발사 지정 시작: 프로젝트 ID = {}", projectId);
+    public void assignCompaniesAndMembersFromAssignments(List<CompanyAssignment> assignments,
+                                                         Project project, CompanyProjectRole companyRole) {
+        log.info("{} 역할 회사 및 구성원 지정 시작: 프로젝트 ID = {}, assignmentCount={}",
+                companyRole.getDescription(), project.getId(), assignments.size());
 
-        // project 유효성 검사
-        Project project = getValidProject(projectId);
-
-        // ADMIN 확인
-        validateAdminRole(userRole);
-
-        // 고객사 지정
-        // 개발사 및 멤버 지정 (수정된 로직 사용)
-        assignCompaniesAndMembersFromAssignments(
-                request.getDevAssignments(),
-                project,
-                CompanyProjectRole.DEV_COMPANY
-        );
-
-        log.info("개발사 지정 완료: 프로젝트 ID = {}", projectId);
-
-        // CONTRACT > IN_PROGRESS 로 상태 변경
-        if (project.getStatus() == ProjectStatus.CONTRACT) {
-            log.info("프로젝트 상태 변경 시도: ID={}, 현재 상태={}, 변경 상태={}",
-                    projectId, project.getStatus(), ProjectStatus.IN_PROGRESS);
-            project.changeStatus(ProjectStatus.IN_PROGRESS);
-        } else {
-            log.info("프로젝트 상태 변경 건너뜀: ID={}, 현재 상태={}", projectId, project.getStatus());
+        if (CollectionUtils.isEmpty(assignments)) {
+            log.warn("지정할 {} 회사 정보가 없습니다. 프로젝트 ID = {}", companyRole.getDescription(), project.getId());
+            return;
         }
 
-        log.info("개발사 지정 전체 프로세스 완료: 프로젝트 ID = {}", projectId);
+        MemberProjectRole managerRole = determineTargetManagerRole(companyRole);
+        MemberProjectRole memberRole = determineTargetMemberRole(companyRole);
 
-        // response 생성
-        return createDevCompanyAssignmentResponse(project);
+        for (CompanyAssignment assignment : assignments) {
+            Company company = companyService.getCompany(assignment.getCompanyId());
+            companyProjectService.assignCompanyToProject(company, project, companyRole);
+
+            List<Member> managers = memberService.findByIds(assignment.getManagerIds());
+            memberProjectService.assignMembersToProject(company, managers, project, managerRole);
+
+            if (!CollectionUtils.isEmpty(assignment.getMemberIds())) {
+                List<Member> members = memberService.findByIds(assignment.getMemberIds());
+                memberProjectService.assignMembersToProject(company, members, project, memberRole);
+            }
+            log.info("회사 ID {} 및 소속 멤버 지정 완료: 프로젝트 ID = {}", assignment.getCompanyId(), project.getId());
+        }
+        log.info("모든 {} 역할 회사 및 구성원 지정 완료: 프로젝트 ID = {}", companyRole.getDescription(), project.getId());
+    }
+
+    /**
+     * 프로젝트 상태 변경
+     */
+    public void changeProjectStatus(Project project, ProjectStatus newStatus) {
+        log.info("프로젝트 상태 변경 시도: ID={}, 현재 상태={}, 변경 상태={}",
+                project.getId(), project.getStatus(), newStatus);
+        project.changeStatus(newStatus);
+        projectProvider.store(project);
+        log.info("프로젝트 상태 변경 완료: ID={}, 새 상태={}", project.getId(), project.getStatus());
+    }
+
+    /**
+     * 프로젝트 기본 정보 수정
+     */
+    public void updateProjectInfo(Project project, String title, String description, LocalDateTime startDate, LocalDateTime endDate) {
+        log.info("프로젝트 정보 수정 시작: projectId={}, title={}", project.getId(), title);
+        project.updateProjectInfo(title, description, startDate, endDate);
+        projectProvider.store(project);
+        log.info("프로젝트 정보 수정 완료: projectId={}", project.getId());
     }
 
     /**
@@ -575,124 +582,6 @@ public class ProjectService {
         return responsePage;
     }
 
-    private void assignCompaniesAndMembersFromAssignments(List<CompanyAssignment> assignments,
-                                                          Project project, CompanyProjectRole companyRole) {
-        log.info("{} 역할 회사 및 구성원 지정 시작: 프로젝트 ID = {}", companyRole.getDescription(), project.getId());
-
-        if (CollectionUtils.isEmpty(assignments)) {
-            log.warn("지정할 {} 회사 정보가 없습니다. 프로젝트 ID = {}", companyRole.getDescription(), project.getId());
-            return;
-        }
-
-        // 회사 역할에 따른 멤버 역할 결정
-        MemberProjectRole managerRole = determineTargetManagerRole(companyRole);
-        MemberProjectRole memberRole = determineTargetMemberRole(companyRole);
-        log.debug("결정된 멤버 역할: managerRole={}, memberRole={}", managerRole, memberRole);
-
-        for (CompanyAssignment assignment : assignments) {
-            Long companyId = assignment.getCompanyId();
-            // 담당자 ID는 필수, 참여자 ID는 선택적
-            List<Long> currentManagerIds = assignment.getManagerIds(); // NotEmpty DTO 제약조건 필요
-            List<Long> currentMemberIds = assignment.getMemberIds() != null ? assignment.getMemberIds() : Collections.emptyList();
-
-            if (companyId == null) {
-                log.warn("회사 ID가 null");
-                continue;
-            }
-            // 담당자 ID 목록 필수 확인
-            if (CollectionUtils.isEmpty(currentManagerIds)) {
-                log.error("회사 ID {} 에 대한 필수 담당자 ID 목록이 비어 있습니다.", companyId);
-                // 회사별로 오류를 내거나, 전체를 롤백할지 정책 결정 필요
-                throw new GeneralException(ProjectErrorCode.MEMBER_LIST_EMPTY);
-            }
-
-            // 회사 엔티티 조회
-            Company company = companyService.getCompany(companyId);
-
-            // 회사를 프로젝트에 연결
-            companyProjectService.assignCompanyToProject(company, project, companyRole);
-            log.info("회사-프로젝트 연결: companyId={}, role={}", companyId, companyRole);
-
-            // 해당 회사의 담당자 멤버 조회 및 할당
-            List<Member> managers = memberService.findByIds(currentManagerIds);
-            validateMembersBelongToCompany(managers, company); // 소속 검증
-            memberProjectService.assignMembersToProject(company, managers, project, managerRole);
-            log.info("담당자 {}명 연결 완료: companyId={}", managers.size(), companyId);
-
-            // 해당 회사의 참여자 멤버 조회 및 할당
-            if (!currentMemberIds.isEmpty()) {
-                List<Member> members = memberService.findByIds(currentMemberIds);
-                validateMembersBelongToCompany(members, company); // 소속 검증
-                memberProjectService.assignMembersToProject(company, members, project, memberRole);
-                log.info("참여자 {}명 연결 완료: companyId={}", members.size(), companyId);
-            }
-            log.info("회사 ID {} 및 소속 멤버 지정 완료: 프로젝트 ID = {}", companyId, project.getId());
-        }
-
-        log.info("모든 {} 역할 회사 및 구성원 지정 완료: 프로젝트 ID = {}", companyRole.getDescription(), project.getId());
-    }
-
-    private Map<Company, Map<MemberProjectRole, List<Member>>> groupCompanyMembersByRole(Project project, CompanyProjectRole companyRole) {
-        // 1. 해당 역할의 회사 목록 조회
-        List<Company> companies = companyProjectService.getCompaniesByRole(project, companyRole);
-
-        // 2. 멤버 역할 결정
-        MemberProjectRole managerRole = determineTargetManagerRole(companyRole);
-        MemberProjectRole memberRole = determineTargetMemberRole(companyRole);
-
-        // 3. 회사별로 멤버 조회 및 그룹화
-        return companies.stream()
-                .collect(Collectors.toMap(
-                        company -> company, // Key: Company 객체
-                        company -> {
-                            // 해당 회사의, 해당 프로젝트의, 특정 역할의 멤버 목록 조회
-                            List<Member> managers = memberProjectService.getMembersByCompanyAndRole(project, company, managerRole); // 이 메서드 구현 필요
-                            List<Member> members = memberProjectService.getMembersByCompanyAndRole(project, company, memberRole);   // 이 메서드 구현 필요
-
-                            // 역할별 멤버 맵 생성
-                            return Map.of(
-                                    managerRole, managers != null ? managers : List.of(),
-                                    memberRole, members != null ? members : List.of()
-                            );
-                        }
-                ));
-    }
-
-    private Project createProjectEntity(ProjectCreateRequest request) {
-        log.info("프로젝트 엔티티 생성 시작: 제목 = {}", request.getTitle());
-
-        // DTO 생성
-        ProjectDTO projectDTO = ProjectDTO.builder()
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .status(ProjectStatus.CONTRACT) // 고정값으로 지정
-                .build();
-
-        // DTO → Entity 변환 후 저장
-        Project project = projectDTO.toEntity();
-        return projectRepository.save(project);
-    }
-
-    private void validateProjectDates(LocalDateTime startDate, LocalDateTime endDate) {
-        if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
-            log.error("잘못된 날짜 범위: 시작 날짜 = {}, 종료 날짜 = {}", startDate, endDate);
-            throw new GeneralException(ProjectErrorCode.INVALID_DATE_RANGE);
-        }
-    }
-
-    private DevCompanyAssignmentResponse createDevCompanyAssignmentResponse(Project project) {
-        log.info("개발사 지정 응답 생성 시작: 프로젝트 ID = {}", project.getId());
-
-        // 1. 개발사 역할에 해당하는 회사 및 멤버 정보 그룹화 (헬퍼 메서드 사용)
-        Map<Company, Map<MemberProjectRole, List<Member>>> devAssignmentData =
-                groupCompanyMembersByRole(project, CompanyProjectRole.DEV_COMPANY); // 개발사 역할 지정
-
-        // 2. 조회된 데이터를 기반으로 응답 DTO 생성 (수정된 from 메서드 활용)
-        return DevCompanyAssignmentResponse.from(devAssignmentData);
-    }
-
     private void validateAdminRole(String userRole) {
         if (!ADMIN_ROLE.equals(userRole)) {
             log.error("권한 없음: 요청한 사용자 역할 = {}", userRole);
@@ -942,4 +831,5 @@ public class ProjectService {
 
         return fullTrend;
     }
+
 }

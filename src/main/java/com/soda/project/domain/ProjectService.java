@@ -157,25 +157,6 @@ public class ProjectService {
     }
 
     /**
-     * 프로젝트에 참여 중인 회사 삭제 메서드 (회사 삭제되면 해당 회사의 멤버도 자동 삭제)
-     */
-    @Transactional
-    public void deleteCompanyFromProject(String userRole, Long projectId, Long companyId) {
-        // 프로젝트 유효성 확인
-        Project project = getValidProject(projectId);
-
-        // ADMIN인지 유효성 검사
-        validateAdminRole(userRole);
-
-        // CompanyProject, MemberProject 삭제
-        companyProjectService.deleteCompanyFromProject(project, companyId);
-        log.info("프로젝트에서 회사 연결 삭제 완료: projectId={}, companyId={}", projectId, companyId);
-
-        memberProjectService.deleteMembersFromProject(project, companyId);
-        log.info("프로젝트에서 회사 소속 멤버 삭제 완료: projectId={}, companyId={}", projectId, companyId);
-    }
-
-    /**
      * 해당 프로젝트에 멤버를 추가하는 메서드
      */
     @Transactional

@@ -11,7 +11,9 @@ import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectService;
 import com.soda.project.domain.ProjectStatus;
 import com.soda.project.domain.company.CompanyProjectRole;
+import com.soda.project.domain.company.CompanyProjectService;
 import com.soda.project.domain.event.ProjectCreatedEvent;
+import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.interfaces.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -32,6 +34,8 @@ public class ProjectFacade {
     private final CompanyService companyService;
     private final MemberService memberService;
     private final ProjectService projectService;
+    private final CompanyProjectService companyProjectService;
+    private final MemberProjectService memberProjectService;
     private final ProjectValidator projectValidator;
     private final ApplicationEventPublisher eventPublisher;
     private final ProjectResponseBuilder projectResponseBuilder;
@@ -190,5 +194,14 @@ public class ProjectFacade {
         );
 
         return ProjectCompanyAddResponse.from(project.getId(), company, request.getRole(), managers, members);
+    }
+
+    @Transactional
+    public void deleteCompanyFromProject(String userRole, Long projectId, Long companyId) {
+        projectValidator.validateAdminRole(userRole);
+        Project project = projectService.getValidProject(projectId);
+
+        companyProjectService.deleteCompanyFromProject(project, companyId);
+        memberProjectService.deleteMembersFromProject(project, companyId);
     }
 }

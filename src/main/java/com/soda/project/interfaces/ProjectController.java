@@ -98,7 +98,7 @@ public class ProjectController {
     public ResponseEntity<Void> deleteCompanyFromProject(@PathVariable Long projectId,
                                                          @PathVariable Long companyId, HttpServletRequest request) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        projectService.deleteCompanyFromProject(userRole, projectId, companyId);
+        projectFacade.deleteCompanyFromProject(userRole, projectId, companyId);
         return ResponseEntity.noContent().build();
     }
 

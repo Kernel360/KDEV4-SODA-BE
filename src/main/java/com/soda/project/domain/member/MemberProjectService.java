@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class MemberProjectService {
-
+    private final MemberProjectProvider memberProjectProvider;
     private final MemberProjectRepository memberProjectRepository;
 
     public void assignMembersToProject(Company company, List<Member> members, Project project, MemberProjectRole role) {
@@ -152,7 +152,7 @@ public class MemberProjectService {
 
     @Transactional
     public void deleteMembersFromProject(Project project, Long companyId) {
-        List<MemberProject> membersToDelete = memberProjectRepository
+        List<MemberProject> membersToDelete = memberProjectProvider
                 .findAllByProjectAndMember_CompanyIdAndIsDeletedFalse(project, companyId);
         
         for (MemberProject memberProject: membersToDelete) {

@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CompanyProjectService {
+    private final CompanyProjectProvider companyProjectProvider;
     private final CompanyProjectRepository companyProjectRepository;
 
     public void assignCompanyToProject(Company company, Project project, CompanyProjectRole role) {
@@ -86,7 +87,7 @@ public class CompanyProjectService {
 
     public void deleteCompanyFromProject(Project project, Long companyId) {
 
-        CompanyProject companyProject = companyProjectRepository.findByProjectIdAndCompanyIdAndIsDeletedFalse(project.getId(), companyId)
+        CompanyProject companyProject = companyProjectProvider.findByProjectIdAndCompanyIdAndIsDeletedFalse(project.getId(), companyId)
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND));
 
         companyProject.delete();

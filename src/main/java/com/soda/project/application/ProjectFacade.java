@@ -204,4 +204,12 @@ public class ProjectFacade {
         companyProjectService.deleteCompanyFromProject(project, companyId);
         memberProjectService.deleteMembersFromProject(project, companyId);
     }
+
+    @Transactional
+    public void deleteMemberFromProject(String userRole, Long projectId, Long memberId) {
+        projectValidator.validateAdminRole(userRole);
+        Project project = projectService.getValidProject(projectId);
+
+        memberProjectService.deleteSingleMemberFromProject(project, memberId);
+    }
 }

@@ -113,7 +113,7 @@ public class ProjectController {
     @DeleteMapping("/{projectId}/members/{memberId}")
     public ResponseEntity<Void> deleteMemberFromProject (HttpServletRequest request, @PathVariable Long projectId, @PathVariable Long memberId) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        projectService.deleteMemberFromProject(userRole, projectId, memberId);
+        projectFacade.deleteMemberFromProject(userRole, projectId, memberId);
         return ResponseEntity.noContent().build();
     }
 

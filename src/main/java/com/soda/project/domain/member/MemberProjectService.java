@@ -164,7 +164,7 @@ public class MemberProjectService {
 
     @Transactional
     public void deleteSingleMemberFromProject(Project project, Long memberId) {
-        MemberProject memberToDelete = memberProjectRepository.findByProjectAndMemberIdAndIsDeletedFalse(project, memberId)
+        MemberProject memberToDelete = memberProjectProvider.findByProjectAndMemberIdAndIsDeletedFalse(project, memberId)
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_PROJECT_NOT_FOUND));
 
         memberToDelete.delete();

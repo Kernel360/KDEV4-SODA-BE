@@ -13,9 +13,12 @@ public class CompanyResponse {
     private String companyNumber;
     private String address;
     private String detailAddress;
+    private String ownerName;
 
     public static CompanyResponse fromEntity(Company company) {
-        if (company == null){return null;}
+        if (company == null) {
+            return null;
+        }
         return CompanyResponse.builder()
                 .id(company.getId())
                 .name(company.getName())
@@ -23,6 +26,7 @@ public class CompanyResponse {
                 .companyNumber(company.getCompanyNumber())
                 .address(company.getAddress())
                 .detailAddress(company.getDetailAddress())
+                .ownerName(company.getOwnerName())
                 .build();
     }
 }

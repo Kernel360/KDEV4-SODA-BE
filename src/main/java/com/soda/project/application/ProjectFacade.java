@@ -15,6 +15,7 @@ import com.soda.project.domain.ProjectStatus;
 import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.company.CompanyProjectService;
 import com.soda.project.domain.event.ProjectCreatedEvent;
+import com.soda.project.domain.member.MemberProject;
 import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.interfaces.dto.*;
@@ -233,5 +234,34 @@ public class ProjectFacade {
         memberProjectService.addOrUpdateProjectMembers(project, companyRole, managers, members);
 
         return ProjectMemberAddResponse.from(project.getId(), company.getName(), managers, members);
+    }
+
+    public Page<ProjectMemberResponse> getProjectMembers(Long projectId, ProjectMemberSearchCondition searchCondition, Pageable pageable) {
+        Project project = projectService.getValidProject(projectId);
+        CompanyProjectRole companyRoleFilter = searchCondition.getCompanyRole();
+        List<Long> filteredCompanyIdsForQuery = null;
+
+        if (companyRoleFilter != null) {
+            List<Long> companyIdsByRole = companyProjectService.getCompanyIdsByProjectAndRoleAndIsDeletedFalse(project, companyRoleFilter);
+
+            if (CollectionUtils.isEmpty(companyIdsByRole)) {
+                return Page.empty(pageable);
+            }
+            filteredCompanyIdsForQuery = companyIdsByRole;
+        }
+
+        Long specificCompanyIdFilter = searchCondition.getCompanyId();
+        MemberProjectRole memberRoleFilter = searchCondition.getMemberRole();
+        Long memberIdFilter = searchCondition.getMemberId();
+        Page<MemberProject> memberProjectPage = memberProjectService.getFilteredMemberProjectsAndIsDeletedFalse(
+                project.getId(),
+                filteredCompanyIdsForQuery,
+                specificCompanyIdFilter,
+                memberRoleFilter,
+                memberIdFilter,
+                pageable
+        );
+
+        return memberProjectPage.map(ProjectMemberResponse::from);
     }
 }

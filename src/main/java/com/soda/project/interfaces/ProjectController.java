@@ -121,9 +121,9 @@ public class ProjectController {
     public ResponseEntity<ApiResponseForm<Page<ProjectMemberResponse>>> getProjectMembers(
             @PathVariable Long projectId,
             @ModelAttribute ProjectMemberSearchCondition searchCondition,
-            @PageableDefault(sort = "member.name", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        Page<ProjectMemberResponse> memberPage = projectService.getProjectMembers(projectId, searchCondition, pageable);
+        Page<ProjectMemberResponse> memberPage = projectFacade.getProjectMembers(projectId, searchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(memberPage));
     }
 

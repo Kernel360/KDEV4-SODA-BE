@@ -156,56 +156,6 @@ public class ProjectService {
                 company.getName(), project.getId(), companyRole);
     }
 
-    /**
-     * 특정 프로젝트의 멤버 목록을 필터링하여 조회합니다.
-     */
-    public Page<ProjectMemberResponse> getProjectMembers(
-            Long projectId,
-            ProjectMemberSearchCondition searchCondition,
-            Pageable pageable) {
-        // 1. 프로젝트 유효성 검사
-        Project project = getValidProject(projectId);
-
-        // 2. companyRole 필터 처리
-        CompanyProjectRole companyRole = searchCondition.getCompanyRole();
-        List<Long> filteredCompanyIds = null;
-        if (companyRole != null) {
-            log.debug("CompanyRole 필터({}) 조회 시작", companyRole);
-            filteredCompanyIds = companyProjectService.getCompanyIdsByProjectAndRoleAndIsDeletedFalse(project, companyRole);
-            if (CollectionUtils.isEmpty(filteredCompanyIds)) {
-                log.info("요청된 companyRole({})에 해당하는 삭제되지 않은 회사가 프로젝트({})에 없습니다. 빈 페이지 반환.", companyRole, projectId);
-                return Page.empty(pageable);
-            }
-            log.debug("CompanyRole 필터 적용 (IsDeletedFalse): {} 역할의 회사 ID 목록 = {}", companyRole, filteredCompanyIds);
-        }
-
-        // 3. MemberProjectService 호출
-        Long companyId = searchCondition.getCompanyId();
-        MemberProjectRole memberRole = searchCondition.getMemberRole();
-        Long memberId = searchCondition.getMemberId();
-
-        log.debug("MemberProjectService 필터링 조회 시작: projectId={}, filteredCompanyIds={}, companyId={}, memberRole={}",
-                projectId, filteredCompanyIds != null ? filteredCompanyIds : "N/A", companyId, memberRole);
-
-        // 리포지토리/서비스 호출 시 DTO에서 추출한 값들 사용
-        Page<MemberProject> memberProjectPage = memberProjectService.getFilteredMemberProjectsAndIsDeletedFalse(
-                project.getId(),
-                filteredCompanyIds,
-                companyId,
-                memberRole,
-                memberId,
-                pageable
-        );
-        log.debug("MemberProjectService 조회 완료: {}개의 삭제되지 않은 MemberProject 조회됨 (Total Elements)", memberProjectPage.getTotalElements());
-
-        // 4. DTO 변환 (기존 로직 유지)
-        Page<ProjectMemberResponse> responsePage = memberProjectPage.map(ProjectMemberResponse::from);
-        log.info("삭제되지 않은 프로젝트 멤버 조회 완료: 반환 페이지 정보 (Number={}, Size={}, TotalElements={})",
-                responsePage.getNumber(), responsePage.getSize(), responsePage.getTotalElements());
-
-        return responsePage;
-    }
-
     private void validateAdminRole(String userRole) {
         if (!ADMIN_ROLE.equals(userRole)) {
             log.error("권한 없음: 요청한 사용자 역할 = {}", userRole);
@@ -219,43 +169,6 @@ public class ProjectService {
                     log.error("프로젝트를 찾을 수 없음: 프로젝트 ID = {}", projectId);
                     return new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);
                 });
-    }
-
-
-    private void validateMembersBelongToCompany(List<Member> members, Company company) {
-        if (CollectionUtils.isEmpty(members)) {
-            return;
-        }
-        Long expectedCompanyId = company.getId();
-        for (Member member : members) {
-            if (member.getCompany() == null || !member.getCompany().getId().equals(expectedCompanyId)) {
-                log.error("멤버가 예상된 회사({}) 소속이 아닙니다: memberId={}, memberCompany={}",
-                        company.getName(), member.getId(), (member.getCompany() != null ? member.getCompany().getName() : "없음"));
-                throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_SPECIFIED_COMPANY);
-            }
-        }
-    }
-
-    private MemberProjectRole determineTargetMemberRole(CompanyProjectRole companyRole) {
-        if (companyRole == CompanyProjectRole.DEV_COMPANY) {
-            return MemberProjectRole.DEV_PARTICIPANT;
-        } else if (companyRole == CompanyProjectRole.CLIENT_COMPANY) {
-            return MemberProjectRole.CLI_PARTICIPANT;
-        } else {
-            log.error("멤버 역할을 결정할 수 없는 회사 역할입니다: {}", companyRole);
-            throw new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND);
-        }
-    }
-
-    private MemberProjectRole determineTargetManagerRole(CompanyProjectRole companyRole) {
-        if (companyRole == CompanyProjectRole.DEV_COMPANY) {
-            return MemberProjectRole.DEV_MANAGER;
-        } else if (companyRole == CompanyProjectRole.CLIENT_COMPANY) {
-            return MemberProjectRole.CLI_MANAGER;
-        } else {
-            log.error("매니저 역할을 결정할 수 없는 회사 역할입니다: {}", companyRole);
-            throw new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND);
-        }
     }
 
     public ProjectStatsResponse getProjectCreationTrend(Long userId, String userRole, ProjectStatsCondition statsRequest) {

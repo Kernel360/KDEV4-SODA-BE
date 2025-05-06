@@ -105,12 +105,6 @@ public class MemberProjectService {
         return memberProjectProvider.existsByMemberAndProjectAndIsDeletedFalse(member, project);
     }
 
-    public void deleteMemberProjects(Project project) {
-        List<MemberProject> memberProjects = memberProjectProvider.findByProject(project);
-        memberProjects.forEach(MemberProject::delete);
-        memberProjectProvider.saveAll(memberProjects);
-    }
-
     public List<Member> getMembersByCompanyAndRole(Project project, Company company, MemberProjectRole role) {
         log.debug("프로젝트 내 회사/역할별 멤버 조회 시작: projectId={}, companyId={}, role={}",
                 project.getId(), company.getId(), role);
@@ -133,23 +127,9 @@ public class MemberProjectService {
         return members;
     }
 
-    // 사용자가 참여한 프로젝트 리스트 조회
-    public Page<Long> getProjectIdsByUserId(Long userId, Pageable pageable) {
-        log.info("사용자가 참여한 프로젝트 ID 목록 조회 시작: 사용자 ID = {}", userId);
-
-        Page<MemberProject> memberProjects = memberProjectProvider.findByMemberId(userId, pageable);
-        log.info("사용자 ID = {}가 참여한 프로젝트 ID 목록 조회 완료: 조회된 프로젝트 수 = {}", userId, memberProjects.getSize());
-
-        return memberProjects.map(memberProject -> memberProject.getProject().getId());
-    }
-
     /**
      * 특정 프로젝트에서 특정 멤버의 역할을 조회합니다.
      * 멤버가 해당 프로젝트에 참여하지 않거나, 참여 정보가 삭제된 경우 null을 반환합니다.
-     *
-     * @param project 조회할 프로젝트 엔티티
-     * @param member  역할을 조회할 멤버 엔티티
-     * @return 해당 프로젝트에서의 MemberProjectRole, 참여하지 않거나 삭제된 경우 null
      */
     public MemberProjectRole getMemberRoleInProject(Member member, Project project) {
         Optional<MemberProject> memberProjectOpt = memberProjectProvider.findByMemberAndProjectAndIsDeletedFalse(member, project);

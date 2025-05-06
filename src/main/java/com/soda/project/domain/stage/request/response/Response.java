@@ -1,7 +1,7 @@
 package com.soda.project.domain.stage.request.response;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.entity.Member;
+import com.soda.member.domain.Member;
 import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.response.file.ResponseFile;
 import com.soda.project.domain.stage.request.response.link.ResponseLink;

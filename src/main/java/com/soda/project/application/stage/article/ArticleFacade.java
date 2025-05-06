@@ -1,8 +1,8 @@
 package com.soda.project.application.stage.article;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.entity.Member;
-import com.soda.member.service.MemberService;
+import com.soda.member.domain.Member;
+import com.soda.member.domain.MemberService;
 import com.soda.project.application.stage.article.vote.validator.VoteValidator;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.ArticleService;

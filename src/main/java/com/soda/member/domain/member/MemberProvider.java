@@ -1,6 +1,6 @@
 package com.soda.member.domain.member;
 
-import com.soda.member.entity.Member;
+import com.soda.member.domain.Member;
 
 import java.util.List;
 

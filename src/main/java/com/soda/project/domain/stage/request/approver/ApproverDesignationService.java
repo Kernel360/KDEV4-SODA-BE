@@ -1,7 +1,7 @@
 package com.soda.project.domain.stage.request.approver;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.service.MemberService;
+import com.soda.member.domain.MemberService;
 import com.soda.project.interfaces.stage.request.dto.ApproverDeleteResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

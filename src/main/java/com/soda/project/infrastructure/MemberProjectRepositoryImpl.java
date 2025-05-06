@@ -19,8 +19,8 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
-import static com.soda.member.entity.QCompany.company;
-import static com.soda.member.entity.QMember.member;
+import static com.soda.member.domain.QCompany.company;
+import static com.soda.member.domain.QMember.member;
 import static com.soda.project.domain.member.QMemberProject.memberProject;
 
 @Repository

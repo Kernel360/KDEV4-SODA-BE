@@ -1,8 +1,8 @@
 package com.soda.member.infrastructure.member;
 
 import com.soda.member.domain.member.MemberProvider;
-import com.soda.member.entity.Member;
-import com.soda.member.repository.MemberRepository;
+import com.soda.member.domain.Member;
+import com.soda.member.infrastructure.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

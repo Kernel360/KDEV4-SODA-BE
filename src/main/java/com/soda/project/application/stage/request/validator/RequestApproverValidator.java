@@ -1,7 +1,7 @@
 package com.soda.project.application.stage.request.validator;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.entity.Member;
+import com.soda.member.domain.Member;
 import com.soda.project.domain.stage.request.approver.ApproverDesignation;
 import com.soda.project.domain.stage.request.RequestErrorCode;
 import lombok.RequiredArgsConstructor;

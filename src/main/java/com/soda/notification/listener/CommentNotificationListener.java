@@ -1,6 +1,6 @@
 package com.soda.notification.listener;
 
-import com.soda.member.entity.Member;
+import com.soda.member.domain.Member;
 import com.soda.notification.dto.NotificationData;
 import com.soda.notification.entity.MemberNotification;
 import com.soda.notification.entity.Notification;

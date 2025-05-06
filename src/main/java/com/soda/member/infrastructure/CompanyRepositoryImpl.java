@@ -39,7 +39,7 @@ public class CompanyRepositoryImpl implements CompanyRepositoryCustom {
                         company.isDeleted.isFalse()
                 )
                 .groupBy(year, month, week, day)
-                .orderBy(year.asc(), month.asc(), day.asc())
+                .orderBy(year.asc(), month.asc(), week.asc(), day.asc())
                 .fetch();
     }
 }

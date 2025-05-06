@@ -3,6 +3,7 @@ package com.soda.member.application;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.member.domain.Company;
 import com.soda.member.domain.CompanyService;
+import com.soda.member.domain.CompanyStatsService;
 import com.soda.member.interfaces.dto.CompanyCreationTrend;
 import com.soda.member.interfaces.dto.company.*;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class CompanyFacade {
     private final CompanyService companyService;
+    private final CompanyStatsService companyStatsService;
 
     @LoggableEntityAction(action = "CREATE", entityClass = Company.class)
     @Transactional
@@ -57,6 +59,6 @@ public class CompanyFacade {
     }
 
     public List<CompanyCreationTrend> getCompanyCreationTrend(CompanyTrendSearchCondition condition) {
-        return companyService.getCompanyCreationTrend(condition);
+        return companyStatsService.getCompanyCreationTrend(condition);
     }
 }

@@ -33,6 +33,38 @@ public class MemberProject extends BaseEntity {
         this.role = memberProjectRole;
     }
 
+    public static MemberProject createClientManager(Member member, Project project) {
+        return MemberProject.builder()
+                .member(member)
+                .project(project)
+                .memberProjectRole(MemberProjectRole.CLI_MANAGER)
+                .build();
+    }
+
+    public static MemberProject createClientMember(Member member, Project project) {
+        return MemberProject.builder()
+                .member(member)
+                .project(project)
+                .memberProjectRole(MemberProjectRole.CLI_PARTICIPANT)
+                .build();
+    }
+
+    public static MemberProject createDevManager(Member member, Project project) {
+        return MemberProject.builder()
+                .member(member)
+                .project(project)
+                .memberProjectRole(MemberProjectRole.DEV_MANAGER)
+                .build();
+    }
+
+    public static MemberProject createDevMember(Member member, Project project) {
+        return MemberProject.builder()
+                .member(member)
+                .project(project)
+                .memberProjectRole(MemberProjectRole.DEV_PARTICIPANT)
+                .build();
+    }
+
     public void delete() {
         this.markAsDeleted();
     }

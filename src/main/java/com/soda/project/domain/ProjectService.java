@@ -5,14 +5,13 @@ import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
-import com.soda.project.domain.company.enums.CompanyProjectRole;
-import com.soda.project.domain.member.enums.MemberProjectRole;
 import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.domain.company.CompanyProjectService;
+import com.soda.project.domain.company.enums.CompanyProjectRole;
 import com.soda.project.domain.member.MemberProject;
 import com.soda.project.domain.member.MemberProjectService;
-import com.soda.project.domain.event.ProjectCreatedEvent;
+import com.soda.project.domain.member.enums.MemberProjectRole;
 import com.soda.project.domain.stage.StageService;
 import com.soda.project.infrastructure.ProjectDailyStatsRepository;
 import com.soda.project.infrastructure.ProjectRepository;
@@ -20,7 +19,6 @@ import com.soda.project.interfaces.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,59 +41,33 @@ public class ProjectService {
     private static final String ADMIN_ROLE = "ADMIN";
     private static final String USER_ROLE = "USER";
 
+    private final ProjectProvider projectProvider;
     private final ProjectRepository projectRepository;
     private final MemberService memberService;
     private final CompanyService companyService;
     private final CompanyProjectService companyProjectService;
     private final MemberProjectService memberProjectService;
-    private final StageService stageService;
     private final ProjectDailyStatsRepository projectDailyStatsRepository;
-    private final ApplicationEventPublisher eventPublisher; // 이벤트 발행기
 
     /**
      * 프로젝트를 생성하는 메서드입니다.
-     *
-     * @param userRole  현재 요청한 사용자의 역할 (ADMIN만 허용)
-     * @param request   프로젝트 생성 요청 정보를 담은 DTO
-     * @return          생성된 프로젝트에 대한 응답 DTO
-     * @throws GeneralException 사용자가 관리자 권한이 아닌 경우 또는 유효하지 않은 데이터가 입력된 경우 발생
      */
-    @LoggableEntityAction(action = "CREATE", entityClass = Project.class)
-    @Transactional
-    public ProjectCreateResponse createProject(String userRole, ProjectCreateRequest request) {
-        // 사용자 유효성 검사 관리자만 프로젝트 생성 가능
-        validateAdminRole(userRole);
+    public Project createAndStoreProject(
+            String title, String description, LocalDateTime startDate, LocalDateTime endDate,
+            List<Company> clientCompanies, List<Member> clientManagers, List<Member> clientMembers,
+            List<String> initialStageNames) {
 
-        // 날짜 순서 유효성 검사
-        validateProjectDates(request.getStartDate(), request.getEndDate());
+        log.debug("ProjectService: 프로젝트 생성 및 저장 시작");
 
-        // 프로젝트 기본 정보 생성
-        Project project = createProjectEntity(request);
-
-        // 고객사 지정
-        // 고객사 및 멤버 지정 (수정된 로직 사용)
-        assignCompaniesAndMembersFromAssignments(
-                request.getClientAssignments(),
-                project,
-                CompanyProjectRole.CLIENT_COMPANY
+        Project project = Project.create(
+                title, description, startDate, endDate,
+                clientCompanies, clientManagers, clientMembers,
+                initialStageNames
         );
 
-        // 초기 stage 생성
-        stageService.createInitialStages(project, request.getStageNames());
-
-        // 이벤트 발행
-        try {
-            LocalDate creationDate = project.getCreatedAt().toLocalDate();
-            eventPublisher.publishEvent(new ProjectCreatedEvent(creationDate));
-            log.info("ProjectCreatedEvent 발행: Date={}", creationDate);
-        } catch (Exception e) {
-            log.error("ProjectCreatedEvent 발행 실패: Project ID={}, Error={}", project.getId(), e.getMessage(), e);
-        }
-
-        log.info("프로젝트 생성 완료: 프로젝트 ID = {}", project.getId());
-
-        // response 생성
-        return createProjectCreateResponse(project);
+        Project savedProject = projectProvider.store(project);
+        log.info("ProjectService: 프로젝트 저장 완료: projectId={}", savedProject.getId());
+        return savedProject;
     }
 
     /**
@@ -660,17 +632,6 @@ public class ProjectService {
         log.info("모든 {} 역할 회사 및 구성원 지정 완료: 프로젝트 ID = {}", companyRole.getDescription(), project.getId());
     }
 
-    private ProjectCreateResponse createProjectCreateResponse(Project project) {
-        log.info("프로젝트 생성 응답 생성 시작: 프로젝트 ID = {}", project.getId());
-
-        // 고객사 역할에 해당하는 회사 및 멤버 정보 조회
-        Map<Company, Map<MemberProjectRole, List<Member>>> clientData =
-                groupCompanyMembersByRole(project, CompanyProjectRole.CLIENT_COMPANY);
-
-        // 조회된 데이터를 기반으로 응답 DTO 생성 (DTO의 from 메서드 활용)
-        return ProjectCreateResponse.from(project, clientData);
-    }
-
     private Map<Company, Map<MemberProjectRole, List<Member>>> groupCompanyMembersByRole(Project project, CompanyProjectRole companyRole) {
         // 1. 해당 역할의 회사 목록 조회
         List<Company> companies = companyProjectService.getCompaniesByRole(project, companyRole);
@@ -740,9 +701,7 @@ public class ProjectService {
     }
 
     public Project getValidProject(Long projectId) {
-        log.info("프로젝트 조회 시작: 프로젝트 ID = {}", projectId);
-
-        return projectRepository.findByIdAndIsDeletedFalse(projectId)
+        return projectProvider.findByIdAndIsDeletedFalse(projectId)
                 .orElseThrow(() -> {
                     log.error("프로젝트를 찾을 수 없음: 프로젝트 ID = {}", projectId);
                     return new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND);

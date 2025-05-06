@@ -1,18 +1,23 @@
 package com.soda.project.domain;
 
 import com.soda.common.BaseEntity;
+import com.soda.member.entity.Company;
+import com.soda.member.entity.Member;
 import com.soda.project.domain.company.CompanyProject;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.member.MemberProject;
+import com.soda.project.interfaces.dto.ProjectCreateRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -48,6 +53,53 @@ public class Project extends BaseEntity {
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
+    }
+
+    protected static Project create(String title, String description, LocalDateTime startDate, LocalDateTime endDate,
+                                    List<Company> clientCompanies, List<Member> clientManagers, List<Member> clientMembers,
+                                    List<String> initialStageNames) {
+        var project = Project.builder()
+                .title(title)
+                .description(description)
+                .startDate(startDate)
+                .endDate(endDate)
+                .build();
+
+        project.assignClientCompanies(clientCompanies);
+        project.assignClientMembers(clientManagers, clientMembers);
+        project.addInitialStages(Stage.createInitialStages(project, initialStageNames));
+        return project;
+    }
+
+    private void addInitialStages(List<Stage> initialStages) {
+        if (initialStages != null) {
+            this.stage.addAll(initialStages);
+        }
+    }
+
+    private void assignClientMembers(List<Member> clientManagers, List<Member> clientMembers) {
+        if (clientManagers != null) {
+        List<MemberProject> clientManagerProjects = clientManagers.stream()
+                .map(member -> MemberProject.createClientManager(member, this))
+                .toList();
+        this.memberProjects.addAll(clientManagerProjects);
+    }
+        if (clientMembers != null) {
+            List<MemberProject> clientMemberProjects = clientMembers.stream()
+                    .map(member -> MemberProject.createClientMember(member, this))
+                    .toList();
+            this.memberProjects.addAll(clientMemberProjects);
+        }
+    }
+
+    private void assignClientCompanies(List<Company> clientCompanies) {
+        if (!CollectionUtils.isEmpty(clientCompanies)) {
+            List<CompanyProject> clientCompanyProjects = clientCompanies.stream()
+                    .distinct()
+                    .map(company -> CompanyProject.createClientCompany(company, this))
+                    .toList();
+            this.companyProjects.addAll(clientCompanyProjects);
+        }
     }
 
     public void delete() {

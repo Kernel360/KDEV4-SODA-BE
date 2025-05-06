@@ -1,6 +1,7 @@
 package com.soda.project.interfaces;
 
 import com.soda.global.response.ApiResponseForm;
+import com.soda.project.application.ProjectFacade;
 import com.soda.project.domain.ProjectService;
 import com.soda.project.interfaces.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,13 +19,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ProjectController {
 
+    private final ProjectFacade projectFacade;
     private final ProjectService projectService;
 
     @PostMapping("")
     public ResponseEntity<ApiResponseForm<ProjectCreateResponse>> createProject(HttpServletRequest request,
                                                                                 @Valid @RequestBody ProjectCreateRequest projectCreateRequest) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        ProjectCreateResponse newProject = projectService.createProject(userRole, projectCreateRequest);
+        ProjectCreateResponse newProject = projectFacade.createProject(userRole, projectCreateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(newProject, "project 생성 성공"));
     }
 

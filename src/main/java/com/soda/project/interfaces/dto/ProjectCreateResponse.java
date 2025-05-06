@@ -2,6 +2,8 @@ package com.soda.project.interfaces.dto;
 
 import com.soda.member.entity.Company; // Company import
 import com.soda.member.entity.Member;   // Member import
+import com.soda.project.domain.company.enums.CompanyProjectRole;
+import com.soda.project.domain.member.MemberProject;
 import com.soda.project.domain.member.enums.MemberProjectRole; // 역할 확인용 (선택적)
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectStatus;
@@ -11,6 +13,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map; // Map 사용 예시
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Getter
@@ -28,18 +31,41 @@ public class ProjectCreateResponse {
     // 고객사별 할당 정보
     private List<ClientAssignmentInfo> clientAssignments;
 
-    public static ProjectCreateResponse from(Project project,
-                                             Map<Company, Map<MemberProjectRole, List<Member>>> clientAssignmentData) {
+    public static ProjectCreateResponse from(Project project) {
+        if (project == null) {
+            return null;
+        }
 
-        // Map 데이터를 List<ClientAssignmentInfo>로 변환
-        List<ClientAssignmentInfo> assignments = clientAssignmentData.entrySet().stream()
-                .map(entry -> {
-                    Company company = entry.getKey();
-                    Map<MemberProjectRole, List<Member>> roleToMembersMap = entry.getValue();
+        // 프로젝트에 연결된 고객사(들) 정보 추출
+        List<ClientAssignmentInfo> assignments = project.getCompanyProjects().stream()
+                .filter(cp -> cp.getCompanyProjectRole() == CompanyProjectRole.CLIENT_COMPANY && !cp.getIsDeleted())
+                .map(clientCompanyProject -> {
+                    Company company = clientCompanyProject.getCompany();
+                    if (company == null) return null;
 
-                    // 역할별 멤버 이름 추출
-                    List<String> managerNames = extractMemberNames(roleToMembersMap.get(MemberProjectRole.CLI_MANAGER));
-                    List<String> memberNames = extractMemberNames(roleToMembersMap.get(MemberProjectRole.CLI_PARTICIPANT));
+                    // 해당 회사의 프로젝트 멤버들을 역할별로 필터링
+                    List<Member> allCompanyMembersInProject = project.getMemberProjects().stream()
+                            .filter(mp -> !mp.getIsDeleted() && mp.getMember().getCompany() != null
+                                    && mp.getMember().getCompany().getId().equals(company.getId()))
+                            .map(MemberProject::getMember)
+                            .distinct() // 혹시 모를 중복 제거
+                            .toList();
+
+                    // 역할별 이름 추출
+                    List<String> managerNames = allCompanyMembersInProject.stream()
+                            .filter(m -> project.getMemberProjects().stream()
+                                    .anyMatch(mp -> !mp.getIsDeleted() && mp.getMember().getId().equals(m.getId())
+                                            && mp.getRole() == MemberProjectRole.CLI_MANAGER)
+                            )
+                            .map(Member::getName)
+                            .collect(Collectors.toList());
+
+                    List<String> memberNames = allCompanyMembersInProject.stream()
+                            .filter(m -> project.getMemberProjects().stream()
+                                    .anyMatch(mp -> !mp.getIsDeleted() && mp.getMember().getId().equals(m.getId()) && mp.getRole() == MemberProjectRole.CLI_PARTICIPANT)
+                            )
+                            .map(Member::getName)
+                            .collect(Collectors.toList());
 
                     // ClientAssignmentInfo 생성
                     return ClientAssignmentInfo.builder()
@@ -48,6 +74,7 @@ public class ProjectCreateResponse {
                             .memberNames(memberNames)
                             .build();
                 })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         // 최종 응답 DTO 빌드

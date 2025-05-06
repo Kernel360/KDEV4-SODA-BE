@@ -147,38 +147,6 @@ public class ProjectService {
     }
 
     /**
-     * 프로젝트 기본 정보 수정
-     *
-     * @param userRole 요청한 사용자의 역할 (ADMIN만 수정 가능)
-     * @param projectId 수정할 프로젝트 ID
-     * @param request 수정 요청 정보 DTO
-     * @return 수정한 프로젝트 정보 DTO
-     * @throws GeneralException 프로젝트가 존재하지 않거나 ADMIN 아닌 경우
-     */
-    @Transactional
-    public ProjectInfoUpdateResponse updateProjectInfo(String userRole, Long projectId, ProjectInfoUpdateRequest request) {
-        // 프로젝트 유효성 검사
-        Project project = getValidProject(projectId);
-
-        // ADMIN인지 유효성 검사
-        validateAdminRole(userRole);
-
-        // 프로젝트 기본 정보 업데이트
-        project.updateProjectInfo(
-                request.getTitle(),
-                request.getDescription(),
-                request.getStartDate(),
-                request.getEndDate()
-        );
-        projectRepository.save(project);
-
-        log.info("프로젝트 정보 수정 완료: projectId={}, title={}", projectId, request.getTitle());
-
-        // response 생성
-        return ProjectInfoUpdateResponse.from(project);
-    }
-
-    /**
      * 프로젝트에 회사 및 멤버 추가
      * @param userRole 요청한 사용자의 역할 (ADMIN만 추가 가능)
      * @param projectId 추가할 프로젝트 ID

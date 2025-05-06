@@ -164,4 +164,13 @@ public class ProjectFacade {
         projectService.changeProjectStatus(project, request.getStatus());
         return ProjectStatusUpdateResponse.from(project);
     }
+
+    @Transactional
+    public ProjectInfoUpdateResponse updateProjectInfo(String userRole, Long projectId, ProjectInfoUpdateRequest request) {
+        projectValidator.validateAdminRole(userRole);
+        Project project = projectService.getValidProject(projectId);
+
+        projectService.updateProjectInfo(project, request.getTitle(), request.getDescription(), request.getStartDate(), request.getEndDate());
+        return ProjectInfoUpdateResponse.from(project);
+    }
 }

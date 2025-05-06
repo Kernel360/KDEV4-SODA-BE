@@ -8,7 +8,7 @@ import com.soda.member.interfaces.dto.MemberUpdateRequest;
 import com.soda.member.interfaces.dto.member.ChangePasswordRequest;
 import com.soda.member.interfaces.dto.member.MemberStatusResponse;
 import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
-import com.soda.member.repository.MemberRepository;
+import com.soda.member.infrastructure.MemberRepository;
 import com.soda.project.domain.ProjectErrorCode;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

@@ -4,11 +4,11 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.soda.member.domain.QCompany;
 import com.soda.project.interfaces.dto.stage.article.ArticleSearchCondition;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.enums.ArticleStatus;
 import com.soda.project.domain.stage.article.enums.PriorityType;
-import com.soda.member.entity.QCompany;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Optional;
 
 
-import static com.soda.member.entity.QCompany.company;
-import static com.soda.member.entity.QMember.member;
+import static com.soda.member.domain.QCompany.company;
+import static com.soda.member.domain.QMember.member;
 import static com.soda.project.domain.QProject.project;
 import static com.soda.project.domain.stage.QStage.stage;
 import static com.soda.project.domain.stage.article.QArticle.article;

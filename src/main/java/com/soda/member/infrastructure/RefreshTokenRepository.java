@@ -1,4 +1,4 @@
-package com.soda.member.repository;
+package com.soda.member.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

@@ -6,7 +6,7 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.interfaces.dto.CompanyCreationStatRaw;
 import com.soda.member.interfaces.dto.CompanyCreationTrend;
 import com.soda.member.interfaces.dto.company.*;
-import com.soda.member.repository.CompanyRepository;
+import com.soda.member.infrastructure.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

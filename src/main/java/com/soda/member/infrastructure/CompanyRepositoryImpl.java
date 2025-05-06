@@ -1,10 +1,10 @@
-package com.soda.member.repository;
+package com.soda.member.infrastructure;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.soda.member.domain.QCompany;
 import com.soda.member.interfaces.dto.CompanyCreationStatRaw;
-import com.soda.member.entity.QCompany;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;

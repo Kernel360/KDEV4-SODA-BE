@@ -9,7 +9,7 @@ import java.util.Optional;
 @Repository
 public interface VoteRepository extends JpaRepository<Vote, Long> {
 
-    boolean existsByArticleIdAndIsDeletedFalse(Long articleId);
+    boolean existsByArticle_IdAndIsDeletedFalse(Long articleId);
 
     Optional<Vote> findByIdAndIsDeletedFalse(Long voteId);
 }

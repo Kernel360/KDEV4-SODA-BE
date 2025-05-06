@@ -31,6 +31,13 @@ public class VoteItem extends BaseEntity {
         this.vote = vote;
     }
 
+    protected static VoteItem create(String text, Vote vote) {
+        return VoteItem.builder()
+                .text(text)
+                .vote(vote)
+                .build();
+    }
+
     protected void setVote(Vote vote) {
         this.vote = vote;
     }

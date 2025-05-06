@@ -32,4 +32,11 @@ public class VoteAnswerItem extends BaseEntity {
     public void delete() {
         this.markAsDeleted();
     }
+
+    public static VoteAnswerItem create(VoteAnswer voteResponse, VoteItem voteItem) {
+        return VoteAnswerItem.builder()
+                .voteResponse(voteResponse)
+                .voteItem(voteItem)
+                .build();
+    }
 }

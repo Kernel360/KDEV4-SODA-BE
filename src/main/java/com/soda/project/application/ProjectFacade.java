@@ -14,6 +14,7 @@ import com.soda.project.domain.company.CompanyProjectFactory;
 import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.event.ProjectCreatedEvent;
 import com.soda.project.interfaces.dto.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -151,5 +152,16 @@ public class ProjectFacade {
         projectValidator.validateAdminRole(userRole);
         Project project = projectService.getValidProject(projectId);
         projectService.deleteProject(project);
+    }
+
+    @LoggableEntityAction(action = "UPDATE_STATUS", entityClass = Project.class)
+    @Transactional
+    public ProjectStatusUpdateResponse updateProjectStatus(Long userId, Long projectId, ProjectStatusUpdateRequest request) {
+        Member member = memberService.findMemberById(userId);
+        Project project = projectService.getValidProject(projectId);
+        projectValidator.validateProjectAccessPermission(member, project);
+
+        projectService.changeProjectStatus(project, request.getStatus());
+        return ProjectStatusUpdateResponse.from(project);
     }
 }

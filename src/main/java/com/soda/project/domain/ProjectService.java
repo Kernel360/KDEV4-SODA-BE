@@ -138,40 +138,6 @@ public class ProjectService {
         return projectProvider.findMyCompanyProjectsData(userId, companyId, pageable);
     }
 
-
-    /**
-     * 프로젝트 상태 업데이트
-     *
-     * @param userId 요청한 사용자의 ID
-     * @param userRole 요청한 사용자 역할 (ADMIN or USER)
-     * @param projectId 상태 변경할 프로젝트 ID
-     * @param request 변경할 상태 정보 DTO
-     * @return 상태 변경 결과 응답 DTO
-     * @throws GeneralException 프로젝트 찾을 수 없거나, 사용자 정보를 찾을 수 없거나, 권한이 없는 경우
-     */
-    @LoggableEntityAction(action = "UPDATE_STATUS", entityClass = Project.class)
-    @Transactional
-    public ProjectStatusUpdateResponse updateProjectStatus(Long userId, String userRole, Long projectId, @Valid ProjectStatusUpdateRequest request) {
-        log.info("프로젝트 상태 변경 시작: projectId={}, userId={}, userRole={}, newStatus={}",
-                projectId, userId, userRole, request.getStatus());
-
-        // 프로젝트 유효성 검사
-        Project project = getValidProject(projectId);
-
-        // 사용자 유효성 검사
-        // ADMIN, 프로젝트 참여 중인 사람들만 상태 변경 가능
-        Member member = memberService.findMemberById(userId);
-        validateAdminOrUser(member, userRole, project);
-
-        // 프로젝트 상태 업데이트
-        project.changeStatus(request.getStatus());
-        projectRepository.save(project);
-        log.info("프로젝트 상태 변경 완료: projectId={}, newStatus={}", project.getId(), project.getStatus());
-
-        // ProjectStatusUpdateResponse 생성
-        return ProjectStatusUpdateResponse.from(project);
-    }
-
     /**
      * 프로젝트 삭제
      */

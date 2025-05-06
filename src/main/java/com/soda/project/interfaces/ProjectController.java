@@ -67,8 +67,7 @@ public class ProjectController {
     public ResponseEntity<ApiResponseForm<ProjectStatusUpdateResponse>> updateProjectStatus(HttpServletRequest request, @PathVariable Long projectId,
                                                                                             @Valid @RequestBody ProjectStatusUpdateRequest updateRequest) {
         Long userId = (Long) request.getAttribute("memberId");
-        String userRole = (String) request.getAttribute("userRole").toString();
-        ProjectStatusUpdateResponse response = projectService.updateProjectStatus(userId, userRole, projectId, updateRequest);
+        ProjectStatusUpdateResponse response = projectFacade.updateProjectStatus(userId, projectId, updateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 상태 변경 성공"));
     }
 

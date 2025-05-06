@@ -10,10 +10,7 @@ import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.company.CompanyProjectService;
 import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.member.MemberProjectRole;
-import com.soda.project.interfaces.dto.CompanyAssignment;
-import com.soda.project.interfaces.dto.DevCompanyAssignmentResponse;
-import com.soda.project.interfaces.dto.MyProjectListResponse;
-import com.soda.project.interfaces.dto.ProjectViewResponse;
+import com.soda.project.interfaces.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -147,5 +144,4 @@ public class ProjectResponseBuilder {
         }
         return "Unknown Role";
     }
-
 }

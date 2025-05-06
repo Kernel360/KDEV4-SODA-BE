@@ -1,6 +1,6 @@
 package com.soda.member.interfaces.dto.company;
 
-import com.soda.member.entity.Member;
+import com.soda.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 

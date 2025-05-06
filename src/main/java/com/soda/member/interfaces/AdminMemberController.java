@@ -6,7 +6,7 @@ import com.soda.member.interfaces.dto.AdminUpdateUserRequestDto;
 import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
 import com.soda.member.interfaces.dto.member.admin.UpdateUserStatusRequestDto;
 import com.soda.member.interfaces.dto.member.admin.MemberListDto;
-import com.soda.member.service.AdminMemberService;
+import com.soda.member.domain.AdminMemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

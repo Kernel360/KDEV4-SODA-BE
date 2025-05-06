@@ -1,4 +1,4 @@
-package com.soda.member.error;
+package com.soda.member.domain;
 
 import com.soda.global.response.ErrorCode;
 import org.springframework.http.HttpStatus;

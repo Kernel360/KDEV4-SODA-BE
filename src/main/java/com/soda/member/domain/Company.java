@@ -1,4 +1,4 @@
-package com.soda.member.entity;
+package com.soda.member.domain;
 
 import com.soda.common.BaseEntity;
 import com.soda.member.interfaces.dto.company.CompanyUpdateRequest;

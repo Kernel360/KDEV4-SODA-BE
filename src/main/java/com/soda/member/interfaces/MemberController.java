@@ -9,7 +9,7 @@ import com.soda.member.interfaces.dto.member.ChangePasswordRequest;
 import com.soda.member.interfaces.dto.member.MemberStatusResponse;
 import com.soda.member.interfaces.dto.member.MemberStatusUpdate;
 import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
-import com.soda.member.service.MemberService;
+import com.soda.member.domain.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

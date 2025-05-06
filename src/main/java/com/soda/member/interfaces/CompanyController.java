@@ -3,7 +3,7 @@ package com.soda.member.interfaces;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.member.interfaces.dto.CompanyCreationTrend;
 import com.soda.member.interfaces.dto.company.*;
-import com.soda.member.service.CompanyService;
+import com.soda.member.domain.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,6 @@
 package com.soda.member.interfaces.dto;
 
-import com.soda.member.enums.MemberRole;
+import com.soda.member.domain.MemberRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

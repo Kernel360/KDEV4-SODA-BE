@@ -1,8 +1,6 @@
-package com.soda.member.entity;
+package com.soda.member.domain;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.enums.MemberRole;
-import com.soda.member.enums.MemberStatus;
 import com.soda.notification.entity.MemberNotification;
 import com.soda.project.domain.member.MemberProject;
 import jakarta.persistence.*;

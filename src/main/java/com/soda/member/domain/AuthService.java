@@ -1,4 +1,4 @@
-package com.soda.member.service;
+package com.soda.member.domain;
 
 import com.soda.common.mail.service.EmailService;
 import com.soda.global.response.GeneralException;
@@ -8,11 +8,6 @@ import com.soda.member.interfaces.dto.VerificationConfirmResponse;
 import com.soda.member.interfaces.dto.member.LoginRequest;
 import com.soda.member.interfaces.dto.member.LoginResponse;
 import com.soda.member.interfaces.dto.member.admin.CreateMemberRequest;
-import com.soda.member.entity.Company;
-import com.soda.member.entity.Member;
-import com.soda.member.enums.MemberRole;
-import com.soda.member.enums.MemberStatus;
-import com.soda.member.error.AuthErrorCode;
 import com.soda.member.repository.RefreshTokenRepository;
 import com.soda.member.repository.VerificationCodeRepository;
 import io.jsonwebtoken.ExpiredJwtException;

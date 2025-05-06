@@ -2,8 +2,8 @@ package com.soda.member.interfaces.dto.member;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.member.interfaces.dto.company.CompanyResponse;
-import com.soda.member.entity.Member;
-import com.soda.member.enums.MemberRole;
+import com.soda.member.domain.Member;
+import com.soda.member.domain.MemberRole;
 import lombok.Builder;
 import lombok.Getter;
 

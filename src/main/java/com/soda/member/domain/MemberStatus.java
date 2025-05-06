@@ -1,4 +1,4 @@
-package com.soda.member.enums;
+package com.soda.member.domain;
 
 public enum MemberStatus {
     AVAILABLE("업무 가능", true),

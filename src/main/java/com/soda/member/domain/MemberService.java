@@ -1,4 +1,4 @@
-package com.soda.member.service;
+package com.soda.member.domain;
 
 import com.soda.global.response.GeneralException;
 import com.soda.member.interfaces.dto.FindAuthIdRequest;
@@ -8,10 +8,6 @@ import com.soda.member.interfaces.dto.MemberUpdateRequest;
 import com.soda.member.interfaces.dto.member.ChangePasswordRequest;
 import com.soda.member.interfaces.dto.member.MemberStatusResponse;
 import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
-import com.soda.member.entity.Member;
-import com.soda.member.enums.MemberRole;
-import com.soda.member.enums.MemberStatus;
-import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
 import com.soda.project.domain.ProjectErrorCode;
 import jakarta.persistence.EntityNotFoundException;

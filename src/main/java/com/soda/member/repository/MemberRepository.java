@@ -1,6 +1,6 @@
 package com.soda.member.repository;
 
-import com.soda.member.entity.Member;
+import com.soda.member.domain.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

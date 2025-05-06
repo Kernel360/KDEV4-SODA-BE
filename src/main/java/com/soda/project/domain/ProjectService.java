@@ -3,16 +3,16 @@ package com.soda.project.domain;
 import com.querydsl.core.Tuple;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
+import com.soda.member.application.CompanyFacade;
 import com.soda.member.domain.Company;
 import com.soda.member.domain.Member;
-import com.soda.project.domain.company.enums.CompanyProjectRole;
-import com.soda.project.domain.member.enums.MemberProjectRole;
-import com.soda.member.domain.CompanyService;
 import com.soda.member.domain.MemberService;
 import com.soda.project.domain.company.CompanyProjectService;
+import com.soda.project.domain.company.enums.CompanyProjectRole;
+import com.soda.project.domain.event.ProjectCreatedEvent;
 import com.soda.project.domain.member.MemberProject;
 import com.soda.project.domain.member.MemberProjectService;
-import com.soda.project.domain.event.ProjectCreatedEvent;
+import com.soda.project.domain.member.enums.MemberProjectRole;
 import com.soda.project.domain.stage.StageService;
 import com.soda.project.infrastructure.ProjectDailyStatsRepository;
 import com.soda.project.infrastructure.ProjectRepository;
@@ -45,7 +45,7 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final MemberService memberService;
-    private final CompanyService companyService;
+    private final CompanyFacade companyFacade;
     private final CompanyProjectService companyProjectService;
     private final MemberProjectService memberProjectService;
     private final StageService stageService;
@@ -399,7 +399,7 @@ public class ProjectService {
         validateAdminRole(userRole);
 
         // 요청 정보 추출
-        Company company = companyService.getCompany(request.getCompanyId());
+        Company company = companyFacade.getCompany(request.getCompanyId());
         CompanyProjectRole companyRole = request.getRole();
         List<Long> managerIds = request.getManagerIds();
         List<Long> memberIds = request.getMemberIds() != null ? request.getMemberIds() : Collections.emptyList();
@@ -483,7 +483,7 @@ public class ProjectService {
         validateAdminRole(userRole);
 
         // 회사 유효성 검사 및 프로젝트 참여 확인
-        Company company = companyService.getCompany(request.getCompanyId());
+        Company company = companyFacade.getCompany(request.getCompanyId());
         CompanyProjectRole companyRole = companyProjectService.getCompanyRoleInProject(company, project);
 
         if (companyRole == null) {
@@ -635,7 +635,7 @@ public class ProjectService {
             }
 
             // 회사 엔티티 조회
-            Company company = companyService.getCompany(companyId);
+            Company company = companyFacade.getCompany(companyId);
 
             // 회사를 프로젝트에 연결
             companyProjectService.assignCompanyToProject(company, project, companyRole);

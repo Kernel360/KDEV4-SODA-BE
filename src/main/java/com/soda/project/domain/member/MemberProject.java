@@ -32,6 +32,14 @@ public class MemberProject extends BaseEntity {
         this.role = memberProjectRole;
     }
 
+    protected static MemberProject create(Member member, Project project, MemberProjectRole role) {
+        return MemberProject.builder()
+                .member(member)
+                .project(project)
+                .memberProjectRole(role)
+                .build();
+    }
+
     public static MemberProject createClientManager(Member member, Project project) {
         return MemberProject.builder()
                 .member(member)

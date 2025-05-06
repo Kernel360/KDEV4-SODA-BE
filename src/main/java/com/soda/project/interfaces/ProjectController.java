@@ -106,7 +106,7 @@ public class ProjectController {
     public ResponseEntity<ApiResponseForm<ProjectMemberAddResponse>> addMembersToProject (HttpServletRequest request, @PathVariable Long projectId,
                                                                    @Valid @RequestBody ProjectMemberAddRequest projectMemberAddRequest) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        ProjectMemberAddResponse response = projectService.addMemberToProject(userRole, projectId, projectMemberAddRequest);
+        ProjectMemberAddResponse response = projectFacade.addMemberToProject(userRole, projectId, projectMemberAddRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트에 멤버 추가 성공"));
     }
 

@@ -2,17 +2,20 @@ package com.soda.project.application;
 
 import com.querydsl.core.Tuple;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
+import com.soda.global.response.GeneralException;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.application.validator.ProjectValidator;
 import com.soda.project.domain.Project;
+import com.soda.project.domain.ProjectErrorCode;
 import com.soda.project.domain.ProjectService;
 import com.soda.project.domain.ProjectStatus;
 import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.company.CompanyProjectService;
 import com.soda.project.domain.event.ProjectCreatedEvent;
+import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.interfaces.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -211,5 +214,24 @@ public class ProjectFacade {
         Project project = projectService.getValidProject(projectId);
 
         memberProjectService.deleteSingleMemberFromProject(project, memberId);
+    }
+
+    @Transactional
+    public ProjectMemberAddResponse addMemberToProject(String userRole, Long projectId, ProjectMemberAddRequest request) {
+        projectValidator.validateAdminRole(userRole);
+        Project project = projectService.getValidProject(projectId);
+        Company company = companyService.getCompany(request.getCompanyId());
+
+        List<Member> managers = request.getManagerIds() != null ? memberService.findByIds(request.getManagerIds()) : Collections.emptyList();
+        List<Member> members = request.getMemberIds() != null ? memberService.findByIds(request.getMemberIds()) : Collections.emptyList();
+
+        CompanyProjectRole companyRole = companyProjectService.getCompanyRoleInProject(company, project);
+        if (companyRole == null) {
+            throw new GeneralException(ProjectErrorCode.COMPANY_PROJECT_NOT_FOUND);
+        }
+
+        memberProjectService.addOrUpdateProjectMembers(project, companyRole, managers, members);
+
+        return ProjectMemberAddResponse.from(project.getId(), company.getName(), managers, members);
     }
 }

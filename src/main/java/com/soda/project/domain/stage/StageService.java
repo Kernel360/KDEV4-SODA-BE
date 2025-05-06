@@ -4,11 +4,10 @@ import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
 import com.soda.project.domain.Project;
-import com.soda.project.domain.error.ProjectErrorCode;
-import com.soda.project.domain.error.StageErrorCode;
-import com.soda.project.interfaces.dto.stage.*;
+import com.soda.project.domain.ProjectErrorCode;
 import com.soda.project.infrastructure.ProjectRepository;
-import com.soda.project.infrastructure.StageRepository;
+import com.soda.project.infrastructure.stage.StageRepository;
+import com.soda.project.interfaces.stage.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -318,5 +317,9 @@ public class StageService {
         List<Long> stageIds = stageRepository.findAllIdsByProjectIdIn(projectIds);
         log.info("스테이지 ID 목록 조회 완료: {}개", stageIds.size());
         return stageIds;
+    }
+
+    public Stage getStageOrThrow(Long stageId) {
+        return stageRepository.findById(stageId).orElseThrow(() -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
     }
 }

@@ -13,7 +13,7 @@ import com.soda.member.enums.MemberRole;
 import com.soda.member.enums.MemberStatus;
 import com.soda.member.error.MemberErrorCode;
 import com.soda.member.repository.MemberRepository;
-import com.soda.project.domain.error.ProjectErrorCode;
+import com.soda.project.domain.ProjectErrorCode;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

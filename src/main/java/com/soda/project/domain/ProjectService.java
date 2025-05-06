@@ -11,8 +11,6 @@ import com.soda.member.service.CompanyService;
 import com.soda.member.service.MemberService;
 import com.soda.project.domain.company.CompanyProjectService;
 import com.soda.project.domain.member.MemberProject;
-import com.soda.project.domain.enums.ProjectStatus;
-import com.soda.project.domain.error.ProjectErrorCode;
 import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.event.ProjectCreatedEvent;
 import com.soda.project.domain.stage.StageService;

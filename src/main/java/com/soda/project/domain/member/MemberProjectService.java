@@ -5,7 +5,7 @@ import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.project.domain.member.enums.MemberProjectRole;
 import com.soda.project.domain.Project;
-import com.soda.project.domain.error.ProjectErrorCode;
+import com.soda.project.domain.ProjectErrorCode;
 import com.soda.project.infrastructure.MemberProjectRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -4,7 +4,7 @@ import com.soda.member.entity.Company; // Company import
 import com.soda.member.entity.Member;   // Member import
 import com.soda.project.domain.member.enums.MemberProjectRole; // 역할 확인용 (선택적)
 import com.soda.project.domain.Project;
-import com.soda.project.domain.enums.ProjectStatus;
+import com.soda.project.domain.ProjectStatus;
 import lombok.Builder;
 import lombok.Getter;
 

@@ -13,7 +13,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.soda.project.domain.QProject;
 import com.soda.project.domain.company.QCompanyProject;
-import com.soda.project.domain.enums.ProjectStatus;
+import com.soda.project.domain.ProjectStatus;
 import com.soda.project.domain.member.QMemberProject;
 import com.soda.project.domain.stage.QStage;
 import com.soda.project.domain.stage.article.QArticle;

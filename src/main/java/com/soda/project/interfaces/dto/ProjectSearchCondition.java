@@ -1,6 +1,6 @@
 package com.soda.project.interfaces.dto;
 
-import com.soda.project.domain.enums.ProjectStatus;
+import com.soda.project.domain.ProjectStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

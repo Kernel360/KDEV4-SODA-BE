@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -108,6 +109,15 @@ public class ProjectValidator {
         boolean isParticipant = memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
         if (!isParticipant) {
             throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
+        }
+    }
+
+    public void validateStatsDateRange(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            throw new GeneralException(ProjectErrorCode.INVALID_DATE_RANGE);
+        }
+        if (startDate.isAfter(endDate)) {
+            throw new GeneralException(ProjectErrorCode.INVALID_DATE_RANGE);
         }
     }
 }

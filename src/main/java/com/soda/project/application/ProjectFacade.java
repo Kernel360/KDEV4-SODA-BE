@@ -18,6 +18,7 @@ import com.soda.project.domain.event.ProjectCreatedEvent;
 import com.soda.project.domain.member.MemberProject;
 import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.domain.member.MemberProjectService;
+import com.soda.project.domain.stats.ProjectStatsService;
 import com.soda.project.interfaces.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -40,6 +41,7 @@ public class ProjectFacade {
     private final ProjectService projectService;
     private final CompanyProjectService companyProjectService;
     private final MemberProjectService memberProjectService;
+    private final ProjectStatsService projectStatsService;
     private final ProjectValidator projectValidator;
     private final ApplicationEventPublisher eventPublisher;
     private final ProjectResponseBuilder projectResponseBuilder;
@@ -263,5 +265,12 @@ public class ProjectFacade {
         );
 
         return memberProjectPage.map(ProjectMemberResponse::from);
+    }
+
+    public ProjectStatsResponse getProjectCreationTrend(Long userId, String userRole, ProjectStatsCondition request) {
+        projectValidator.validateAdminRole(userRole);
+        projectValidator.validateStatsDateRange(request.getStartDate(), request.getEndDate());
+
+        return projectStatsService.getProjectCreationTrend(request);
     }
 }

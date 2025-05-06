@@ -1,6 +1,6 @@
 package com.soda.member.repository;
 
-import com.soda.member.dto.CompanyCreationStatRaw;
+import com.soda.member.interfaces.dto.CompanyCreationStatRaw;
 
 import java.time.LocalDateTime;
 import java.util.List;

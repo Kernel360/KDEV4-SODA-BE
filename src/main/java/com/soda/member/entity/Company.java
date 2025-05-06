@@ -1,7 +1,7 @@
 package com.soda.member.entity;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.dto.company.CompanyUpdateRequest;
+import com.soda.member.interfaces.dto.company.CompanyUpdateRequest;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

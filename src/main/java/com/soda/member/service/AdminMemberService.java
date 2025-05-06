@@ -1,10 +1,10 @@
 package com.soda.member.service;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.dto.AdminUpdateUserRequestDto;
-import com.soda.member.dto.member.admin.MemberDetailDto;
-import com.soda.member.dto.member.admin.MemberListDto;
-import com.soda.member.dto.member.admin.UpdateUserStatusRequestDto;
+import com.soda.member.interfaces.dto.AdminUpdateUserRequestDto;
+import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
+import com.soda.member.interfaces.dto.member.admin.MemberListDto;
+import com.soda.member.interfaces.dto.member.admin.UpdateUserStatusRequestDto;
 import com.soda.member.entity.Company;
 import com.soda.member.entity.Member;
 import com.soda.member.error.MemberErrorCode;

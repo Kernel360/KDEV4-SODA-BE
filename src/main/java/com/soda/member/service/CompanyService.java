@@ -3,12 +3,12 @@ package com.soda.member.service;
 
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
-import com.soda.member.dto.CompanyCreationStatRaw;
-import com.soda.member.dto.CompanyCreationTrend;
-import com.soda.member.dto.company.*;
+import com.soda.member.interfaces.dto.CompanyCreationStatRaw;
+import com.soda.member.interfaces.dto.CompanyCreationTrend;
 import com.soda.member.entity.Company;
 import com.soda.member.enums.StatisticsUnit;
 import com.soda.member.error.CompanyErrorCode;
+import com.soda.member.interfaces.dto.company.*;
 import com.soda.member.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,13 +1,13 @@
 package com.soda.member.service;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.dto.FindAuthIdRequest;
-import com.soda.member.dto.FindAuthIdResponse;
-import com.soda.member.dto.InitialUserInfoRequestDto;
-import com.soda.member.dto.MemberUpdateRequest;
-import com.soda.member.dto.member.ChangePasswordRequest;
-import com.soda.member.dto.member.MemberStatusResponse;
-import com.soda.member.dto.member.admin.MemberDetailDto;
+import com.soda.member.interfaces.dto.FindAuthIdRequest;
+import com.soda.member.interfaces.dto.FindAuthIdResponse;
+import com.soda.member.interfaces.dto.InitialUserInfoRequestDto;
+import com.soda.member.interfaces.dto.MemberUpdateRequest;
+import com.soda.member.interfaces.dto.member.ChangePasswordRequest;
+import com.soda.member.interfaces.dto.member.MemberStatusResponse;
+import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
 import com.soda.member.entity.Member;
 import com.soda.member.enums.MemberRole;
 import com.soda.member.enums.MemberStatus;

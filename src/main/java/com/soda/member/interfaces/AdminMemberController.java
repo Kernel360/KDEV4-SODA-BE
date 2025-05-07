@@ -1,19 +1,16 @@
 package com.soda.member.interfaces;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.global.response.PagedData;
 import com.soda.member.application.MemberFacade;
 import com.soda.member.interfaces.dto.AdminUpdateUserRequestDto;
 import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
-import com.soda.member.interfaces.dto.member.admin.UpdateUserStatusRequestDto;
 import com.soda.member.interfaces.dto.member.admin.MemberListDto;
+import com.soda.member.interfaces.dto.member.admin.UpdateUserStatusRequestDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +30,7 @@ public class AdminMemberController {
             @Valid @RequestBody UpdateUserStatusRequestDto requestDto,
             HttpServletRequest request) {
         Long currentMemberId = (Long) request.getAttribute("memberId");
-        memberFacade.updateMemberStatus(userId, currentMemberId, requestDto);
+        memberFacade.updateMemberDeletionStatus(userId, currentMemberId, requestDto);
         return ResponseEntity.ok(ApiResponseForm.success(null, "회원 상태 변경 성공"));
     }
 

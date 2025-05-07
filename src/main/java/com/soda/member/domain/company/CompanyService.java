@@ -1,6 +1,5 @@
 package com.soda.member.domain.company;
 
-import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.interfaces.dto.company.CompanyCreateRequest;
 import com.soda.member.interfaces.dto.company.CompanyResponse;

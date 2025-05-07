@@ -15,17 +15,17 @@ import java.util.stream.Collectors;
 @Service
 public class LinkService {
 
-    private final Map<String, LinkStrategy<Object, LinkBase>> strategies;
+    private final Map<String, LinkStrategy> strategies;
     private final LinkFactory linkFactory;
 
-    public LinkService(List<LinkStrategy<Object, LinkBase>> strategies, LinkFactory linkFactory) {
+    public LinkService(List<LinkStrategy> strategies, LinkFactory linkFactory) {
         this.strategies = strategies.stream()
                 .collect(Collectors.toMap(LinkStrategy::getSupportedDomain, Function.identity()));
         this.linkFactory = linkFactory;
     }
 
     public LinkUploadResponse upload(String domainType, Long domainId, Long memberId, LinkUploadRequest linkUploadRequest) {
-        LinkStrategy<Object, LinkBase> strategy = getStrategy(domainType);
+        LinkStrategy strategy = getStrategy(domainType);
         Object domain = strategy.getDomainOrThrow(domainId);
         strategy.validateWriter(memberId, domain);
 
@@ -35,7 +35,7 @@ public class LinkService {
     }
 
     public LinkDeleteResponse delete(String domainType, Long linkId, Long memberId) {
-        LinkStrategy<Object, LinkBase> strategy = getStrategy(domainType);
+        LinkStrategy strategy = getStrategy(domainType);
         LinkBase link = strategy.getLinkOrThrow(linkId);
         strategy.validateLinkUploader(memberId, link);
         link.delete();
@@ -48,8 +48,8 @@ public class LinkService {
         return (List<T>) strategy.toEntities(dtos, domain);
     }
 
-    private LinkStrategy<Object, LinkBase> getStrategy(String domainType) {
-        LinkStrategy<Object, LinkBase> strategy = strategies.get(domainType.toLowerCase());
+    private LinkStrategy getStrategy(String domainType) {
+        LinkStrategy strategy = strategies.get(domainType.toLowerCase());
         if (strategy == null) { throw new GeneralException(LinkErrorCode.LINK_DOMAIN_NOT_FOUND);}
         return strategy;
     }

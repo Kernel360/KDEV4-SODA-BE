@@ -12,17 +12,17 @@ import java.util.stream.Collectors;
 @Service
 public class FileService {
 
-    private final Map<String, FileStrategy<Object, FileBase>> strategies;
+    private final Map<String, FileStrategy> strategies;
     private final FileFactory fileFactory;
 
-    public FileService(List<FileStrategy<Object, FileBase>> strategies, FileFactory fileFactory) {
+    public FileService(List<FileStrategy> strategies, FileFactory fileFactory) {
         this.strategies = strategies.stream()
                 .collect(Collectors.toMap(FileStrategy::getSupportedDomain, Function.identity()));
         this.fileFactory = fileFactory;
     }
 
     public PresignedUploadResponse getPresignedUrls(String domainType, Long domainId, Long memberId, List<FileUploadRequest> files) {
-        FileStrategy<Object, FileBase> strategy = getStrategy(domainType);
+        FileStrategy strategy = getStrategy(domainType);
         Object domain = strategy.getDomainOrThrow(domainId);
         strategy.validateWriter(memberId, domain);
 
@@ -31,7 +31,7 @@ public class FileService {
     }
 
     public FileConfirmResponse confirmUpload(String domainType, Long domainId, Long memberId, List<ConfirmedFile> confirmedFiles) {
-        FileStrategy<Object, FileBase> strategy = getStrategy(domainType);
+        FileStrategy strategy = getStrategy(domainType);
         Object domain = strategy.getDomainOrThrow(domainId);
         strategy.validateWriter(memberId, domain);
 
@@ -41,7 +41,7 @@ public class FileService {
     }
 
     public FileDeleteResponse delete(String domainType, Long fileId, Long memberId) {
-        FileStrategy<Object, FileBase> strategy = getStrategy(domainType);
+        FileStrategy strategy = getStrategy(domainType);
         FileBase file = strategy.getFileOrThrow(fileId);
         strategy.validateFileUploader(memberId, file);
 
@@ -49,8 +49,8 @@ public class FileService {
         return FileDeleteResponse.fromEntity(file);
     }
 
-    private FileStrategy<Object, FileBase> getStrategy(String domainType) {
-        FileStrategy<Object, FileBase> strategy = strategies.get(domainType.toLowerCase());
+    private FileStrategy getStrategy(String domainType) {
+        FileStrategy strategy = strategies.get(domainType.toLowerCase());
         if (strategy == null) { throw new GeneralException(FileErrorCode.FILE_DOMAIN_NOT_FOUND);}
         return strategy;
     }

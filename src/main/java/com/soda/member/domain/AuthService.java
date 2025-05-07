@@ -3,6 +3,8 @@ package com.soda.member.domain;
 import com.soda.common.mail.service.EmailService;
 import com.soda.global.response.GeneralException;
 import com.soda.global.security.jwt.JwtTokenProvider;
+import com.soda.member.domain.company.Company;
+import com.soda.member.domain.company.CompanyService;
 import com.soda.member.interfaces.dto.ResetPasswordRequest;
 import com.soda.member.interfaces.dto.VerificationConfirmResponse;
 import com.soda.member.interfaces.dto.member.LoginRequest;

@@ -6,8 +6,8 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.domain.member.MemberProject;
+import com.soda.project.domain.member.MemberProjectRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,13 +19,13 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.List;
 
-import static com.soda.member.domain.QCompany.company;
 import static com.soda.member.domain.QMember.member;
+import static com.soda.member.domain.company.QCompany.company;
 import static com.soda.project.domain.member.QMemberProject.memberProject;
 
 @Repository
 @RequiredArgsConstructor
-public class MemberProjectRepositoryImpl implements MemberProjectRepositoryCustom{
+public class MemberProjectRepositoryImpl implements MemberProjectRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -101,6 +101,7 @@ public class MemberProjectRepositoryImpl implements MemberProjectRepositoryCusto
 
     /**
      * Spring Data의 Sort 객체를 QueryDSL의 OrderSpecifier 배열로 변환합니다.
+     *
      * @param sort Pageable에서 추출한 Sort 객체
      * @return QueryDSL의 orderBy 절에 사용할 OrderSpecifier 배열
      */
@@ -126,6 +127,7 @@ public class MemberProjectRepositoryImpl implements MemberProjectRepositoryCusto
 
     /**
      * 점(.)으로 구분된 속성 문자열(예: "member.name")을 기반으로 실제 PathBuilder 경로를 찾습니다.
+     *
      * @param rootPath 시작 PathBuilder (엔티티 루트)
      * @param property 속성 문자열
      * @return 해당 속성에 대한 PathBuilder

@@ -1,10 +1,12 @@
 package com.soda.member.domain;
 
 import com.soda.global.response.GeneralException;
+import com.soda.member.domain.company.Company;
 import com.soda.member.interfaces.dto.AdminUpdateUserRequestDto;
 import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
 import com.soda.member.interfaces.dto.member.admin.MemberListDto;
 import com.soda.member.interfaces.dto.member.admin.UpdateUserStatusRequestDto;
+import com.soda.member.application.CompanyFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -20,15 +22,8 @@ import org.springframework.util.StringUtils;
 public class AdminMemberService {
 
     private final MemberService memberService;
-    private final CompanyService companyService;
+    private final CompanyFacade companyFacade;
 
-    /**
-     * 사용자 활성/비활성 상태 변경
-     *
-     * @param userId          대상 사용자 ID
-     * @param currentMemberId
-     * @param requestDto      상태 변경 요청 DTO
-     */
     @Transactional
     public void updateMemberStatus(Long userId, Long currentMemberId, UpdateUserStatusRequestDto requestDto) {
         Member member = memberService.findMemberById(userId);
@@ -48,20 +43,14 @@ public class AdminMemberService {
         log.info("관리자에 의해 사용자 상태 변경 완료: userId={}, active={}", userId, requestDto.getActive());
     }
 
-    /**
-     * 전체 사용자 목록 조회 (페이징 및 검색 기능 포함)
-     *
-     * @param pageable 페이징 정보
-     * @param searchKeyword 검색어 (이름, 이메일, 아이디)
-     * @return 페이징 처리된 사용자 목록 DTO
-     */
     @Transactional(readOnly = true)
     public Page<MemberListDto> getAllUsers(Pageable pageable, String searchKeyword) {
         Page<Member> memberPage;
 
         if (StringUtils.hasText(searchKeyword)) {
             memberPage = memberService.findByKeywordIncludingDeleted(searchKeyword, pageable);
-            log.info("관리자 사용자 목록 검색 조회: keyword={}, page={}, size={}", searchKeyword, pageable.getPageNumber(), pageable.getPageSize());
+            log.info("관리자 사용자 목록 검색 조회: keyword={}, page={}, size={}", searchKeyword, pageable.getPageNumber(),
+                    pageable.getPageSize());
         } else {
             memberPage = memberService.findAll(pageable);
             log.info("관리자 전체 사용자 목록 조회: page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
@@ -70,29 +59,12 @@ public class AdminMemberService {
         return memberPage.map(MemberListDto::fromEntity);
     }
 
-    /**
-     * 특정 사용자의 상세 정보를 조회합니다.
-     * (삭제된 사용자 포함하여 조회 가능)
-     *
-     * @param userId 조회할 사용자의 ID
-     * @return 사용자 상세 정보 DTO
-     * @throws GeneralException 사용자를 찾을 수 없을 경우
-     */
     public MemberDetailDto getMemberDetail(Long userId) {
         Member member = memberService.findMemberById(userId);
         log.info("관리자 사용자 상세 조회: userId={}", userId);
         return MemberDetailDto.fromEntity(member);
     }
 
-    /**
-     * 관리자가 특정 사용자의 정보를 수정합니다.
-     * (비밀번호, 활성/비활성 상태는 제외)
-     *
-     * @param userId     수정할 사용자의 ID
-     * @param requestDto 수정할 사용자 정보 DTO
-     * @return 수정된 사용자 상세 정보 DTO
-     * @throws GeneralException 사용자를 찾을 수 없거나, 유효성 검사 실패 시
-     */
     @Transactional
     public MemberDetailDto updateMemberInfo(Long userId, AdminUpdateUserRequestDto requestDto) {
         Member member = memberService.findMemberById(userId);
@@ -105,13 +77,14 @@ public class AdminMemberService {
 
         Company company = null;
         if (requestDto.getCompanyId() != null) {
-            company = companyService.getCompany(requestDto.getCompanyId());
+            company = companyFacade.getCompany(requestDto.getCompanyId());
             log.info("사용자 소속 회사 변경/설정: companyId={}, companyName={}", company.getId(), company.getName());
         } else {
             log.info("사용자 소속 회사 없음(null)으로 설정");
         }
 
-        member.updateAdminInfo(requestDto.getName(), requestDto.getEmail(), requestDto.getRole(), company, requestDto.getPosition(), requestDto.getPhoneNumber());
+        member.updateAdminInfo(requestDto.getName(), requestDto.getEmail(), requestDto.getRole(), company,
+                requestDto.getPosition(), requestDto.getPhoneNumber());
 
         Member updatedMember = memberService.saveMember(member);
         log.info("관리자에 의해 사용자 정보 수정 완료: userId={}", userId);

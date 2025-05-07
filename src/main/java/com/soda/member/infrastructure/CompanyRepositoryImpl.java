@@ -3,7 +3,7 @@ package com.soda.member.infrastructure;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.soda.member.domain.QCompany;
+import com.soda.member.domain.company.QCompany;
 import com.soda.member.interfaces.dto.CompanyCreationStatRaw;
 import lombok.RequiredArgsConstructor;
 
@@ -39,7 +39,7 @@ public class CompanyRepositoryImpl implements CompanyRepositoryCustom {
                         company.isDeleted.isFalse()
                 )
                 .groupBy(year, month, week, day)
-                .orderBy(year.asc(), month.asc(), day.asc())
+                .orderBy(year.asc(), month.asc(), week.asc(), day.asc())
                 .fetch();
     }
 }

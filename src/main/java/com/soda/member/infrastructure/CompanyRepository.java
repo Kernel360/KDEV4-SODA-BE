@@ -1,6 +1,6 @@
 package com.soda.member.infrastructure;
 
-import com.soda.member.domain.Company;
+import com.soda.member.domain.company.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

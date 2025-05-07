@@ -2,7 +2,7 @@ package com.soda.global.init;
 
 import com.soda.member.domain.Member;
 import com.soda.member.domain.MemberRole;
-import com.soda.member.infrastructure.CompanyRepository;
+import com.soda.member.application.CompanyFacade;
 import com.soda.member.infrastructure.MemberRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +16,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class InitialDataLoader {
 
-    private final CompanyRepository companyRepository;
+    private final CompanyFacade companyFacade;
     private final MemberRepository memberRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     @Value("${init.admin.authid}")
@@ -26,7 +25,6 @@ public class InitialDataLoader {
 
     @Value("${init.admin.password}")
     private String adminPassword;
-
 
     @PostConstruct
     public void init() {

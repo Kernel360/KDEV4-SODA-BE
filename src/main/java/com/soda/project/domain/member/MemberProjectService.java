@@ -1,7 +1,7 @@
 package com.soda.project.domain.member;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.domain.Company;
+import com.soda.member.domain.company.Company;
 import com.soda.member.domain.Member;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectErrorCode;

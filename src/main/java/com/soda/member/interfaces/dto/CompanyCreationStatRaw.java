@@ -1,16 +1,9 @@
 package com.soda.member.interfaces.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.time.LocalDate;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class CompanyCreationStatRaw {
-    private int year;
-    private int month;
-    private int weekOfYear;
-    private int dayOfMonth;
-    private long count;
+public record CompanyCreationStatRaw(Integer year, Integer month, Integer week, Integer day, Long count) {
+    public LocalDate getDate() {
+        return LocalDate.of(year, month, day);
+    }
 }

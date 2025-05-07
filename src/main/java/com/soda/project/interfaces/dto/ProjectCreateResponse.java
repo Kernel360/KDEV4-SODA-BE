@@ -1,6 +1,6 @@
 package com.soda.project.interfaces.dto;
 
-import com.soda.member.domain.Company; // Company import
+import com.soda.member.domain.company.Company; // Company import
 import com.soda.member.domain.Member;   // Member import
 import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.member.MemberProject;

@@ -1,6 +1,6 @@
 package com.soda.member.interfaces.dto.company;
 
-import com.soda.member.domain.StatisticsUnit;
+import com.soda.member.domain.company.StatisticsUnit;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;

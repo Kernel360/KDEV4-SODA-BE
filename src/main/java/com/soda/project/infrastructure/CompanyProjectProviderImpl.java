@@ -1,6 +1,6 @@
 package com.soda.project.infrastructure;
 
-import com.soda.member.domain.Company;
+import com.soda.member.domain.company.Company;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.company.CompanyProject;
 import com.soda.project.domain.company.CompanyProjectProvider;

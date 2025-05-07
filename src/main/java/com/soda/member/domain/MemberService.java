@@ -1,6 +1,7 @@
 package com.soda.member.domain;
 
 import com.soda.global.response.GeneralException;
+import com.soda.member.domain.company.Company;
 import com.soda.member.interfaces.dto.FindAuthIdRequest;
 import com.soda.member.interfaces.dto.FindAuthIdResponse;
 import com.soda.member.interfaces.dto.InitialUserInfoRequestDto;

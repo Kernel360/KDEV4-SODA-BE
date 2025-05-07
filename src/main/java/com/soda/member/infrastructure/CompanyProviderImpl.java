@@ -49,4 +49,9 @@ public class CompanyProviderImpl implements CompanyProvider {
     public List<CompanyCreationStatRaw> countCompaniesByDayRaw(LocalDateTime startDateTime, LocalDateTime endDateTime) {
         return companyRepository.countCompaniesByDayRaw(startDateTime, endDateTime);
     }
+
+    @Override
+    public List<Company> findByIdInAndIsDeletedFalse(List<Long> companyIds) {
+        return companyRepository.findByIdInAndIsDeletedFalse(companyIds);
+    }
 }

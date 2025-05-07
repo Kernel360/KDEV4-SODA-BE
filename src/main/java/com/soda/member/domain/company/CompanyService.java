@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,8 +23,6 @@ import java.util.stream.Collectors;
 public class CompanyService {
     private final CompanyProvider companyProvider;
 
-    @LoggableEntityAction(action = "CREATE", entityClass = Company.class)
-    @Transactional
     public CompanyResponse createCompany(CompanyCreateRequest request) {
         Company company = Company.create(request);
         return CompanyResponse.fromEntity(companyProvider.store(company));
@@ -45,8 +45,6 @@ public class CompanyService {
                 .orElseThrow(() -> new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY));
     }
 
-    @LoggableEntityAction(action = "UPDATE", entityClass = Company.class)
-    @Transactional
     public CompanyResponse updateCompany(Long id, CompanyUpdateRequest request) {
         Company company = companyProvider.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY));
@@ -55,8 +53,6 @@ public class CompanyService {
         return CompanyResponse.fromEntity(companyProvider.store(company));
     }
 
-    @LoggableEntityAction(action = "DELETE", entityClass = Company.class)
-    @Transactional
     public void deleteCompany(Long id) {
         Company company = companyProvider.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY));
@@ -64,7 +60,6 @@ public class CompanyService {
         companyProvider.store(company);
     }
 
-    @Transactional
     public CompanyResponse restoreCompany(Long id) {
         Company company = companyProvider.findById(id)
                 .orElseThrow(() -> new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY));
@@ -78,5 +73,15 @@ public class CompanyService {
         return company.getMemberList().stream()
                 .map(MemberResponse::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    public List<Company> findCompaniesByIds(List<Long> companyIds) {
+        if (CollectionUtils.isEmpty(companyIds)) {
+            return Collections.emptyList();
+        }
+        log.debug("ID 목록 {} 로 회사 조회 시작", companyIds);
+        List<Company> companies = companyProvider.findByIdInAndIsDeletedFalse(companyIds);
+        log.debug("ID 목록 {} 로 활성 회사 {}개 조회 완료", companyIds, companies.size());
+        return companies;
     }
 }

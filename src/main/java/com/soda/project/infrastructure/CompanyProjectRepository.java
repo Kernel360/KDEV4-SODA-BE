@@ -1,11 +1,9 @@
 package com.soda.project.infrastructure;
 
 import com.soda.member.domain.company.Company;
-import com.soda.project.domain.company.enums.CompanyProjectRole;
-import com.soda.member.domain.Company;
-import com.soda.project.domain.company.CompanyProjectRole;
-import com.soda.project.domain.company.CompanyProject;
 import com.soda.project.domain.Project;
+import com.soda.project.domain.company.CompanyProject;
+import com.soda.project.domain.company.CompanyProjectRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

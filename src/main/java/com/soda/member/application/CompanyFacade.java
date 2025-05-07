@@ -19,8 +19,8 @@ public class CompanyFacade {
     private final CompanyService companyService;
     private final CompanyStatsService companyStatsService;
 
-    @LoggableEntityAction(action = "CREATE", entityClass = Company.class)
     @Transactional
+    @LoggableEntityAction(action = "CREATE", entityClass = Company.class)
     public CompanyResponse createCompany(CompanyCreateRequest request) {
         return companyService.createCompany(request);
     }
@@ -37,14 +37,14 @@ public class CompanyFacade {
         return companyService.getCompany(id);
     }
 
-    @LoggableEntityAction(action = "UPDATE", entityClass = Company.class)
     @Transactional
+    @LoggableEntityAction(action = "UPDATE", entityClass = Company.class)
     public CompanyResponse updateCompany(Long id, CompanyUpdateRequest request) {
         return companyService.updateCompany(id, request);
     }
 
-    @LoggableEntityAction(action = "DELETE", entityClass = Company.class)
     @Transactional
+    @LoggableEntityAction(action = "DELETE", entityClass = Company.class)
     public void deleteCompany(Long id) {
         companyService.deleteCompany(id);
     }

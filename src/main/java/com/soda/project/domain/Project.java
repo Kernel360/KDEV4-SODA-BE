@@ -1,8 +1,8 @@
 package com.soda.project.domain;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.domain.Company;
 import com.soda.member.domain.Member;
+import com.soda.member.domain.company.Company;
 import com.soda.project.domain.company.CompanyProject;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.member.MemberProject;

@@ -20,4 +20,6 @@ public interface CompanyProvider {
         Optional<Company> findByIdAndIsDeletedFalse(Long id);
 
         List<CompanyCreationStatRaw> countCompaniesByDayRaw(LocalDateTime startDateTime, LocalDateTime endDateTime);
+
+        List<Company> findByIdInAndIsDeletedFalse(List<Long> companyIds);
 }

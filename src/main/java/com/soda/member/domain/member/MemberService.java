@@ -81,21 +81,15 @@ public class MemberService {
     }
 
     public void validateDuplicateAuthId(String authId) {
-        if (memberProvider.existsByAuthId(authId)) {
-            log.warn("회원 가입/수정 실패: 아이디 중복 - {}", authId);
-            throw new GeneralException(MemberErrorCode.DUPLICATE_AUTH_ID);
-        }
+        memberValidator.validateDuplicateAuthId(authId);
     }
 
     public void validateEmailExists(String email) {
-        findMemberByEmailOrThrow(email);
+        memberValidator.validateEmailExists(email);
     }
 
     public void validateDuplicateEmail(String email) {
-        if (memberProvider.existsByEmailAndIsDeletedFalse(email)) {
-            log.warn("회원 가입/수정 실패: 이메일 중복 - {}", email);
-            throw new GeneralException(MemberErrorCode.DUPLICATE_EMAIL);
-        }
+        memberValidator.validateDuplicateEmail(email);
     }
 
     @Transactional
@@ -112,26 +106,80 @@ public class MemberService {
                 });
     }
 
-    private String maskAuthId(String authId) {
-        if (authId == null || authId.isEmpty()) {
-            return "***";
+    public MemberStatusResponse updateMemberStatus(Long memberId, MemberStatus newStatus) {
+        Member member = memberProvider.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("ID " + memberId + " 에 해당하는 멤버를 찾을 수 없습니다."));
+
+        member.updateMemberStatus(newStatus);
+        memberProvider.store(member);
+        return MemberStatusResponse.fromEntity(member);
+    }
+
+    public void updateMyProfile(Long memberId, MemberUpdateRequest requestDto) {
+        Member member = findByIdAndIsDeletedFalse(memberId);
+
+        member.myProfileUpdate(requestDto.getName(),
+                requestDto.getEmail(),
+                requestDto.getPhoneNumber(),
+                requestDto.getPosition());
+
+        memberProvider.store(member);
+    }
+
+    public void changeUserPassword(Long memberId, ChangePasswordRequest requestDto) {
+        Member member = findByIdAndIsDeletedFalse(memberId);
+        memberValidator.validatePasswordChange(member, requestDto.getCurrentPassword(), requestDto.getNewPassword());
+
+        if (!passwordEncoder.matches(requestDto.getCurrentPassword(), member.getPassword())) {
+            throw new GeneralException(MemberErrorCode.INVALID_PASSWORD);
         }
-        int length = authId.length();
-        if (length <= 1) {
-            return "*";
-        } else if (length <= 3) {
-            return authId.charAt(0) + "*".repeat(length - 1);
-        } else {
-            return authId.substring(0, 2) + "***" + authId.charAt(length - 1);
-        }
+
+        member.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));
+        memberProvider.store(member);
+    }
+
+    public Member findWithProjectsById(Long memberId) {
+        return memberProvider.findWithProjectsById(memberId)
+                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    public List<Member> findMembersByIdsAndCompany(List<Long> ids, Company company) {
+        return memberProvider.findMembersByIdsAndCompany(ids, company);
+    }
+
+    public List<Member> findMembersByCompany(Company company) {
+        return memberProvider.findMembersByCompany(company);
     }
 
     public Page<Member> findAll(Pageable pageable) {
-        return memberProvider.findAllWithCompany(pageable);
+        return memberProvider.findAll(pageable);
     }
 
     public Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable) {
+        return memberProvider.findByKeywordIncludingDeleted(keyword, pageable);
+    }
+
+    public Page<Member> findAllWithCompany(Pageable pageable) {
+        return memberProvider.findAllWithCompany(pageable);
+    }
+
+    public Page<Member> findByKeywordWithCompany(String keyword, Pageable pageable) {
         return memberProvider.findByKeywordWithCompany(keyword, pageable);
+    }
+
+    public MemberDetailDto getMemberDetailWithCompany(Long userId) {
+        return memberProvider.getMemberDetailWithCompany(userId);
+    }
+
+    private String maskAuthId(String authId) {
+        if (!StringUtils.hasText(authId)) {
+            return "";
+        }
+        int length = authId.length();
+        if (length <= 4) {
+            return "*".repeat(length);
+        }
+        return authId.substring(0, 2) + "*".repeat(length - 4) + authId.substring(length - 2);
     }
 
     public void setupInitialProfile(Long memberId, InitialUserInfoRequestDto requestDto) {
@@ -157,47 +205,6 @@ public class MemberService {
                 .orElseThrow(() -> new EntityNotFoundException("ID " + memberId + " 에 해당하는 멤버를 찾을 수 없습니다."));
 
         return MemberStatusResponse.fromEntity(member);
-    }
-
-    public MemberStatusResponse updateMemberStatus(Long memberId, MemberStatus newStatus) {
-        Member member = memberProvider.findById(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("ID " + memberId + " 에 해당하는 멤버를 찾을 수 없습니다."));
-
-        member.updateMemberStatus(newStatus);
-
-        memberProvider.store(member);
-        return MemberStatusResponse.fromEntity(member);
-    }
-
-    public void updateMyProfile(Long memberId, MemberUpdateRequest requestDto) {
-        Member member = findByIdAndIsDeletedFalse(memberId);
-
-        member.myProfileUpdate(requestDto.getName(),
-                requestDto.getEmail(),
-                requestDto.getPhoneNumber(),
-                requestDto.getPosition());
-
-        memberProvider.store(member);
-    }
-
-    public void changeUserPassword(Long memberId, ChangePasswordRequest requestDto) {
-        Member member = findByIdAndIsDeletedFalse(memberId);
-
-        if (!passwordEncoder.matches(requestDto.getCurrentPassword(), member.getPassword())) {
-            throw new GeneralException(MemberErrorCode.INVALID_PASSWORD);
-        }
-
-        member.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));
-        memberProvider.store(member);
-    }
-
-    public Member findWithProjectsById(Long memberId) {
-        return memberProvider.findWithProjectsById(memberId)
-                .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
-    }
-
-    public List<Member> findMembersByIdsAndCompany(List<Long> ids, Company company) {
-        return memberProvider.findMembersByIdsAndCompany(ids, company);
     }
 
     public void updateMemberStatus(Long userId, Long currentMemberId, UpdateUserStatusRequestDto requestDto) {

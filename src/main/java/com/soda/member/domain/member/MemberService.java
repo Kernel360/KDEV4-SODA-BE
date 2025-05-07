@@ -30,7 +30,6 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class MemberService {
 
     private final MemberProvider memberProvider;
@@ -92,7 +91,6 @@ public class MemberService {
         memberValidator.validateDuplicateEmail(email);
     }
 
-    @Transactional
     public Member saveMember(Member member) {
         log.info("회원 정보 저장 완료: memberId={}", member.getId());
         return memberProvider.store(member);

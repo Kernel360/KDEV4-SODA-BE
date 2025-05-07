@@ -34,7 +34,7 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<ArticleCreateResponse>> createArticle(@RequestBody ArticleCreateRequest request, HttpServletRequest user) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        ArticleCreateResponse response = articleService.createArticle(request, userId, userRole);
+        ArticleCreateResponse response = articleFacade.createArticle(request, userId, userRole);
         return ResponseEntity.ok(ApiResponseForm.success(response, "게시글 생성 성공"));
     }
 
@@ -109,13 +109,6 @@ public class ArticleController {
         Long memberId = (Long) request.getAttribute("memberId");
         LinkDeleteResponse linkDeleteResponse = linkService.delete("article", linkId, memberId);
         return ResponseEntity.ok(ApiResponseForm.success(linkDeleteResponse));
-    }
-
-    @GetMapping("/articles/recent-articles")
-    public ResponseEntity<ApiResponseForm<List<RecentArticleResponse>>> getRecentArticles(HttpServletRequest request) {
-        Long memberId = (Long) request.getAttribute("memberId");
-        List<RecentArticleResponse> recentArticles = articleService.getRecentArticlesForUser(memberId);
-        return ResponseEntity.ok(ApiResponseForm.success(recentArticles));
     }
 
     @GetMapping("/articles/my")

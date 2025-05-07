@@ -23,7 +23,6 @@ public class ArticleCreateResponse {
     private String memberName;
     private String stageName;
     private Long parentArticleId;           // 답글인 경우를 나타내기 위해서
-    private List<ArticleFileDTO> fileList;
     private List<ArticleLinkDTO> linkList;
 
     public static ArticleCreateResponse fromEntity(Article article) {
@@ -36,12 +35,6 @@ public class ArticleCreateResponse {
                 .memberName(article.getMember().getName())
                 .stageName(article.getStage().getName())
                 .parentArticleId(article.getParentArticle() == null ? null : article.getParentArticle().getId())
-                .fileList(article.getArticleFileList().stream()
-                        .map(file -> ArticleFileDTO.builder()
-                                .name(file.getName())
-                                .url(file.getUrl())
-                                .build())
-                        .collect(Collectors.toList()))
                 .linkList(article.getArticleLinkList().stream()
                         .map(link -> ArticleLinkDTO.builder()
                                 .urlAddress(link.getUrlAddress())

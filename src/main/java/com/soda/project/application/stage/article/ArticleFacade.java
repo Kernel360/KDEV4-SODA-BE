@@ -1,13 +1,21 @@
 package com.soda.project.application.stage.article;
 
+import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.domain.Member;
 import com.soda.member.domain.MemberService;
+import com.soda.project.application.stage.article.validator.ArticleValidator;
 import com.soda.project.application.stage.article.vote.validator.VoteValidator;
+import com.soda.project.domain.Project;
+import com.soda.project.domain.ProjectService;
+import com.soda.project.domain.stage.Stage;
+import com.soda.project.domain.stage.StageService;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import com.soda.project.domain.stage.article.vote.*;
+import com.soda.project.interfaces.dto.stage.article.ArticleCreateRequest;
+import com.soda.project.interfaces.dto.stage.article.ArticleCreateResponse;
 import com.soda.project.interfaces.dto.stage.article.vote.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,11 +30,14 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ArticleFacade {
 
+    private final ProjectService projectService;
+    private final StageService stageService;
     private final MemberService memberService;
     private final ArticleService articleService;
     private final VoteService voteService;
     private final VoteItemService voteItemService;
 
+    private final ArticleValidator articleValidator;
     private final VoteValidator voteValidator;
 
     @Transactional
@@ -103,5 +114,28 @@ public class ArticleFacade {
         voteValidator.validateResultViewPermission(member, article.getStage().getProject());
 
         return voteService.getVoteResultData(vote);
+    }
+
+    @LoggableEntityAction(action = "CREATE", entityClass = Article.class)
+    @Transactional
+    public ArticleCreateResponse createArticle(ArticleCreateRequest request, Long userId, String userRole) {
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(request.getProjectId());
+        Stage stage = stageService.validateStage(request.getStageId(), project);
+
+        articleValidator.validateAdminOrProjectMember(userRole, member, project);
+        articleValidator.validateLinkSize(request.getLinkList());
+
+        Article createdArticle = articleService.createArticle(
+                request.getTitle(),
+                request.getContent(),
+                request.getPriority(),
+                request.getDeadLine(),
+                member,
+                stage,
+                request.getParentArticleId(),
+                request.getLinkList()
+        );
+        return ArticleCreateResponse.fromEntity(createdArticle);
     }
 }

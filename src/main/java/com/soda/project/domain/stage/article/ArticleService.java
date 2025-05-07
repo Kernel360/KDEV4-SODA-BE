@@ -1,25 +1,24 @@
 package com.soda.project.domain.stage.article;
 
 import com.querydsl.core.Tuple;
-import com.soda.project.domain.stage.article.error.ArticleErrorCode;
-import com.soda.project.domain.stage.article.vote.Vote;
-import com.soda.project.domain.stage.article.vote.VoteService;
-import com.soda.project.infrastructure.stage.article.ArticleRepository;
+import com.soda.common.link.dto.LinkUploadRequest;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.domain.Member;
 import com.soda.member.domain.MemberRole;
 import com.soda.member.domain.MemberService;
+import com.soda.project.application.stage.article.ArticleFacade;
 import com.soda.project.domain.Project;
-import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.ProjectErrorCode;
-import com.soda.project.domain.company.CompanyProjectService;
-import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.ProjectService;
+import com.soda.project.domain.member.MemberProjectService;
+import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.StageService;
+import com.soda.project.domain.stage.article.enums.ArticleStatus;
+import com.soda.project.domain.stage.article.enums.PriorityType;
+import com.soda.project.domain.stage.article.error.ArticleErrorCode;
 import com.soda.project.interfaces.dto.stage.article.*;
-import com.soda.project.interfaces.dto.stage.article.vote.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,10 +26,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,53 +38,52 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ArticleService {
 
-    private final ArticleRepository articleRepository;
     private final MemberProjectService memberProjectService;
-    private final CompanyProjectService companyProjectService;
     private final StageService stageService;
     private final ProjectService projectService;
     private final ArticleFileService articleFileService;
     private final ArticleLinkService articleLinkService;
     private final MemberService memberService;
     private final LinkService linkService;
-    private final VoteService voteService;
+
+    private final ArticleProvider articleProvider;
+    private final ArticleFactory articleFactory;
 
     /**
      * 게시글 생성하기
-     * @param request 생성할 게시글의 상세 정보
-     * @param userId 게시글을 생성하는 사용자 ID
-     * @param userRole 게시글을 생성하는 사용자의 역할
-     * @return 생성된 게시글의 정보
      */
-    @LoggableEntityAction(action = "CREATE", entityClass = Article.class)
-    @Transactional
-    public ArticleCreateResponse createArticle(ArticleCreateRequest request, Long userId, String userRole) {
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(request.getProjectId());
-        Stage stage = stageService.validateStage(request.getStageId(), project);
+    public Article createArticle(String title, String content, PriorityType priority, LocalDateTime deadLine, Member member,
+                                 Stage stage, Long parentArticleId, List<LinkUploadRequest.LinkUploadDTO> linkList) {
+        log.debug("[Service] 게시글 생성 시작: title={}, memberId={}, stageId={}, parentArticleId={}",
+                title, member.getId(), stage.getId(), parentArticleId != null ? parentArticleId : "없음");
 
-        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
-
+        // 부모 게시글 조회
         Article parentArticle = null;
-        if (request.getParentArticleId() != null) {
-            parentArticle = articleRepository.findById(request.getParentArticleId())
-                    .orElseThrow(() -> new GeneralException(ArticleErrorCode.PARENT_ARTICLE_NOT_FOUND));
+        if (parentArticleId != null) {
+            parentArticle = getValidArticleOrNull(parentArticleId);
         }
 
-        articleLinkService.validateLinkSize(request.getLinkList());
+        Article article = articleFactory.createArticleWithLinks(
+                title, content, priority, deadLine,
+                member, stage, parentArticle,
+                linkList
+        );
 
-        Article article = createArticle(request, member, stage, parentArticle);
-
-        article = articleRepository.save(article);
-
-        return ArticleCreateResponse.fromEntity(article);
+        Article savedArticle = articleProvider.store(article);
+        log.info("[Service] 게시글 저장 완료: articleId={}", savedArticle.getId());
+        return savedArticle;
     }
 
-    private Article createArticle(ArticleCreateRequest request, Member member, Stage stage, Article parentArticle) {
-        Article article = request.toEntity(member, stage, parentArticle);
-        List<ArticleLink> links = linkService.buildLinks("article", article, request.getLinkList());
-        article.addLinks(links);
-        return article;
+    private Article getValidArticleOrNull(Long articleId) {
+        if (articleId == null) {
+            return null;
+        }
+
+        return articleProvider.findById(articleId)
+                .orElseThrow(() -> {
+                    log.warn("[Service] (부모) 게시글을 찾을 수 없음: articleId={}", articleId);
+                    return new GeneralException(ArticleErrorCode.PARENT_ARTICLE_NOT_FOUND);
+                });
     }
 
     /**
@@ -165,7 +161,7 @@ public class ArticleService {
 
         checkIfMemberIsAdminOrProjectMember(userRole, member, project);
 
-        Page<Article> articles = articleRepository.searchArticles(projectId, articleSearchCondition, pageable);
+        Page<Article> articles = articleProvider.searchArticles(projectId, articleSearchCondition, pageable);
         log.info("조건에 맞는 게시글 페이지 조회 완료. PageNumber={}, PageSize={}, TotalElements={}",
                 articles.getNumber(), articles.getSize(), articles.getTotalElements());
 
@@ -250,9 +246,9 @@ public class ArticleService {
     private List<Article> getArticlesByStageAndProject(Long stageId, Project project) {
         if (stageId != null) {
             Stage stage = stageService.findById(stageId);
-            return articleRepository.findByStageAndStage_Project(stage, project);
+            return articleProvider.findByStageAndStage_Project(stage, project);
         }
-        return articleRepository.findByStage_Project(project);
+        return articleProvider.findByStage_Project(project);
     }
 
     /**
@@ -261,43 +257,11 @@ public class ArticleService {
      * @return 검증된 게시글
      */
     public Article validateArticle(Long articleId) {
-        return articleRepository.findByIdAndIsDeletedFalseWithMemberAndCompanyUsingQuerydsl(articleId)
+        return articleProvider.findByIdAndIsDeletedFalseWithMemberAndCompanyUsingQuerydsl(articleId)
                 .orElseThrow(() -> {
                     log.warn("유효하지 않은 게시물입니다");
                     return new GeneralException(ArticleErrorCode.INVALID_ARTICLE);
                 });
-    }
-
-    /**
-     * 특정 사용자가 속한 모든 프로젝트의 Stage들에 포함된 최신 아티클 3개를 조회합니다.
-     *
-     * @param memberId 조회할 사용자의 ID
-     * @return 최신 아티클 DTO 리스트 (최대 3개)
-     */
-    public List<RecentArticleResponse> getRecentArticlesForUser(Long memberId) {
-        List<Long> projectIds = memberProjectService.findProjectIdsByMemberId(memberId);
-
-        if (CollectionUtils.isEmpty(projectIds)) {
-            log.info("사용자 {}는 참여중인 프로젝트가 없습니다.", memberId);
-            return Collections.emptyList(); // 빈 리스트 반환
-        }
-        log.debug("사용자 {} 참여 프로젝트 ID 목록: {}", memberId, projectIds);
-
-        List<Long> stageIds = stageService.findStageIdsByProjectIds(projectIds);
-
-        if (CollectionUtils.isEmpty(stageIds)) {
-            log.info("사용자 {}의 프로젝트들에 속한 Stage가 없습니다.", memberId);
-            return Collections.emptyList(); // 빈 리스트 반환
-        }
-        log.debug("사용자 {} 관련 Stage ID 목록: {}", memberId, stageIds);
-
-        List<Article> recentArticles = articleRepository.findTop3ByStage_IdInAndIsDeletedFalseOrderByCreatedAtDesc(stageIds);
-
-        log.info("최신 아티클 조회 완료 (ArticleService): {}개 조회됨", recentArticles.size());
-
-        return recentArticles.stream()
-                .map(RecentArticleResponse::from)
-                .collect(Collectors.toList());
     }
 
     public Page<MyArticleListResponse> getMyArticles(Long userId, Long projectId, Pageable pageable) {
@@ -314,7 +278,7 @@ public class ArticleService {
     }
 
     private Page<Tuple> fetchMyArticlesData(Long userId, Long projectId, Pageable pageable) {
-        return articleRepository.findMyArticlesData(userId, projectId, pageable);
+        return articleProvider.findMyArticlesData(userId, projectId, pageable);
     }
 
     private Page<MyArticleListResponse> convertToMyArticleListResponsePage(Page<Tuple> tuplePage) {
@@ -348,19 +312,6 @@ public class ArticleService {
         return MyArticleListResponse.from(articleId, title, projId, projName, stgId, stgName, createdAt);
     }
 
-    public VoteResultResponse getVoteResults(Long articleId, Long userId) {
-        log.info("[결과 조회 시작(ArticleService) - 조건 없음/빌더 사용] Article ID: {}, User ID: {}", articleId, userId);
-
-        Article article = validateArticle(articleId);
-        Vote vote = article.getVote();
-        log.debug("게시글 및 투표 정보 확인 완료. Vote ID: {}", vote.getId());
-
-        VoteResultResponse response = voteService.getVoteResultData(vote);
-
-        log.info("[결과 조회 성공(ArticleService)] Article ID: {}, Vote ID: {}", articleId, response.getVoteId());
-        return response;
-    }
-
     @Transactional
     public ArticleStatusUpdateResponse updateArticleStatus(Long userId, Long articleId, ArticleStatusUpdateRequest request) {
         log.info("게시글 상태 변경 시작: articleId={}, userId={}, newStatus={}",
@@ -377,9 +328,11 @@ public class ArticleService {
         log.debug("게시글 작성자 본인 확인 완료. User ID: {}", userId);
 
         article.changeStatus(request.getStatus());
-        articleRepository.save(article);
+        articleProvider.store(article);
         log.info("게시글 상태 변경 완료: articleID={}, newStatus={}", article.getId(), article.getStatus());
 
         return ArticleStatusUpdateResponse.from(article);
     }
+
+
 }

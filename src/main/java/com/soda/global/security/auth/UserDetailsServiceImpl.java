@@ -1,7 +1,7 @@
 package com.soda.global.security.auth;
 
 import com.soda.member.domain.member.Member;
-import com.soda.member.infrastructure.MemberRepository;
+import com.soda.member.infrastructure.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,4 +1,4 @@
-package com.soda.member.infrastructure;
+package com.soda.member.infrastructure.member;
 
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;

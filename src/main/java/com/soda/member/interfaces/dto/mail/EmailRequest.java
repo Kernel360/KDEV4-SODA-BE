@@ -1,4 +1,4 @@
-package com.soda.common.mail.dto;
+package com.soda.member.interfaces.dto.mail;
 
 import lombok.Getter;
 import lombok.Setter;

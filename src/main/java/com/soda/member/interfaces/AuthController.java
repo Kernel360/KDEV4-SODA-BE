@@ -1,6 +1,6 @@
 package com.soda.member.interfaces;
 
-import com.soda.common.mail.dto.EmailRequest;
+import com.soda.member.interfaces.dto.mail.EmailRequest;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.member.interfaces.dto.EmailVerificationRequest;
 import com.soda.member.interfaces.dto.ResetPasswordRequest;

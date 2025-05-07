@@ -1,4 +1,4 @@
-package com.soda.member.infrastructure;
+package com.soda.member.infrastructure.company;
 
 import com.soda.member.domain.company.Company;
 import org.springframework.data.jpa.repository.JpaRepository;

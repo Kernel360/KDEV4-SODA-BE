@@ -5,8 +5,8 @@
 //import com.soda.project.domain.company.enums.CompanyProjectRole;
 //import com.soda.project.domain.member.enums.MemberProjectRole;
 //import com.soda.member.domain.member.MemberRole;
-//import com.soda.member.infrastructure.CompanyRepository;
-//import com.soda.member.infrastructure.MemberRepository;
+//import com.soda.member.infrastructure.company.CompanyRepository;
+//import com.soda.member.infrastructure.member.MemberRepository;
 //import com.soda.project.company.CompanyProject;
 //import com.soda.project.member.MemberProject;
 //import com.soda.project.domain.Project;

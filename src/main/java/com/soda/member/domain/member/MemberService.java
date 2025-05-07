@@ -6,16 +6,8 @@ import com.soda.member.application.validator.MemberValidator;
 import com.soda.member.domain.company.Company;
 import com.soda.member.interfaces.dto.FindAuthIdRequest;
 import com.soda.member.interfaces.dto.FindAuthIdResponse;
-import com.soda.member.interfaces.dto.InitialUserInfoRequestDto;
-import com.soda.member.interfaces.dto.MemberUpdateRequest;
-import com.soda.member.interfaces.dto.AdminUpdateUserRequestDto;
-import com.soda.member.interfaces.dto.member.ChangePasswordRequest;
-import com.soda.member.interfaces.dto.member.MemberStatusResponse;
-import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
 import com.soda.member.interfaces.dto.member.admin.MemberListDto;
-import com.soda.member.interfaces.dto.member.admin.UpdateUserStatusRequestDto;
 import com.soda.project.domain.ProjectErrorCode;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -87,10 +79,6 @@ public class MemberService {
         memberValidator.validateEmailExists(email);
     }
 
-    public void validateDuplicateEmail(String email) {
-        memberValidator.validateDuplicateEmail(email);
-    }
-
     public Member saveMember(Member member) {
         log.info("회원 정보 저장 완료: memberId={}", member.getId());
         return memberProvider.store(member);
@@ -104,36 +92,36 @@ public class MemberService {
                 });
     }
 
-    public MemberStatusResponse updateMemberStatus(Long memberId, MemberStatus newStatus) {
-        Member member = memberProvider.findById(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("ID " + memberId + " 에 해당하는 멤버를 찾을 수 없습니다."));
-
+    public Member updateMemberStatus(Member member, MemberStatus newStatus) {
         member.updateMemberStatus(newStatus);
-        memberProvider.store(member);
-        return MemberStatusResponse.fromEntity(member);
+        return memberProvider.store(member);
     }
 
-    public void updateMyProfile(Long memberId, MemberUpdateRequest requestDto) {
-        Member member = findByIdAndIsDeletedFalse(memberId);
-
-        member.myProfileUpdate(requestDto.getName(),
-                requestDto.getEmail(),
-                requestDto.getPhoneNumber(),
-                requestDto.getPosition());
-
+    public void updateMemberDeletionStatus(Member member, boolean isDeleted) {
+        if (isDeleted) {
+            member.delete();
+        } else {
+            member.restore();
+        }
         memberProvider.store(member);
     }
 
-    public void changeUserPassword(Long memberId, ChangePasswordRequest requestDto) {
-        Member member = findByIdAndIsDeletedFalse(memberId);
-        memberValidator.validatePasswordChange(member, requestDto.getCurrentPassword(), requestDto.getNewPassword());
+    @Transactional
+    public Member updateProfile(Member member, String name, String email, String phoneNumber, String position) {
+        member.myProfileUpdate(name, email, phoneNumber, position);
+        return memberProvider.store(member);
+    }
 
-        if (!passwordEncoder.matches(requestDto.getCurrentPassword(), member.getPassword())) {
+    @Transactional
+    public Member changePassword(Member member, String currentPassword, String newPassword) {
+        memberValidator.validatePasswordChange(member, currentPassword, newPassword);
+
+        if (!passwordEncoder.matches(currentPassword, member.getPassword())) {
             throw new GeneralException(MemberErrorCode.INVALID_PASSWORD);
         }
 
-        member.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));
-        memberProvider.store(member);
+        member.updatePassword(passwordEncoder.encode(newPassword));
+        return memberProvider.store(member);
     }
 
     public Member findWithProjectsById(Long memberId) {
@@ -165,11 +153,21 @@ public class MemberService {
         return memberProvider.findByKeywordWithCompany(keyword, pageable);
     }
 
-    public MemberDetailDto getMemberDetailWithCompany(Long userId) {
-        return memberProvider.getMemberDetailWithCompany(userId);
+    @Transactional
+    public void setupInitialProfile(Member member, String name, String email, String phoneNumber,
+                                    String authId, String password, String position) {
+        member.initialProfile(name, email, phoneNumber, authId, passwordEncoder.encode(password), position);
+        memberProvider.store(member);
     }
 
-    private String maskAuthId(String authId) {
+    @Transactional
+    public Member updateAdminInfo(Member member, String name, String email, MemberRole role,
+            Company company, String position, String phoneNumber) {
+        member.updateAdminInfo(name, email, role, company, position, phoneNumber);
+        return memberProvider.store(member);
+    }
+
+    public String maskAuthId(String authId) {
         if (!StringUtils.hasText(authId)) {
             return "";
         }
@@ -180,49 +178,7 @@ public class MemberService {
         return authId.substring(0, 2) + "*".repeat(length - 4) + authId.substring(length - 2);
     }
 
-    public void setupInitialProfile(Long memberId, InitialUserInfoRequestDto requestDto) {
-        Member member = findByIdAndIsDeletedFalse(memberId);
 
-        member.initialProfile(requestDto.getName(),
-                requestDto.getEmail(),
-                requestDto.getPhoneNumber(),
-                requestDto.getAuthId(),
-                passwordEncoder.encode(requestDto.getPassword()),
-                requestDto.getPosition());
-
-        memberProvider.store(member);
-    }
-
-    public MemberDetailDto getMemberDetail(Long userId) {
-        return memberProvider.getMemberDetailWithCompany(userId);
-    }
-
-    @Transactional(readOnly = true)
-    public MemberStatusResponse getMemberStatus(Long memberId) {
-        Member member = memberProvider.findById(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("ID " + memberId + " 에 해당하는 멤버를 찾을 수 없습니다."));
-
-        return MemberStatusResponse.fromEntity(member);
-    }
-
-    public void updateMemberStatus(Long userId, Long currentMemberId, UpdateUserStatusRequestDto requestDto) {
-        Member member = findMemberById(userId);
-        Member currentMember = findByIdAndIsDeletedFalse(currentMemberId);
-        memberValidator.validateAdminAccess(currentMember);
-
-        if (member.getAuthId().equals(currentMember.getAuthId()) && !requestDto.getActive()) {
-            throw new GeneralException(MemberErrorCode.CANNOT_DEACTIVATE_SELF);
-        }
-
-        if (requestDto.getActive()) {
-            member.restore();
-        } else {
-            member.delete();
-        }
-
-        saveMember(member);
-        log.info("관리자에 의해 사용자 상태 변경 완료: userId={}, active={}", userId, requestDto.getActive());
-    }
 
     public Page<MemberListDto> getAllUsers(Pageable pageable, String searchKeyword) {
         Page<Member> memberPage;
@@ -239,25 +195,8 @@ public class MemberService {
         return memberPage.map(MemberListDto::fromEntity);
     }
 
-    public MemberDetailDto updateMemberInfo(Long userId, AdminUpdateUserRequestDto requestDto) {
-        Member member = findMemberById(userId);
-        Company company = requestDto.getCompanyId() != null ? companyFacade.getCompany(requestDto.getCompanyId())
-                : member.getCompany();
-
-        member.updateAdminInfo(
-                requestDto.getName(),
-                requestDto.getEmail(),
-                requestDto.getRole(),
-                company,
-                requestDto.getPosition(),
-                requestDto.getPhoneNumber());
-
-        saveMember(member);
-        log.info("관리자에 의해 사용자 정보 수정 완료: userId={}", userId);
-        return MemberDetailDto.fromEntity(member);
-    }
-
-    public boolean isAdmin(MemberRole memberRole) {
-        return memberRole == MemberRole.ADMIN;
+    public Member findByNameAndEmail(String name, String email) {
+        return memberProvider.findByNameAndEmail(name, email)
+                .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
     }
 }

@@ -150,4 +150,9 @@ public class MemberProviderImpl implements MemberProvider {
         }
         return memberRepository.findByCompanyAndIsDeletedFalse(company);
     }
+
+    @Override
+    public Optional<Member> findByNameAndEmail(String name, String email) {
+        return memberRepository.findByNameAndEmailAndIsDeletedFalse(name, email);
+    }
 }

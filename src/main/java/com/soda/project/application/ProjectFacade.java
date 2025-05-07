@@ -104,16 +104,18 @@ public class ProjectFacade {
         Project project = projectService.getValidProject(projectId);
 
         projectValidator.validateDevAssignments(request, project);
-        Map<Long, Company> devCompanyMap = new HashMap<>();
-        Map<Long, Member> devManagerMap = new HashMap<>();
-        Map<Long, Member> devMemberMap = new HashMap<>();
+        List<Company> companiesToAssign = new ArrayList<>();
+        List<Member> managersToAssign = new ArrayList<>();
+        List<Member> membersToAssign = new ArrayList<>();
+
+        populateAssignmentEntities(request, companiesToAssign, managersToAssign, membersToAssign);
 
         projectService.assignDevCompanyAndMembers(
                 project,
-                new ArrayList<>(devCompanyMap.values()),
-                new ArrayList<>(devManagerMap.values()),
-                new ArrayList<>(devMemberMap.values())
-        );;
+                companiesToAssign, // 조회된 회사 리스트
+                managersToAssign,  // 조회된 매니저 리스트
+                membersToAssign    // 조회된 멤버 리스트
+        );
 
         if (project.getStatus() == ProjectStatus.CONTRACT) {
             project.changeStatus(ProjectStatus.IN_PROGRESS);
@@ -126,6 +128,36 @@ public class ProjectFacade {
         List<Company> assignedCompanies = companyService.findCompaniesByIds(assignedCompanyIds);
 
         return projectResponseBuilder.createDevCompanyAssignmentResponse(project, assignedCompanies);
+    }
+
+    private void populateAssignmentEntities(DevCompanyAssignmentRequest request, List<Company> companiesToAssign, List<Member> managersToAssign, List<Member> membersToAssign) {
+        if (request.getDevAssignments() != null) {
+            for (CompanyAssignment assignment : request.getDevAssignments()) {
+                // 1. 회사 조회
+                Company company = companyService.getCompany(assignment.getCompanyId());
+                companiesToAssign.add(company);
+
+                // 2. 매니저 조회 및 소속 검증
+                if (!CollectionUtils.isEmpty(assignment.getManagerIds())) {
+                    List<Member> managers = memberService.findMembersByIdsAndCompany(assignment.getManagerIds(), company);
+                    // 요청된 ID 수와 조회된 ID 수가 다르면 예외 처리
+                    if (managers.size() != assignment.getManagerIds().size()) {
+                        // 적절한 예외 발생
+                        throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
+                    }
+                    managersToAssign.addAll(managers);
+                }
+
+                // 3. 멤버 조회 및 소속 검증
+                if (!CollectionUtils.isEmpty(assignment.getMemberIds())) {
+                    List<Member> members = memberService.findMembersByIdsAndCompany(assignment.getMemberIds(), company);
+                    if (members.size() != assignment.getMemberIds().size()) {
+                        throw new GeneralException(ProjectErrorCode.MEMBER_PROJECT_NOT_FOUND);
+                    }
+                    membersToAssign.addAll(members);
+                }
+            }
+        }
     }
 
     public Page<ProjectListResponse> getAllProjects(ProjectSearchCondition request, Pageable pageable) {

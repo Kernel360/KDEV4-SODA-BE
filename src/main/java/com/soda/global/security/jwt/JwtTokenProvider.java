@@ -1,12 +1,11 @@
 package com.soda.global.security.jwt;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.error.AuthErrorCode;
+import com.soda.member.domain.AuthErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

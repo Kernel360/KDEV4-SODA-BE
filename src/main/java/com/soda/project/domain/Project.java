@@ -1,12 +1,11 @@
 package com.soda.project.domain;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.entity.Company;
-import com.soda.member.entity.Member;
+import com.soda.member.domain.Company;
+import com.soda.member.domain.Member;
 import com.soda.project.domain.company.CompanyProject;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.member.MemberProject;
-import com.soda.project.interfaces.dto.ProjectCreateRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -17,7 +16,6 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter

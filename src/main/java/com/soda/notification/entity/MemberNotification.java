@@ -1,7 +1,7 @@
 package com.soda.notification.entity;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.entity.Member;
+import com.soda.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

@@ -1,7 +1,7 @@
 package com.soda.project.domain.member;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.entity.Member;
+import com.soda.member.domain.Member;
 import com.soda.project.domain.Project;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

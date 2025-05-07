@@ -2,7 +2,7 @@ package com.soda.project.domain.stage.request;
 
 import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
-import com.soda.member.entity.Member;
+import com.soda.member.domain.Member;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.request.approver.ApproverDesignation;
 import com.soda.project.interfaces.stage.request.dto.ReRequestCreateRequest;

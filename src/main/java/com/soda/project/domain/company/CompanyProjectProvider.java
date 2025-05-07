@@ -1,6 +1,6 @@
 package com.soda.project.domain.company;
 
-import com.soda.member.entity.Company;
+import com.soda.member.domain.Company;
 import com.soda.project.domain.Project;
 
 import java.util.List;

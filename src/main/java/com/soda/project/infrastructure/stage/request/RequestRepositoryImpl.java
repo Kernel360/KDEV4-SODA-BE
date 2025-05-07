@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.soda.member.entity.QMember.member;
+import static com.soda.member.domain.QMember.member;
+
 
 @Slf4j
 @Repository

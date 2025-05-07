@@ -1,7 +1,6 @@
 package com.soda.member.domain.member;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.application.CompanyFacade;
 import com.soda.member.application.validator.MemberValidator;
 import com.soda.member.domain.company.Company;
 import com.soda.member.interfaces.dto.FindAuthIdRequest;
@@ -27,7 +26,6 @@ public class MemberService {
     private final MemberProvider memberProvider;
     private final PasswordEncoder passwordEncoder;
     private final MemberValidator memberValidator;
-    private final CompanyFacade companyFacade;
 
     public Member findByIdAndIsDeletedFalse(Long memberId) {
         return memberProvider.findByIdAndIsDeletedFalse(memberId)

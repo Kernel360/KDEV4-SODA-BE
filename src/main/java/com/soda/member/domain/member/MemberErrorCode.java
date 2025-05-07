@@ -16,13 +16,15 @@ public enum MemberErrorCode implements ErrorCode {
     INVALID_PASSWORD_FORMAT("2310", "올바른 비밀번호 형식이 아닙니다.", HttpStatus.BAD_REQUEST),
     CANNOT_DEACTIVATE_SELF("2311", "본인 계정은 비활성화 할 수 없습니다.", HttpStatus.BAD_REQUEST),
     INVALID_CURRENT_PASSWORD("2312", "현재 비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
-    NEW_PASSWORD_SAME_AS_OLD("2313","새 비밀번호는 현재 비밀번호와 달라야 합니다." , HttpStatus.BAD_REQUEST);
+    NEW_PASSWORD_SAME_AS_OLD("2313", "새 비밀번호는 현재 비밀번호와 달라야 합니다.", HttpStatus.BAD_REQUEST),
+    INVALID_PHONE_NUMBER("2314", "전화번호 형식이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
+    INVALID_NAME("2315", "이름 형식이 올바르지 않습니다.", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String message;
     private final HttpStatus httpStatus;
 
-    MemberErrorCode (String code, String message, HttpStatus httpStatus) {
+    MemberErrorCode(String code, String message, HttpStatus httpStatus) {
         this.code = code;
         this.message = message;
         this.httpStatus = httpStatus;

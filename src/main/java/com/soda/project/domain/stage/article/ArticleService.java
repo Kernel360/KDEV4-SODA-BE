@@ -8,38 +8,30 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.domain.Member;
 import com.soda.member.domain.MemberRole;
 import com.soda.member.domain.MemberService;
-import com.soda.project.application.stage.article.ArticleFacade;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectErrorCode;
 import com.soda.project.domain.ProjectService;
 import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.stage.Stage;
-import com.soda.project.domain.stage.StageService;
-import com.soda.project.domain.stage.article.enums.ArticleStatus;
 import com.soda.project.domain.stage.article.enums.PriorityType;
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
 import com.soda.project.interfaces.dto.stage.article.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
-@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class ArticleService {
 
     private final MemberProjectService memberProjectService;
-    private final StageService stageService;
     private final ProjectService projectService;
     private final ArticleFileService articleFileService;
     private final ArticleLinkService articleLinkService;
@@ -150,74 +142,15 @@ public class ArticleService {
 
     /**
      * 특정 프로젝트 단계에 속한 모든 게시글 조회
-     * @param userId 게시글을 조회하는 사용자 ID
-     * @param userRole 게시글을 조회하는 사용자의 역할
-     * @param projectId 프로젝트 ID
-     * @return 해당 조건에 맞는 게시글 리스트
      */
-    public Page<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, ArticleSearchCondition articleSearchCondition, Pageable pageable) {
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(projectId);
-
-        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
-
-        Page<Article> articles = articleProvider.searchArticles(projectId, articleSearchCondition, pageable);
-        log.info("조건에 맞는 게시글 페이지 조회 완료. PageNumber={}, PageSize={}, TotalElements={}",
-                articles.getNumber(), articles.getSize(), articles.getTotalElements());
-
-
-        List<ArticleListViewResponse> articleDTOList = articles.stream()
-                .map(ArticleListViewResponse::fromEntity)
-                .toList();
-
-        Map<Long, List<ArticleListViewResponse>> parentToChildMap = articleDTOList.stream()
-                .filter(articleDTO -> articleDTO.getParentArticleId() != null)
-                .collect(Collectors.groupingBy(ArticleListViewResponse::getParentArticleId));
-
-        List<ArticleListViewResponse> finalArticleDTOList = articleDTOList.stream()
-                .map(articleDTO -> addChildArticleToParent(articleDTO, parentToChildMap))
-                .toList();
-
-        return new PageImpl<>(finalArticleDTOList, pageable, articles.getTotalElements());
-    }
-
-    /**
-     * 부모 게시글에 자식 게시글을 재귀적으로 추가
-     * @param articleDTO 부모 게시글
-     * @param parentToChildMap 부모 게시글에 대한 자식 게시글의 맵
-     * @return 자식 게시글이 추가된 부모 게시글
-     */
-    private ArticleListViewResponse addChildArticleToParent(ArticleListViewResponse articleDTO, Map<Long, List<ArticleListViewResponse>> parentToChildMap) {
-        List<ArticleListViewResponse> childArticles = parentToChildMap.get(articleDTO.getId());
-
-        // 답글이 있는 경우
-        if (childArticles != null && !childArticles.isEmpty()) {
-            articleDTO = articleDTO.withChildArticles(childArticles);
-
-            for (ArticleListViewResponse childArticle : childArticles) {
-                addChildArticleToParent(childArticle, parentToChildMap);
-            }
-        }
-
-        return articleDTO;
+    public Page<Article> getAllArticles(Long projectId, ArticleSearchCondition articleSearchCondition, Pageable pageable) {
+        return articleProvider.searchArticles(projectId, articleSearchCondition, pageable);
     }
 
     /**
      * 특정 게시글을 조회
-     * @param projectId 게시글이 속한 프로젝트 ID
-     * @param userId 게시글을 조회하는 사용자 ID
-     * @param userRole 게시글을 조회하는 사용자의 역할
-     * @param articleId 조회할 게시글 ID
-     * @return 조회된 게시글의 정보
      */
-    public ArticleViewResponse getArticle(Long projectId, Long userId, String userRole, Long articleId) {
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(projectId);
-
-        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
-
-        Article article = validateArticle(articleId);
-
+    public ArticleViewResponse getArticle(Article article) {
         return ArticleViewResponse.fromEntity(article);
     }
 
@@ -235,20 +168,6 @@ public class ArticleService {
         if (!isAdmin && !isProjectMember) {
             throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
         }
-    }
-
-    /**
-     * 단계와 프로젝트에 따른 게시글들을 조회
-     * @param stageId 단계 ID
-     * @param project 프로젝트 정보
-     * @return 해당 단계와 프로젝트에 속한 게시글 리스트
-     */
-    private List<Article> getArticlesByStageAndProject(Long stageId, Project project) {
-        if (stageId != null) {
-            Stage stage = stageService.findById(stageId);
-            return articleProvider.findByStageAndStage_Project(stage, project);
-        }
-        return articleProvider.findByStage_Project(project);
     }
 
     /**

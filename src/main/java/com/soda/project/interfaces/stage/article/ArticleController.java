@@ -46,7 +46,7 @@ public class ArticleController {
                                                                                          @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        Page<ArticleListViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, articleSearchCondition, pageable);
+        Page<ArticleListViewResponse> response = articleFacade.getAllArticles(userId, userRole, projectId, articleSearchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -55,7 +55,7 @@ public class ArticleController {
                                                                            @PathVariable Long articleId) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        ArticleViewResponse response = articleService.getArticle(projectId, userId, userRole, articleId);
+        ArticleViewResponse response = articleFacade.getArticle(projectId, userId, userRole, articleId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

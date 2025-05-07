@@ -14,10 +14,11 @@ import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import com.soda.project.domain.stage.article.vote.*;
-import com.soda.project.interfaces.dto.stage.article.ArticleCreateRequest;
-import com.soda.project.interfaces.dto.stage.article.ArticleCreateResponse;
+import com.soda.project.interfaces.dto.stage.article.*;
 import com.soda.project.interfaces.dto.stage.article.vote.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -39,6 +40,8 @@ public class ArticleFacade {
 
     private final ArticleValidator articleValidator;
     private final VoteValidator voteValidator;
+
+    private final ArticleResponseBuilder articleResponseBuilder;
 
     @Transactional
     public VoteCreateResponse createVoteForArticle(Long articleId, Long userId, VoteCreateRequest request) {
@@ -137,5 +140,25 @@ public class ArticleFacade {
                 request.getLinkList()
         );
         return ArticleCreateResponse.fromEntity(createdArticle);
+    }
+
+    public Page<ArticleListViewResponse> getAllArticles(Long userId, String userRole, Long projectId, ArticleSearchCondition searchCondition, Pageable pageable) {
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(projectId);
+
+        articleValidator.validateAdminOrProjectMember(userRole, member, project);
+
+        Page<Article> articlePage = articleService.getAllArticles(projectId, searchCondition, pageable);
+
+        return articleResponseBuilder.buildArticleListPageWithHierarchy(articlePage, pageable);
+    }
+
+    public ArticleViewResponse getArticle(Long projectId, Long userId, String userRole, Long articleId) {
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Project project = projectService.getValidProject(projectId);
+        Article article = articleService.validateArticle(articleId);
+
+        articleValidator.validateAdminOrProjectMember(userRole, member, project);
+        return articleService.getArticle(article);
     }
 }

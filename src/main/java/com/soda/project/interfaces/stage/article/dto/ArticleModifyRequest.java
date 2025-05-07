@@ -2,7 +2,7 @@ package com.soda.project.interfaces.stage.article.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.soda.project.domain.stage.article.enums.PriorityType;
-import com.soda.common.link.dto.LinkUploadRequest;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
 import lombok.Builder;
 import lombok.Getter;
 

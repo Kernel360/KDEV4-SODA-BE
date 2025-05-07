@@ -1,10 +1,10 @@
 package com.soda.project.domain.stage.article;
 
-import com.soda.common.link.dto.LinkUploadRequest;
-import com.soda.common.link.service.LinkService;
 import com.soda.member.domain.Member;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.article.enums.PriorityType;
+import com.soda.project.domain.stage.common.link.LinkService;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;

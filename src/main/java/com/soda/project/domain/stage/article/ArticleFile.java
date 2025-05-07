@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.article;
 
-import com.soda.common.file.model.FileBase;
+import com.soda.project.domain.stage.common.file.FileBase;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -24,6 +24,14 @@ public class ArticleFile extends FileBase {
         this.name = name;
         this.url = url;
         this.article = article;
+    }
+
+    public static ArticleFile create(String fileName, String url, Article article) {
+        return ArticleFile.builder()
+                .name(fileName)
+                .url(url)
+                .article(article)
+                .build();
     }
 
     public void delete() {

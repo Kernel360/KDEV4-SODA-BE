@@ -1,11 +1,11 @@
 package com.soda.project.interfaces.stage.article;
 
-import com.soda.common.file.dto.*;
-import com.soda.common.file.service.FileService;
-import com.soda.common.link.dto.LinkDeleteResponse;
-import com.soda.common.link.service.LinkService;
+import com.soda.project.application.stage.common.FileFacade;
+import com.soda.project.application.stage.common.LinkFacade;
+import com.soda.project.interfaces.stage.common.link.dto.LinkDeleteResponse;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.project.application.stage.article.ArticleFacade;
+import com.soda.project.interfaces.stage.common.file.dto.*;
 import com.soda.project.interfaces.stage.article.dto.*;
 import com.soda.project.interfaces.stage.article.vote.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,9 +25,8 @@ import java.util.List;
 public class ArticleController {
 
     private final ArticleFacade articleFacade;
-
-    private final FileService fileService;
-    private final LinkService linkService;
+    private final FileFacade fileFacade;
+    private final LinkFacade linkFacade;
 
     @PostMapping("/articles")
     public ResponseEntity<ApiResponseForm<ArticleCreateResponse>> createArticle(@RequestBody ArticleCreateRequest request, HttpServletRequest user) {
@@ -81,7 +80,7 @@ public class ArticleController {
                                                               @RequestBody List<FileUploadRequest> fileUploadRequests,
                                                               HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        PresignedUploadResponse presignedUploadResponse = fileService.getPresignedUrls("article", articleId, memberId, fileUploadRequests);
+        PresignedUploadResponse presignedUploadResponse = fileFacade.getPresignedUrls("article", articleId, memberId, fileUploadRequests);
         return ResponseEntity.ok(ApiResponseForm.success(presignedUploadResponse));
     }
 
@@ -90,7 +89,7 @@ public class ArticleController {
                                                              @RequestBody List<ConfirmedFile> confirmedFiles,
                                                              HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        FileConfirmResponse fileConfirmResponse = fileService.confirmUpload("article", articleId, memberId, confirmedFiles);
+        FileConfirmResponse fileConfirmResponse = fileFacade.confirmUpload("article", articleId, memberId, confirmedFiles);
         return ResponseEntity.ok(ApiResponseForm.success(fileConfirmResponse));
     }
 
@@ -98,7 +97,7 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<?>> deleteFile(@PathVariable Long fileId,
                                                          HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        FileDeleteResponse fileDeleteResponse = fileService.delete("article", fileId, memberId);
+        FileDeleteResponse fileDeleteResponse = fileFacade.delete("article", fileId, memberId);
         return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
     }
 
@@ -106,7 +105,7 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<?>> deleteLink(@PathVariable Long linkId,
                                                          HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        LinkDeleteResponse linkDeleteResponse = linkService.delete("article", linkId, memberId);
+        LinkDeleteResponse linkDeleteResponse = linkFacade.delete("article", linkId, memberId);
         return ResponseEntity.ok(ApiResponseForm.success(linkDeleteResponse));
     }
 

@@ -1,7 +1,6 @@
 package com.soda.project.domain.stage.article;
 
 import com.querydsl.core.Tuple;
-import com.soda.common.link.dto.LinkUploadRequest;
 import com.soda.global.response.GeneralException;
 import com.soda.member.domain.Member;
 import com.soda.project.domain.stage.Stage;
@@ -10,6 +9,7 @@ import com.soda.project.domain.stage.article.enums.PriorityType;
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
 import com.soda.project.interfaces.stage.article.dto.ArticleSearchCondition;
 import com.soda.project.interfaces.stage.article.dto.ArticleViewResponse;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

@@ -1,6 +1,7 @@
 package com.soda.member.domain;
 
 import com.soda.member.domain.company.Company;
+import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -8,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MemberProvider {
+    Member store(Member member);
+
     Optional<Member> findById(Long id);
 
     Optional<Member> findByIdAndIsDeletedFalse(Long id);
@@ -32,5 +35,11 @@ public interface MemberProvider {
 
     boolean existsByEmailAndIsDeletedFalse(String email);
 
-    Member save(Member member);
+    Page<Member> findAllWithCompany(Pageable pageable);
+
+    Page<Member> findByKeywordWithCompany(String keyword, Pageable pageable);
+
+    MemberDetailDto getMemberDetailWithCompany(Long userId);
+
+    List<Member> findMembersByCompany(Company company);
 }

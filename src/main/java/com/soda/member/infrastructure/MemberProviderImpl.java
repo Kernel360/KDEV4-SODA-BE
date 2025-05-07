@@ -6,6 +6,7 @@ import com.soda.member.domain.Member;
 import com.soda.member.domain.MemberErrorCode;
 import com.soda.member.domain.MemberProvider;
 import com.soda.member.domain.company.Company;
+import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
 import com.soda.project.domain.ProjectErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MemberProviderImpl implements MemberProvider {
     private final MemberRepository memberRepository;
+
+    @Override
+    public Member store(Member member) {
+        return memberRepository.save(member);
+    }
 
     @Override
     public Optional<Member> findById(Long id) {
@@ -116,7 +122,27 @@ public class MemberProviderImpl implements MemberProvider {
     }
 
     @Override
-    public Member save(Member member) {
-        return memberRepository.save(member);
+    public Page<Member> findAllWithCompany(Pageable pageable) {
+        return memberRepository.findAllWithCompany(pageable);
+    }
+
+    @Override
+    public Page<Member> findByKeywordWithCompany(String keyword, Pageable pageable) {
+        return memberRepository.findByKeywordWithCompany(keyword, pageable);
+    }
+
+    @Override
+    public MemberDetailDto getMemberDetailWithCompany(Long userId) {
+        Member member = findById(userId)
+                .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
+        return MemberDetailDto.fromEntity(member);
+    }
+
+    @Override
+    public List<Member> findMembersByCompany(Company company) {
+        if (company == null || company.getId() == null) {
+            throw new GeneralException(CommonErrorCode.BAD_REQUEST);
+        }
+        return memberRepository.findByCompanyAndIsDeletedFalse(company);
     }
 }

@@ -13,6 +13,8 @@ public interface MemberProvider {
 
     Optional<Member> findById(Long id);
 
+    List<Member> findAllById(List<Long> ids);
+
     Optional<Member> findByIdAndIsDeletedFalse(Long id);
 
     Optional<Member> findByAuthIdAndIsDeletedFalse(String authId);

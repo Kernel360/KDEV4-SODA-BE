@@ -5,7 +5,7 @@ import com.soda.project.domain.Project;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.ArticleProvider;
-import com.soda.project.interfaces.dto.stage.article.ArticleSearchCondition;
+import com.soda.project.interfaces.stage.article.dto.ArticleSearchCondition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -26,6 +26,14 @@ public class ArticleLink extends LinkBase {
         this.article = article;
     }
 
+    public static ArticleLink create(String urlAddress, String urlDescription, Article article) {
+        return ArticleLink.builder()
+                .urlAddress(urlAddress)
+                .urlDescription(urlDescription)
+                .article(article)
+                .build();
+    }
+
     public void delete() {
         this.markAsDeleted();
     }

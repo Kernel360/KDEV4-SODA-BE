@@ -26,6 +26,14 @@ public class ArticleFile extends FileBase {
         this.article = article;
     }
 
+    public static ArticleFile create(String fileName, String url, Article article) {
+        return ArticleFile.builder()
+                .name(fileName)
+                .url(url)
+                .article(article)
+                .build();
+    }
+
     public void delete() {
         this.markAsDeleted();
     }

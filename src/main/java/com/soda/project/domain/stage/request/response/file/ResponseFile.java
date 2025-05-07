@@ -32,7 +32,7 @@ public class ResponseFile extends FileBase {
                 .name(fileName)
                 .url(url)
                 .response(response)
-                .build();;
+                .build();
     }
 
     @Override

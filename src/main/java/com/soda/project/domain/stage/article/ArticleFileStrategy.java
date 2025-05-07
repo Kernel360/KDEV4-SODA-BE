@@ -1,8 +1,6 @@
 package com.soda.project.domain.stage.article;
 
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
-import com.soda.project.infrastructure.stage.article.ArticleFileRepository;
-import com.soda.project.infrastructure.stage.article.ArticleRepository;
 import com.soda.project.domain.stage.common.file.FileStrategy;
 import com.soda.global.response.GeneralException;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +15,8 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class ArticleFileStrategy implements FileStrategy<Article, ArticleFile> {
     
-    private final ArticleRepository articleRepository;
-    private final ArticleFileRepository articleFileRepository;
+    private final ArticleProvider articleProvider;
+    private final ArticleFileProvider articleFileProvider;
 
     @Override
     public String getSupportedDomain() {
@@ -27,7 +25,7 @@ public class ArticleFileStrategy implements FileStrategy<Article, ArticleFile> {
 
     @Override
     public Article getDomainOrThrow(Long domainId) {
-        return articleRepository.findById(domainId)
+        return articleProvider.findById(domainId)
                 .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
     }
 
@@ -40,36 +38,26 @@ public class ArticleFileStrategy implements FileStrategy<Article, ArticleFile> {
 
     @Override
     public ArticleFile toEntity(String fileName, String url, Article article) {
-        return ArticleFile.builder()
-                .name(fileName)
-                .url(url)
-                .article(article)
-                .build();
+        return ArticleFile.create(fileName, url, article);
     }
 
     @Override
-    public List<ArticleFile> toEntities(List<String> urls, List<String> names, Article domain) {
-        if (urls == null || urls.isEmpty()) {
-            return List.of();
-        }
+    public List<ArticleFile> toEntities(List<String> urls, List<String> names, Article article) {
+        if (urls == null || urls.isEmpty()) {return List.of();}
 
         return IntStream.range(0, urls.size())
-                .mapToObj(i -> ArticleFile.builder()
-                        .url(urls.get(i))
-                        .name(names.get(i))
-                        .article(domain)
-                        .build())
+                .mapToObj(i -> ArticleFile.create(urls.get(i), names.get(i), article))
                 .toList();
     }
 
     @Override
     public void saveAll(List<ArticleFile> entities) {
-        articleFileRepository.saveAll(entities);
+        articleFileProvider.saveAll(entities);
     }
 
     @Override
     public ArticleFile getFileOrThrow(Long fileId) {
-        return articleFileRepository.findById(fileId)
+        return articleFileProvider.findById(fileId)
                 .orElseThrow(() -> new GeneralException(ArticleErrorCode.ARTICLE_FILE_NOT_FOUND));
     }
 

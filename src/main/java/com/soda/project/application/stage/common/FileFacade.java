@@ -30,6 +30,7 @@ public class FileFacade {
         FileStrategy<Object, FileBase> strategy = getStrategy(domainType);
         Object domain = strategy.getDomainOrThrow(domainId);
         strategy.validateWriter(memberId, domain);
+
         return fileService.getPresignedUrls(files);
     }
 
@@ -53,9 +54,7 @@ public class FileFacade {
 
     private FileStrategy<Object, FileBase> getStrategy(String domainType) {
         FileStrategy<Object, FileBase> strategy = strategies.get(domainType.toLowerCase());
-        if (strategy == null) {
-            throw new GeneralException(FileErrorCode.FILE_DOMAIN_NOT_FOUND);
-        }
+        if (strategy == null) { throw new GeneralException(FileErrorCode.FILE_DOMAIN_NOT_FOUND);}
         return strategy;
     }
 }

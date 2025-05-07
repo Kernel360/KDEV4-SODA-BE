@@ -13,7 +13,7 @@ public interface LinkStrategy<T, E extends LinkBase> {
 
     E toEntity(LinkUploadRequest.LinkUploadDTO dto, T domain);
 
-    List<E> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, T domain);
+    List<E> toEntities(List<? extends LinkUploadRequest.LinkUploadDTO> dtos, Object domain);
 
     void saveAll(List<E> entities);
 

@@ -10,7 +10,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FileService {
 
-    private final S3Service s3Service;
     private final FileFactory fileFactory;
 
     public PresignedUploadResponse getPresignedUrls(List<FileUploadRequest> files) {

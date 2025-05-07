@@ -61,6 +61,7 @@ public class Project extends BaseEntity {
                 .description(description)
                 .startDate(startDate)
                 .endDate(endDate)
+                .status(ProjectStatus.CONTRACT)
                 .build();
 
         project.assignClientCompanies(clientCompanies);

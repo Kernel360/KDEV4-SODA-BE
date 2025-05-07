@@ -1,7 +1,7 @@
 package com.soda.project.application.stage.article.comment.builder;
 
 import com.soda.project.domain.stage.article.comment.Comment;
-import com.soda.project.interfaces.dto.stage.article.comment.CommentDTO;
+import com.soda.project.interfaces.stage.article.comment.dto.CommentDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

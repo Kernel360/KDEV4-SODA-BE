@@ -2,15 +2,12 @@ package com.soda.project.interfaces.stage.article;
 
 import com.soda.project.application.stage.common.FileFacade;
 import com.soda.project.application.stage.common.LinkFacade;
-import com.soda.project.domain.stage.common.file.FileService;
 import com.soda.project.interfaces.stage.common.link.dto.LinkDeleteResponse;
-import com.soda.project.domain.stage.common.link.LinkService;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.project.application.stage.article.ArticleFacade;
-import com.soda.project.domain.stage.article.ArticleService;
-import com.soda.project.interfaces.dto.stage.article.*;
-import com.soda.project.interfaces.dto.stage.article.vote.*;
 import com.soda.project.interfaces.stage.common.file.dto.*;
+import com.soda.project.interfaces.stage.article.dto.*;
+import com.soda.project.interfaces.stage.article.vote.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +25,6 @@ import java.util.List;
 public class ArticleController {
 
     private final ArticleFacade articleFacade;
-    private final ArticleService articleService;
     private final FileFacade fileFacade;
     private final LinkFacade linkFacade;
 
@@ -36,7 +32,7 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<ArticleCreateResponse>> createArticle(@RequestBody ArticleCreateRequest request, HttpServletRequest user) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        ArticleCreateResponse response = articleService.createArticle(request, userId, userRole);
+        ArticleCreateResponse response = articleFacade.createArticle(request, userId, userRole);
         return ResponseEntity.ok(ApiResponseForm.success(response, "게시글 생성 성공"));
     }
 
@@ -48,7 +44,7 @@ public class ArticleController {
                                                                                          @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        Page<ArticleListViewResponse> response = articleService.getAllArticles(userId, userRole, projectId, articleSearchCondition, pageable);
+        Page<ArticleListViewResponse> response = articleFacade.getAllArticles(userId, userRole, projectId, articleSearchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -57,7 +53,7 @@ public class ArticleController {
                                                                            @PathVariable Long articleId) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        ArticleViewResponse response = articleService.getArticle(projectId, userId, userRole, articleId);
+        ArticleViewResponse response = articleFacade.getArticle(projectId, userId, userRole, articleId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -66,7 +62,7 @@ public class ArticleController {
                                               @PathVariable Long articleId) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        articleService.deleteArticle(projectId, userId, userRole, articleId);
+        articleFacade.deleteArticle(projectId, userId, userRole, articleId);
         return ResponseEntity.noContent().build();
     }
 
@@ -75,7 +71,7 @@ public class ArticleController {
                                                                                 @PathVariable Long articleId, @RequestBody ArticleModifyRequest request) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        ArticleModifyResponse response = articleService.updateArticle(userId, userRole, articleId, request);
+        ArticleModifyResponse response = articleFacade.updateArticle(userId, userRole, articleId, request);
         return ResponseEntity.ok(ApiResponseForm.success(response, "Article 수정 성공"));
     }
 
@@ -113,20 +109,13 @@ public class ArticleController {
         return ResponseEntity.ok(ApiResponseForm.success(linkDeleteResponse));
     }
 
-    @GetMapping("/articles/recent-articles")
-    public ResponseEntity<ApiResponseForm<List<RecentArticleResponse>>> getRecentArticles(HttpServletRequest request) {
-        Long memberId = (Long) request.getAttribute("memberId");
-        List<RecentArticleResponse> recentArticles = articleService.getRecentArticlesForUser(memberId);
-        return ResponseEntity.ok(ApiResponseForm.success(recentArticles));
-    }
-
     @GetMapping("/articles/my")
     public ResponseEntity<ApiResponseForm<Page<MyArticleListResponse>>> getMyArticles(HttpServletRequest request,
                                                                                       @RequestParam(required = false) Long projectId,
                                                                                       Pageable pageable
                                                                                       ) {
         Long memberId = (Long) request.getAttribute("memberId");
-        Page<MyArticleListResponse> response = articleService.getMyArticles(memberId, projectId, pageable);
+        Page<MyArticleListResponse> response = articleFacade.getMyArticles(memberId, projectId, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -172,7 +161,7 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<ArticleStatusUpdateResponse>> updateArticleStatus(HttpServletRequest request, @PathVariable Long articleId,
                                                                                             @Valid @RequestBody ArticleStatusUpdateRequest updateRequest) {
         Long userId = (Long) request.getAttribute("memberId");
-        ArticleStatusUpdateResponse response = articleService.updateArticleStatus(userId, articleId, updateRequest);
+        ArticleStatusUpdateResponse response = articleFacade.updateArticleStatus(userId, articleId, updateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "게시글 상태 변경 성공"));
     }
 }

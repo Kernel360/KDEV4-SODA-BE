@@ -37,7 +37,6 @@ public class ArticleFacade {
     private final MemberService memberService;
     private final ArticleService articleService;
     private final VoteService voteService;
-    private final VoteItemService voteItemService;
 
     private final ArticleValidator articleValidator;
     private final VoteValidator voteValidator;
@@ -162,7 +161,7 @@ public class ArticleFacade {
         List<VoteItem> selectedItems = Collections.emptyList();
         if (!vote.isAllowTextAnswer() && !CollectionUtils.isEmpty(request.getSelectedItemIds())) {
             // VoteItemService 통해 조회
-            selectedItems = voteItemService.findVoteItemsByIds(request.getSelectedItemIds());
+            selectedItems = voteService.findVoteItemsByIds(request.getSelectedItemIds());
         }
 
         voteValidator.validateSubmission(vote, member, article.getMember(), article.getStage().getProject(), request);
@@ -182,7 +181,7 @@ public class ArticleFacade {
         }
         voteValidator.validateVoteItemAddition(vote, member, article.getMember(), article.getStage().getProject(), request.getItemText());
 
-        VoteItem savedItem = voteItemService.createAndSaveVoteItem(vote, request.getItemText());
+        VoteItem savedItem = voteService.addVoteItem(vote, request.getItemText());
         vote.addVoteItem(savedItem);
         return VoteItemAddResponse.from(savedItem);
     }

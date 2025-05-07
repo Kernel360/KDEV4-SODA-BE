@@ -24,4 +24,9 @@ public class VoteItemProviderImpl implements VoteItemProvider {
     public List<VoteItem> findAllById(List<Long> itemIds) {
         return voteItemRepository.findAllById(itemIds);
     }
+
+    @Override
+    public VoteItem store(VoteItem voteItem) {
+        return voteItemRepository.save(voteItem);
+    }
 }

@@ -1,4 +1,4 @@
-package com.soda.project.infrastructure.stage.request;
+package com.soda.project.infrastructure.stage.request.file;
 
 import com.soda.project.domain.stage.request.file.RequestFile;
 import org.springframework.data.jpa.repository.JpaRepository;

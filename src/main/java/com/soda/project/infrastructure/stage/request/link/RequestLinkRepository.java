@@ -1,4 +1,4 @@
-package com.soda.project.infrastructure.stage.request;
+package com.soda.project.infrastructure.stage.request.link;
 
 import com.soda.project.domain.stage.request.link.RequestLink;
 import org.springframework.data.jpa.repository.JpaRepository;

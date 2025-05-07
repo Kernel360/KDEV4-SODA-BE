@@ -24,6 +24,14 @@ public class RequestFile extends FileBase {
         this.request = request;
     }
 
+    public static RequestFile create(String name, String url, Request request) {
+        return RequestFile.builder()
+                .name(name)
+                .url(url)
+                .request(request)
+                .build();
+    }
+
     @Override
     public Long getDomainId() {
         return request.getId();

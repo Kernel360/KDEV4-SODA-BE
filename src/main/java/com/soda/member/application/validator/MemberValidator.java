@@ -56,13 +56,6 @@ public class MemberValidator {
         }
     }
 
-    public void validateProfileUpdate(Member member, String name, String email, String phoneNumber) {
-        validateMemberStatus(member);
-        if (!member.getEmail().equals(email)) {
-            validateDuplicateEmail(email);
-        }
-    }
-
     public void validatePasswordChange(Member member, String currentPassword, String newPassword) {
         validateMemberStatus(member);
         if (currentPassword.equals(newPassword)) {

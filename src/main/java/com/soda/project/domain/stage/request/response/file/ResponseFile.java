@@ -27,6 +27,14 @@ public class ResponseFile extends FileBase {
         this.response = response;
     }
 
+    public static ResponseFile create(String fileName, String url, Response response) {
+        return ResponseFile.builder()
+                .name(fileName)
+                .url(url)
+                .response(response)
+                .build();;
+    }
+
     @Override
     public Long getDomainId() {
         return response.getId();

@@ -12,9 +12,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ResponseLink extends LinkBase {
-    private String urlAddress;
-
-    private String urlDescription;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "response_id", nullable = false)
@@ -25,6 +22,14 @@ public class ResponseLink extends LinkBase {
         this.urlAddress = urlAddress;
         this.urlDescription = urlDescription;
         this.response = response;
+    }
+
+    public static ResponseLink create(String urlAddress, String urlDescription, Response response) {
+        return ResponseLink.builder()
+                .urlAddress(urlAddress)
+                .urlDescription(urlDescription)
+                .response(response)
+                .build();
     }
 
     public void updateResponse(Response response) {

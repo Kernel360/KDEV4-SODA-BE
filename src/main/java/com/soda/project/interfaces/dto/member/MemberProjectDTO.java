@@ -1,7 +1,7 @@
 package com.soda.project.interfaces.dto.member;
 
 import com.soda.member.domain.Member;
-import com.soda.project.domain.member.enums.MemberProjectRole;
+import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.domain.member.MemberProject;
 import com.soda.project.domain.Project;
 import lombok.Builder;

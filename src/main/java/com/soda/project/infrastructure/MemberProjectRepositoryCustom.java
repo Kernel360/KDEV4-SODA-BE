@@ -1,6 +1,6 @@
 package com.soda.project.infrastructure;
 
-import com.soda.project.domain.member.enums.MemberProjectRole;
+import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.domain.member.MemberProject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

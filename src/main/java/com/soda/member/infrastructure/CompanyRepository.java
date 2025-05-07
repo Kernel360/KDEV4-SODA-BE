@@ -15,4 +15,5 @@ public interface CompanyRepository extends JpaRepository<Company, Long>, Company
 
     Optional<Company> findByCompanyNumber(String companyNumber);
 
+    List<Company> findByIdInAndIsDeletedFalse(List<Long> companyIds);
 }

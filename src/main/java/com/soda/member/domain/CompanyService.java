@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -221,12 +222,16 @@ public class CompanyService {
     }
 
     private List<String> generateFullPeriodList(LocalDate startDate, LocalDate endDate, StatisticsUnit unit) {
-        List<String> periods = new ArrayList<>();
-        LocalDate currentDate = unit.getStartOfPeriod(startDate);
-        while (!currentDate.isAfter(endDate)) {
-            periods.add(unit.formatPeriod(currentDate));
-            currentDate = unit.getNextPeriodStart(currentDate);
+        return null;
+    }
+
+    public List<Company> findCompaniesByIds(List<Long> companyIds) {
+        if (CollectionUtils.isEmpty(companyIds)) {
+            return Collections.emptyList(); // 빈 목록이면 빈 리스트 반환
         }
-        return periods.stream().distinct().sorted().collect(Collectors.toList());
+        log.debug("ID 목록 {} 로 회사 조회 시작", companyIds);
+        List<Company> companies = companyRepository.findByIdInAndIsDeletedFalse(companyIds);
+        log.debug("ID 목록 {} 로 활성 회사 {}개 조회 완료", companyIds, companies.size());
+        return companies;
     }
 }

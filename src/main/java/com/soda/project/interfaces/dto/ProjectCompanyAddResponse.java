@@ -2,7 +2,7 @@ package com.soda.project.interfaces.dto;
 
 import com.soda.member.domain.Company;
 import com.soda.member.domain.Member;
-import com.soda.project.domain.company.enums.CompanyProjectRole;
+import com.soda.project.domain.company.CompanyProjectRole;
 import lombok.Builder;
 import lombok.Getter;
 

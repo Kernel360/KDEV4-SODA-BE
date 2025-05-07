@@ -18,7 +18,7 @@ public class FileService {
         return PresignedUploadResponse.builder().entries(entries).build();
     }
 
-    public FileConfirmResponse confirmUpload(FileStrategy strategy, Object domain, List<ConfirmedFile> confirmedFiles) {
+    public FileConfirmResponse confirmUpload(FileStrategy<Object, FileBase> strategy, Object domain, List<ConfirmedFile> confirmedFiles) {
         List<FileBase> entities = fileFactory.makeFileEntities(strategy, domain, confirmedFiles);
         strategy.saveAll(entities);
         return FileConfirmResponse.fromEntity(entities);

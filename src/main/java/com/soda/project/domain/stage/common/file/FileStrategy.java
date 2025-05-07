@@ -3,7 +3,7 @@ package com.soda.project.domain.stage.common.file;
 import java.util.List;
 
 public interface FileStrategy<T, E extends FileBase> {
-    String getSupportedDomain(); // "request", "article" 등
+    String getSupportedDomain();
 
     T getDomainOrThrow(Long domainId);
 

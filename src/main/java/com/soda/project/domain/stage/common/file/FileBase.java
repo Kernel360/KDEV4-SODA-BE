@@ -1,4 +1,4 @@
-package com.soda.common.file.model;
+package com.soda.project.domain.stage.common.file;
 
 import com.soda.common.BaseEntity;
 import jakarta.persistence.MappedSuperclass;

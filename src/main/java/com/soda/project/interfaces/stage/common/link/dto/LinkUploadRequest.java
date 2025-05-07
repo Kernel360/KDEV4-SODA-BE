@@ -1,4 +1,4 @@
-package com.soda.common.link.dto;
+package com.soda.project.interfaces.stage.common.link.dto;
 
 import lombok.Getter;
 

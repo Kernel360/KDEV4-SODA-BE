@@ -1,6 +1,4 @@
-package com.soda.common.file.strategy;
-
-import com.soda.common.file.model.FileBase;
+package com.soda.project.domain.stage.common.file;
 
 import java.util.List;
 

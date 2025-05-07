@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.request.response.link;
 
-import com.soda.common.link.model.LinkBase;
+import com.soda.project.domain.stage.common.link.LinkBase;
 import com.soda.project.domain.stage.request.response.Response;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

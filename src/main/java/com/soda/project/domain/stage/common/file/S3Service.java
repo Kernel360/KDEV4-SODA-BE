@@ -1,4 +1,4 @@
-package com.soda.common.file.service;
+package com.soda.project.domain.stage.common.file;
 
 import com.soda.global.config.AWSS3Config;
 import lombok.RequiredArgsConstructor;

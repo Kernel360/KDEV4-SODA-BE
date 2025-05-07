@@ -1,11 +1,11 @@
 package com.soda.project.interfaces.stage.request.response;
 
-import com.soda.common.file.dto.*;
-import com.soda.common.file.service.FileService;
-import com.soda.common.link.dto.LinkDeleteResponse;
-import com.soda.common.link.service.LinkService;
+import com.soda.project.domain.stage.common.file.FileService;
+import com.soda.project.interfaces.stage.common.link.dto.LinkDeleteResponse;
+import com.soda.project.domain.stage.common.link.LinkService;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.project.application.stage.request.response.ResponseFacade;
+import com.soda.project.interfaces.stage.common.file.dto.*;
 import com.soda.project.interfaces.stage.request.response.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

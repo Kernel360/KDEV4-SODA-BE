@@ -3,7 +3,7 @@ package com.soda.project.domain.stage.article;
 import com.soda.project.interfaces.dto.stage.article.ArticleLinkDTO;
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
 import com.soda.project.infrastructure.stage.article.ArticleLinkRepository;
-import com.soda.common.link.dto.LinkUploadRequest;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
 import com.soda.global.response.GeneralException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

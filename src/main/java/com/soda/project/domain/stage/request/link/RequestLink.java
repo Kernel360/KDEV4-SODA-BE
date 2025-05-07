@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.request.link;
 
-import com.soda.common.link.model.LinkBase;
+import com.soda.project.domain.stage.common.link.LinkBase;
 import com.soda.project.domain.stage.request.Request;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

@@ -1,4 +1,4 @@
-package com.soda.common.file.error;
+package com.soda.project.domain.stage.common.file;
 
 import com.soda.global.response.ErrorCode;
 import org.springframework.http.HttpStatus;

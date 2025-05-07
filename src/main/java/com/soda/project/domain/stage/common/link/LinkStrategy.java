@@ -1,7 +1,6 @@
-package com.soda.common.link.strategy;
+package com.soda.project.domain.stage.common.link;
 
-import com.soda.common.link.dto.LinkUploadRequest;
-import com.soda.common.link.model.LinkBase;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
 
 import java.util.List;
 

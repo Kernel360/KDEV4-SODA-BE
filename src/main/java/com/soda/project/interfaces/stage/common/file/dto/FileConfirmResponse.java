@@ -1,7 +1,7 @@
-package com.soda.common.file.dto;
+package com.soda.project.interfaces.stage.common.file.dto;
 
-import com.soda.common.file.error.FileErrorCode;
-import com.soda.common.file.model.FileBase;
+import com.soda.project.domain.stage.common.file.FileErrorCode;
+import com.soda.project.domain.stage.common.file.FileBase;
 import com.soda.global.response.GeneralException;
 import lombok.Builder;
 import lombok.Getter;

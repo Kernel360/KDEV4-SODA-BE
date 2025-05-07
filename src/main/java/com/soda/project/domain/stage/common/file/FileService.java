@@ -1,10 +1,7 @@
-package com.soda.common.file.service;
+package com.soda.project.domain.stage.common.file;
 
-import com.soda.common.file.dto.*;
-import com.soda.common.file.error.FileErrorCode;
-import com.soda.common.file.model.FileBase;
-import com.soda.common.file.strategy.FileStrategy;
 import com.soda.global.response.GeneralException;
+import com.soda.project.interfaces.stage.common.file.dto.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

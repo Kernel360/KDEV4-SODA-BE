@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.article;
 
-import com.soda.common.file.model.FileBase;
+import com.soda.project.domain.stage.common.file.FileBase;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;

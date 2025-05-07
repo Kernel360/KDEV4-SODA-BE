@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.request.response.file;
 
-import com.soda.common.file.strategy.FileStrategy;
+import com.soda.project.domain.stage.common.file.FileStrategy;
 import com.soda.global.response.GeneralException;
 import com.soda.project.domain.stage.request.response.Response;
 import com.soda.project.domain.stage.request.response.ResponseErrorCode;

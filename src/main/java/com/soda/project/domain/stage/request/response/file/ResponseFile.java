@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.request.response.file;
 
-import com.soda.common.file.model.FileBase;
+import com.soda.project.domain.stage.common.file.FileBase;
 import com.soda.project.domain.stage.request.response.Response;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

@@ -1,7 +1,7 @@
-package com.soda.common.link.dto;
+package com.soda.project.interfaces.stage.common.link.dto;
 
-import com.soda.common.link.error.LinkErrorCode;
-import com.soda.common.link.model.LinkBase;
+import com.soda.project.domain.stage.common.link.LinkErrorCode;
+import com.soda.project.domain.stage.common.link.LinkBase;
 import com.soda.global.response.GeneralException;
 import lombok.Builder;
 import lombok.Getter;

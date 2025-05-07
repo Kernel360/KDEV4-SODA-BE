@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.request.file;
 
-import com.soda.common.file.model.FileBase;
+import com.soda.project.domain.stage.common.file.FileBase;
 import com.soda.project.domain.stage.request.Request;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

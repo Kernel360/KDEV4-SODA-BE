@@ -1,11 +1,8 @@
-package com.soda.common.link.service;
+package com.soda.project.domain.stage.common.link;
 
-import com.soda.common.link.dto.LinkDeleteResponse;
-import com.soda.common.link.dto.LinkUploadRequest;
-import com.soda.common.link.dto.LinkUploadResponse;
-import com.soda.common.link.error.LinkErrorCode;
-import com.soda.common.link.model.LinkBase;
-import com.soda.common.link.strategy.LinkStrategy;
+import com.soda.project.interfaces.stage.common.link.dto.LinkDeleteResponse;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadResponse;
 import com.soda.global.response.GeneralException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

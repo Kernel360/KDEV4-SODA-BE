@@ -1,7 +1,7 @@
 package com.soda.project.domain.stage.request.response.link;
 
-import com.soda.common.link.dto.LinkUploadRequest;
-import com.soda.common.link.strategy.LinkStrategy;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
+import com.soda.project.domain.stage.common.link.LinkStrategy;
 import com.soda.global.response.GeneralException;
 import com.soda.project.domain.stage.request.response.Response;
 import com.soda.project.domain.stage.request.response.ResponseErrorCode;

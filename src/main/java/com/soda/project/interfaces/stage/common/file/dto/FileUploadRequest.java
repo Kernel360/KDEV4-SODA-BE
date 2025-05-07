@@ -1,4 +1,4 @@
-package com.soda.common.file.dto;
+package com.soda.project.interfaces.stage.common.file.dto;
 
 import lombok.Getter;
 import lombok.Setter;

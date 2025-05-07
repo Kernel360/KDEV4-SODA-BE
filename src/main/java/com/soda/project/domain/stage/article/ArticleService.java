@@ -5,7 +5,7 @@ import com.soda.project.domain.stage.article.error.ArticleErrorCode;
 import com.soda.project.domain.stage.article.vote.Vote;
 import com.soda.project.domain.stage.article.vote.VoteService;
 import com.soda.project.infrastructure.stage.article.ArticleRepository;
-import com.soda.common.link.service.LinkService;
+import com.soda.project.domain.stage.common.link.LinkService;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.domain.Member;

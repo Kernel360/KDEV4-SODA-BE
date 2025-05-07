@@ -106,38 +106,10 @@ public class ArticleService {
 
     /**
      * 게시글 삭제
-     * @param projectId 게시글이 속한 프로젝트 ID
-     * @param userId 삭제를 요청하는 사용자 ID
-     * @param userRole 삭제를 요청하는 사용자의 역할
-     * @param articleId 삭제할 게시글의 ID
      */
-    @LoggableEntityAction(action = "DELETE", entityClass = Article.class)
     @Transactional
-    public void deleteArticle(Long projectId, Long userId, String userRole, Long articleId) {
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(projectId);
-
-        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
-
-        Article article = validateArticle(articleId);
-        validateArticleNotDeleted(article);
-
-        // 게시글 삭제
+    public void deleteArticle(Article article) {
         article.delete();
-
-        // 연관된 파일 및 링크 삭제
-        articleFileService.deleteFiles(articleId, article);
-        articleLinkService.deleteLinks(articleId, article);
-    }
-
-    /**
-     * 게시글이 이미 삭제되었는지 검증
-     * @param article 검증할 게시글
-     */
-    private void validateArticleNotDeleted(Article article) {
-        if (article.getIsDeleted()) {
-            throw new GeneralException(ArticleErrorCode.ARTICLE_ALREADY_DELETED);
-        }
     }
 
     /**

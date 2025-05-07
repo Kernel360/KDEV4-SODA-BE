@@ -64,7 +64,7 @@ public class ArticleController {
                                               @PathVariable Long articleId) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        articleService.deleteArticle(projectId, userId, userRole, articleId);
+        articleFacade.deleteArticle(projectId, userId, userRole, articleId);
         return ResponseEntity.noContent().build();
     }
 

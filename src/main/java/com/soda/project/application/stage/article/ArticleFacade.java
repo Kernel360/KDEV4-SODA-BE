@@ -161,4 +161,14 @@ public class ArticleFacade {
         articleValidator.validateAdminOrProjectMember(userRole, member, project);
         return articleService.getArticle(article);
     }
+
+    @LoggableEntityAction(action = "DELETE", entityClass = Article.class)
+    @Transactional
+    public void deleteArticle(Long projectId, Long userId, String userRole, Long articleId) {
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Article article = articleService.validateArticle(articleId);
+
+        articleValidator.validateDeletePermission(member, userRole, article);
+        articleService.deleteArticle(article);
+    }
 }

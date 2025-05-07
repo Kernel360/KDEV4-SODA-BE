@@ -45,4 +45,18 @@ public class ArticleValidator {
             throw new GeneralException(ArticleErrorCode.LINK_SIZE_EXCEEDED);
         }
     }
+
+    public void validateDeletePermission(Member requester, String requesterRoleString, Article article) {
+        MemberRole requesterRole = null;
+        if (requesterRoleString != null) {
+            requesterRole = MemberRole.valueOf(requesterRoleString.toUpperCase());
+        }
+
+        boolean isAdmin = (requesterRole == MemberRole.ADMIN);
+        boolean isAuthor = article.getMember().getId().equals(requester.getId());
+
+        if (!isAdmin && !isAuthor) {
+            throw new GeneralException(ArticleErrorCode.NO_PERMISSION_TO_DELETE_ARTICLE);
+        }
+    }
 }

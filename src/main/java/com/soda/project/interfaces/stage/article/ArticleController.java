@@ -6,7 +6,6 @@ import com.soda.common.link.dto.LinkDeleteResponse;
 import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.project.application.stage.article.ArticleFacade;
-import com.soda.project.domain.stage.article.ArticleService;
 import com.soda.project.interfaces.dto.stage.article.*;
 import com.soda.project.interfaces.dto.stage.article.vote.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,7 +25,7 @@ import java.util.List;
 public class ArticleController {
 
     private final ArticleFacade articleFacade;
-    private final ArticleService articleService;
+
     private final FileService fileService;
     private final LinkService linkService;
 
@@ -163,7 +162,7 @@ public class ArticleController {
     public ResponseEntity<ApiResponseForm<ArticleStatusUpdateResponse>> updateArticleStatus(HttpServletRequest request, @PathVariable Long articleId,
                                                                                             @Valid @RequestBody ArticleStatusUpdateRequest updateRequest) {
         Long userId = (Long) request.getAttribute("memberId");
-        ArticleStatusUpdateResponse response = articleService.updateArticleStatus(userId, articleId, updateRequest);
+        ArticleStatusUpdateResponse response = articleFacade.updateArticleStatus(userId, articleId, updateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "게시글 상태 변경 성공"));
     }
 }

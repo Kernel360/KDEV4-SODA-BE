@@ -59,4 +59,11 @@ public class ArticleValidator {
             throw new GeneralException(ArticleErrorCode.NO_PERMISSION_TO_UPDATE_ARTICLE);
         }
     }
+
+    public void validateStatusUpdatePermission(Member requester, Article article) {
+        // 게시글 작성자와 요청자가 동일한지 확인
+        if (!article.getMember().getId().equals(requester.getId())) {
+            throw new GeneralException(ArticleErrorCode.NO_PERMISSION_TO_UPDATE_ARTICLE);
+        }
+    }
 }

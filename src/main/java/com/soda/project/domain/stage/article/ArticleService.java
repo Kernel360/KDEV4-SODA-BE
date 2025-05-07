@@ -4,17 +4,17 @@ import com.querydsl.core.Tuple;
 import com.soda.common.link.dto.LinkUploadRequest;
 import com.soda.global.response.GeneralException;
 import com.soda.member.domain.Member;
-import com.soda.member.domain.MemberService;
 import com.soda.project.domain.stage.Stage;
+import com.soda.project.domain.stage.article.enums.ArticleStatus;
 import com.soda.project.domain.stage.article.enums.PriorityType;
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
-import com.soda.project.interfaces.dto.stage.article.*;
+import com.soda.project.interfaces.dto.stage.article.ArticleSearchCondition;
+import com.soda.project.interfaces.dto.stage.article.ArticleViewResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,14 +24,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArticleService {
 
-    private final MemberService memberService;
-
     private final ArticleProvider articleProvider;
     private final ArticleFactory articleFactory;
 
-    /**
-     * 게시글 생성하기
-     */
+    // 게시글 생성
     public Article createArticle(String title, String content, PriorityType priority, LocalDateTime deadLine, Member member,
                                  Stage stage, Long parentArticleId, List<LinkUploadRequest.LinkUploadDTO> linkList) {
         log.debug("[Service] 게시글 생성 시작: title={}, memberId={}, stageId={}, parentArticleId={}",
@@ -66,9 +62,7 @@ public class ArticleService {
                 });
     }
 
-    /**
-     * 기존 게시글 수정
-     */
+    // 게시글 수정
     public Article updateArticle(Article article, String title, String content, PriorityType priority, LocalDateTime deadline,
                                  List<LinkUploadRequest.LinkUploadDTO> linkList) {
         article.updateArticle(title, content, priority, deadline);
@@ -76,11 +70,8 @@ public class ArticleService {
         return article;
     }
 
-    /**
-     * 게시글 삭제
-     */
-    @Transactional
-    public void deleteArticle(Article article) {
+    // 게시글 삭제
+     public void deleteArticle(Article article) {
         article.delete();
     }
 
@@ -91,16 +82,12 @@ public class ArticleService {
         return articleProvider.searchArticles(projectId, articleSearchCondition, pageable);
     }
 
-    /**
-     * 특정 게시글을 조회
-     */
+    // 특정 게시글을 조회
     public ArticleViewResponse getArticle(Article article) {
         return ArticleViewResponse.fromEntity(article);
     }
 
-    /**
-     * 게시글을 ID로 검증
-     */
+    //게시글을 ID로 검증
     public Article validateArticle(Long articleId) {
         return articleProvider.findByIdAndIsDeletedFalseWithMemberAndCompanyUsingQuerydsl(articleId)
                 .orElseThrow(() -> {
@@ -109,34 +96,16 @@ public class ArticleService {
                 });
     }
 
-    /**
-     * 사용자가 작성한 게시글 목록 조회
-     */
+    // 사용자가 작성한 게시글 목록 조회
     public Page<Tuple> findMyArticlesData(Long userId, Long projectId, Pageable pageable) {
         return articleProvider.findMyArticlesData(userId, projectId, pageable);
     }
 
-    @Transactional
-    public ArticleStatusUpdateResponse updateArticleStatus(Long userId, Long articleId, ArticleStatusUpdateRequest request) {
-        log.info("게시글 상태 변경 시작: articleId={}, userId={}, newStatus={}",
-                articleId, userId, request.getStatus());
-
-        Article article = validateArticle(articleId);
-        Member member = memberService.findMemberById(userId);
-
-        if (member == null || !member.getId().equals(userId)) {
-            log.warn("게시글 상태 변경 권한 없음: 요청자(ID:{})가 작성자(ID:{})가 아닙니다. Article ID: {}",
-                    userId, (member != null ? member.getId() : "null"), articleId);
-            throw new GeneralException(ArticleErrorCode.NO_PERMISSION_TO_MODIFY_ARTICLE);
-        }
-        log.debug("게시글 작성자 본인 확인 완료. User ID: {}", userId);
-
-        article.changeStatus(request.getStatus());
+    // 게시글 상태 변경
+    public Article updateArticleStatus(Article article, ArticleStatus newStatus) {
+        article.changeStatus(newStatus);
         articleProvider.store(article);
-        log.info("게시글 상태 변경 완료: articleID={}, newStatus={}", article.getId(), article.getStatus());
-
-        return ArticleStatusUpdateResponse.from(article);
+        return article;
     }
-
 
 }

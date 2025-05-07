@@ -1,4 +1,4 @@
-package com.soda.member.domain;
+package com.soda.member.domain.member;
 
 import com.soda.member.domain.company.Company;
 import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;

@@ -1,7 +1,7 @@
 package com.soda.project.domain.stage.article.vote;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.domain.Member;
+import com.soda.member.domain.member.Member;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.article.error.VoteErrorCode;
 import com.soda.project.interfaces.dto.stage.article.vote.VoteCreateResponse;

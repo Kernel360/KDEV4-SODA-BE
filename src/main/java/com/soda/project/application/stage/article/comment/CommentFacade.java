@@ -1,8 +1,8 @@
 package com.soda.project.application.stage.article.comment;
 
 import com.soda.global.log.data.annotation.LoggableEntityAction;
-import com.soda.member.domain.Member;
-import com.soda.member.domain.MemberService;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberService;
 import com.soda.project.application.stage.article.comment.builder.CommentHierarchyBuilder;
 import com.soda.project.application.stage.article.comment.validator.CommentValidator;
 import com.soda.project.application.stage.article.validator.ArticleValidator;

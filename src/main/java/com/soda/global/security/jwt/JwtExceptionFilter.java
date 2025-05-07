@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.soda.global.response.ApiResponseForm;
 import com.soda.global.response.ErrorCode;
 import com.soda.member.domain.AuthErrorCode;
-import com.soda.member.domain.MemberErrorCode;
+import com.soda.member.domain.member.MemberErrorCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;

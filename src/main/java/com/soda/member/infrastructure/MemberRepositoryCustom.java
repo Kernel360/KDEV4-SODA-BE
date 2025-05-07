@@ -1,6 +1,6 @@
 package com.soda.member.infrastructure;
 
-import com.soda.member.domain.Member;
+import com.soda.member.domain.member.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

@@ -2,8 +2,8 @@ package com.soda.project.application.stage.article.vote.validator;
 
 import com.soda.global.response.GeneralException;
 import com.soda.member.domain.company.Company;
-import com.soda.member.domain.Member;
-import com.soda.member.domain.MemberRole;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberRole;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.company.CompanyProjectService;
 import com.soda.project.domain.company.CompanyProjectRole;

@@ -1,6 +1,6 @@
 package com.soda.member.interfaces.dto.member.admin;
 
-import com.soda.member.domain.MemberRole;
+import com.soda.member.domain.member.MemberRole;
 import lombok.Builder;
 import lombok.Getter;
 

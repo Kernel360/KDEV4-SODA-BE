@@ -1,7 +1,7 @@
 package com.soda.project.application;
 
 import com.querydsl.core.Tuple;
-import com.soda.member.domain.Member;
+import com.soda.member.domain.member.Member;
 import com.soda.member.domain.company.Company;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.company.CompanyProjectRole;

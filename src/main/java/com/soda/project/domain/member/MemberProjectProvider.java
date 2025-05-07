@@ -1,6 +1,6 @@
 package com.soda.project.domain.member;
 
-import com.soda.member.domain.Member;
+import com.soda.member.domain.member.Member;
 import com.soda.member.domain.company.Company;
 import com.soda.project.domain.Project;
 import org.springframework.data.domain.Page;

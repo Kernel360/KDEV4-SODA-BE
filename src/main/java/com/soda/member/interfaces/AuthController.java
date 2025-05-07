@@ -9,7 +9,7 @@ import com.soda.member.interfaces.dto.member.LoginRequest;
 import com.soda.member.interfaces.dto.member.LoginResponse;
 import com.soda.member.interfaces.dto.member.admin.CreateMemberRequest;
 import com.soda.member.domain.AuthService;
-import com.soda.member.domain.MemberService;
+import com.soda.member.domain.member.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

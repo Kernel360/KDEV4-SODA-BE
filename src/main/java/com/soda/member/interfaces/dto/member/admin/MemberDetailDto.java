@@ -1,7 +1,7 @@
 package com.soda.member.interfaces.dto.member.admin;
 
-import com.soda.member.domain.Member;
-import com.soda.member.domain.MemberRole;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberRole;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

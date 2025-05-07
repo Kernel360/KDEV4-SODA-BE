@@ -2,8 +2,8 @@ package com.soda.member.infrastructure;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.soda.member.domain.Member;
-import com.soda.member.domain.QMember;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.QMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

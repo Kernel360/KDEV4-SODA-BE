@@ -1,7 +1,7 @@
 package com.soda.project.domain.stage.article.comment;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.domain.Member;
+import com.soda.member.domain.member.Member;
 import com.soda.project.domain.stage.article.Article;
 import com.soda.notification.event.CommentCreatedEvent;
 import com.soda.notification.event.ReplyCreatedEvent;

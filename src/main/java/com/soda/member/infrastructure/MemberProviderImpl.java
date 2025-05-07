@@ -2,9 +2,9 @@ package com.soda.member.infrastructure;
 
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
-import com.soda.member.domain.Member;
-import com.soda.member.domain.MemberErrorCode;
-import com.soda.member.domain.MemberProvider;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberErrorCode;
+import com.soda.member.domain.member.MemberProvider;
 import com.soda.member.domain.company.Company;
 import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
 import com.soda.project.domain.ProjectErrorCode;

@@ -1,7 +1,7 @@
 package com.soda.project.domain.stage.request;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.domain.Member;
+import com.soda.member.domain.member.Member;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.interfaces.stage.request.dto.*;
 import lombok.RequiredArgsConstructor;

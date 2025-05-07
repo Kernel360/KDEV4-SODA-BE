@@ -1,8 +1,8 @@
 package com.soda.member.application;
 
-import com.soda.member.domain.Member;
-import com.soda.member.domain.MemberService;
-import com.soda.member.domain.MemberStatus;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberService;
+import com.soda.member.domain.member.MemberStatus;
 import com.soda.member.domain.company.Company;
 import com.soda.member.interfaces.dto.*;
 import com.soda.member.interfaces.dto.member.ChangePasswordRequest;

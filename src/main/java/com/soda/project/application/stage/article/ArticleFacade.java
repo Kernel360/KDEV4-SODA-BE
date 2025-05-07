@@ -1,5 +1,6 @@
 package com.soda.project.application.stage.article;
 
+import com.querydsl.core.Tuple;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.domain.Member;
@@ -183,5 +184,10 @@ public class ArticleFacade {
 
         Article updatedArticle = articleService.updateArticle(article, request.getTitle(), request.getContent(), request.getPriority(), request.getDeadLine(), request.getLinkList());
         return ArticleModifyResponse.fromEntity(updatedArticle);
+    }
+
+    public Page<MyArticleListResponse> getMyArticles(Long memberId, Long projectId, Pageable pageable) {
+        Page<Tuple> tuplePage = articleService.findMyArticlesData(memberId, projectId, pageable);
+        return articleResponseBuilder.buildMyArticleListPage(tuplePage);
     }
 }

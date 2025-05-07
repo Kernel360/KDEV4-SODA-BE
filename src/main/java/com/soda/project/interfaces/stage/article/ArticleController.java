@@ -117,7 +117,7 @@ public class ArticleController {
                                                                                       Pageable pageable
                                                                                       ) {
         Long memberId = (Long) request.getAttribute("memberId");
-        Page<MyArticleListResponse> response = articleService.getMyArticles(memberId, projectId, pageable);
+        Page<MyArticleListResponse> response = articleFacade.getMyArticles(memberId, projectId, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 

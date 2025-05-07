@@ -109,52 +109,11 @@ public class ArticleService {
                 });
     }
 
-    public Page<MyArticleListResponse> getMyArticles(Long userId, Long projectId, Pageable pageable) {
-        log.info("사용자 ID {}가 작성한 게시글 목록 조회 시작. 프로젝트 필터 ID: {}", userId, projectId != null ? projectId : "없음");
-
-        // 1. 리포지토리 호출하여 Tuple 데이터 조회
-        Page<Tuple> tuplePage = fetchMyArticlesData(userId, projectId, pageable);
-
-        // 2. 조회된 Tuple 데이터를 DTO로 변환 (헬퍼 메서드 사용)
-        Page<MyArticleListResponse> responsePage = convertToMyArticleListResponsePage(tuplePage);
-
-        log.info("사용자 ID {} 작성 게시글 목록 조회 완료. 조회된 게시글 수: {}", userId, responsePage.getTotalElements());
-        return responsePage;
-    }
-
-    private Page<Tuple> fetchMyArticlesData(Long userId, Long projectId, Pageable pageable) {
+    /**
+     * 사용자가 작성한 게시글 목록 조회
+     */
+    public Page<Tuple> findMyArticlesData(Long userId, Long projectId, Pageable pageable) {
         return articleProvider.findMyArticlesData(userId, projectId, pageable);
-    }
-
-    private Page<MyArticleListResponse> convertToMyArticleListResponsePage(Page<Tuple> tuplePage) {
-        if (tuplePage.isEmpty()) {
-            log.info("변환할 게시글 데이터(Tuple)가 없습니다.");
-            return Page.empty(tuplePage.getPageable());
-        } else {
-            log.debug("조회된 Tuple 데이터를 MyArticleListResponse DTO로 변환 시작. 변환 대상 수: {}", tuplePage.getNumberOfElements());
-        }
-
-        return tuplePage.map(this::mapTupleToMyArticleResponse);
-    }
-
-    private MyArticleListResponse mapTupleToMyArticleResponse(Tuple tuple) {
-        // Tuple에서 데이터 추출
-        Long articleId = tuple.get(0, Long.class);
-        String title = tuple.get(1, String.class);
-        Long projId = tuple.get(2, Long.class);
-        String projName = tuple.get(3, String.class);
-        Long stgId = tuple.get(4, Long.class);
-        String stgName = tuple.get(5, String.class);
-        LocalDateTime createdAt = tuple.get(6, LocalDateTime.class);
-
-        // null 체크
-        if (articleId == null) {
-            log.error("mapTupleToMyArticleResponse - Tuple에서 필수 데이터 누락: tuple={}", tuple);
-            throw new GeneralException(ArticleErrorCode.ARTICLE_DATA_CONVERSION_ERROR);
-        }
-
-        // DTO 생성
-        return MyArticleListResponse.from(articleId, title, projId, projName, stgId, stgName, createdAt);
     }
 
     @Transactional

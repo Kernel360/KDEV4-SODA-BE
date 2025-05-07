@@ -75,9 +75,7 @@ public class ArticleService {
         article.delete();
     }
 
-    /**
-     * 특정 프로젝트 단계에 속한 모든 게시글 조회
-     */
+    // 특정 프로젝트 단계에 속한 모든 게시글 조회
     public Page<Article> getAllArticles(Long projectId, ArticleSearchCondition articleSearchCondition, Pageable pageable) {
         return articleProvider.searchArticles(projectId, articleSearchCondition, pageable);
     }

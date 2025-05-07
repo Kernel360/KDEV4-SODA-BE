@@ -53,13 +53,16 @@ public class Member extends BaseEntity {
     @Builder.Default
     private MemberStatus memberStatus = MemberStatus.AVAILABLE;
 
-    public void updateMemberStatus(MemberStatus memberStatus) {this.memberStatus = memberStatus;}
+    public void updateMemberStatus(MemberStatus memberStatus) {
+        this.memberStatus = memberStatus;
+    }
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
     }
 
-    public void updateAdminInfo(String name, String email, MemberRole role, Company company, String position, String phoneNumber) {
+    public void updateAdminInfo(String name, String email, MemberRole role, Company company, String position,
+            String phoneNumber) {
         this.name = name;
         this.email = email;
         this.role = role;
@@ -68,7 +71,8 @@ public class Member extends BaseEntity {
         this.phoneNumber = phoneNumber;
     }
 
-    public void initialProfile(String name, String email, String phoneNumber, String authId, String newPassword, String position) {
+    public void initialProfile(String name, String email, String phoneNumber, String authId, String newPassword,
+            String position) {
         this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
@@ -84,11 +88,11 @@ public class Member extends BaseEntity {
         this.position = position;
     }
 
-    public void Deleted() {
+    public void delete() {
         this.markAsDeleted();
     }
 
-    public void Active() {
+    public void restore() {
         this.markAsActive();
     }
 
@@ -102,6 +106,6 @@ public class Member extends BaseEntity {
     }
 
     public boolean isAdmin() {
-        return this.role == MemberRole.ADMIN;  // 예시로 role이 ADMIN일 경우 관리자
+        return this.role == MemberRole.ADMIN; // 예시로 role이 ADMIN일 경우 관리자
     }
 }

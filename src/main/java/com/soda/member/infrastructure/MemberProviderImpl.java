@@ -37,6 +37,11 @@ public class MemberProviderImpl implements MemberProvider {
     }
 
     @Override
+    public List<Member> findAllById(List<Long> ids) {
+        return memberRepository.findAllById(ids);
+    }
+
+    @Override
     public Optional<Member> findByIdAndIsDeletedFalse(Long id) {
         return memberRepository.findByIdAndIsDeletedFalse(id);
     }

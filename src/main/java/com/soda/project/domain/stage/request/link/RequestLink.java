@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.request.link;
 
-import com.soda.common.link.model.LinkBase;
+import com.soda.project.domain.stage.common.link.LinkBase;
 import com.soda.project.domain.stage.request.Request;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,6 +25,14 @@ public class RequestLink extends LinkBase {
         this.urlAddress = urlAddress;
         this.urlDescription = urlDescription;
         this.request = request;
+    }
+
+    public static RequestLink create(String urlAddress, String urlDescription, Request request) {
+        return RequestLink.builder()
+                .urlAddress(urlAddress)
+                .urlDescription(urlDescription)
+                .request(request)
+                .build();
     }
 
     public void updateRequest(Request request) {

@@ -1,6 +1,6 @@
 package com.soda.project.interfaces.stage.request.dto;
 
-import com.soda.common.link.dto.LinkUploadRequest;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
 import lombok.Getter;
 
 import java.util.List;

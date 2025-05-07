@@ -1,11 +1,11 @@
 package com.soda.project.interfaces.stage.request.response;
 
-import com.soda.common.file.dto.*;
-import com.soda.common.file.service.FileService;
-import com.soda.common.link.dto.LinkDeleteResponse;
-import com.soda.common.link.service.LinkService;
 import com.soda.global.response.ApiResponseForm;
+import com.soda.project.application.stage.common.FileFacade;
+import com.soda.project.application.stage.common.LinkFacade;
 import com.soda.project.application.stage.request.response.ResponseFacade;
+import com.soda.project.interfaces.stage.common.file.dto.*;
+import com.soda.project.interfaces.stage.common.link.dto.LinkDeleteResponse;
 import com.soda.project.interfaces.stage.request.response.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ResponseController {
     private final ResponseFacade responseFacade;
-
-    private final FileService fileService;
-    private final LinkService linkService;
+    private final FileFacade fileFacade;
+    private final LinkFacade linkFacade;
 
     @PostMapping("/requests/{requestId}/approval")
     public ResponseEntity<ApiResponseForm<?>> approveRequest(@RequestBody RequestApproveRequest requestApproveRequest,
@@ -74,7 +73,7 @@ public class ResponseController {
                                                               @RequestBody List<FileUploadRequest> fileUploadRequests,
                                                               HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        PresignedUploadResponse presignedUploadResponse = fileService.getPresignedUrls("response", responseId, memberId, fileUploadRequests);
+        PresignedUploadResponse presignedUploadResponse = fileFacade.getPresignedUrls("response", responseId, memberId, fileUploadRequests);
         return ResponseEntity.ok(ApiResponseForm.success(presignedUploadResponse));
     }
 
@@ -83,7 +82,7 @@ public class ResponseController {
                                                              @RequestBody List<ConfirmedFile> confirmedFiles,
                                                              HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        FileConfirmResponse fileConfirmResponse = fileService.confirmUpload("response", responseId, memberId, confirmedFiles);
+        FileConfirmResponse fileConfirmResponse = fileFacade.confirmUpload("response", responseId, memberId, confirmedFiles);
         return ResponseEntity.ok(ApiResponseForm.success(fileConfirmResponse));
     }
 
@@ -91,7 +90,7 @@ public class ResponseController {
     public ResponseEntity<ApiResponseForm<?>> deleteFile(@PathVariable Long fileId,
                                                          HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        FileDeleteResponse fileDeleteResponse = fileService.delete("response", fileId, memberId);
+        FileDeleteResponse fileDeleteResponse = fileFacade.delete("response", fileId, memberId);
         return ResponseEntity.ok(ApiResponseForm.success(fileDeleteResponse));
     }
 
@@ -99,7 +98,7 @@ public class ResponseController {
     public ResponseEntity<ApiResponseForm<?>> deleteLink(@PathVariable Long linkId,
                                                          HttpServletRequest request) {
         Long memberId = (Long) request.getAttribute("memberId");
-        LinkDeleteResponse linkDeleteResponse = linkService.delete("response", linkId, memberId);
+        LinkDeleteResponse linkDeleteResponse = linkFacade.delete("response", linkId, memberId);
         return ResponseEntity.ok(ApiResponseForm.success(linkDeleteResponse));
     }
 }

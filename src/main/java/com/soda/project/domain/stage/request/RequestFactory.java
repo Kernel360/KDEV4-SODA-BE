@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.request;
 
-import com.soda.common.link.service.LinkService;
+import com.soda.project.domain.stage.common.link.LinkService;
 import com.soda.global.response.GeneralException;
 import com.soda.member.domain.member.MemberProvider;
 import com.soda.member.domain.member.Member;

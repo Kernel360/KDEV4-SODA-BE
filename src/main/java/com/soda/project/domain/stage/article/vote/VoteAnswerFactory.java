@@ -1,7 +1,8 @@
 package com.soda.project.domain.stage.article.vote;
 
-import com.soda.member.domain.member.Member;
-import com.soda.project.interfaces.dto.stage.article.vote.VoteSubmitRequest;
+import com.soda.member.domain.Member;
+import com.soda.project.interfaces.stage.article.vote.VoteSubmitRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +10,9 @@ import java.util.List;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class VoteAnswerFactory {
+    private final VoteAnswerProvider voteAnswerProvider;
 
     public VoteAnswer createAnswerWithItems(Vote vote, Member submitter, VoteSubmitRequest request, List<VoteItem> selectedItems) {
         log.debug("VoteAnswerFactory: Answer 생성 시작 (Entity.create 호출) - voteId={}, submitterId={}", vote.getId(), submitter.getId());
@@ -22,7 +25,9 @@ public class VoteAnswerFactory {
                 selectedItems
         );
 
-        log.debug("VoteAnswerFactory: Answer 객체 생성 완료 (저장 전), Item 개수: {}", voteAnswer.getSelectedItems().size());
-        return voteAnswer;
+        VoteAnswer savedAnswer = voteAnswerProvider.storeAnswerWithItems(voteAnswer);
+        log.info("[VoteFactory] Answer 및 연관 Items 저장 완료 - answerId={}", savedAnswer.getId());
+
+        return savedAnswer;
     }
 }

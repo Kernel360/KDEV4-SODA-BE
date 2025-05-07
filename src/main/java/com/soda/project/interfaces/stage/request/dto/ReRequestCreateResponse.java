@@ -1,6 +1,6 @@
 package com.soda.project.interfaces.stage.request.dto;
 
-import com.soda.common.link.dto.LinkDTO;
+import com.soda.project.interfaces.stage.common.link.dto.LinkDTO;
 import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.RequestStatus;
 import lombok.Builder;

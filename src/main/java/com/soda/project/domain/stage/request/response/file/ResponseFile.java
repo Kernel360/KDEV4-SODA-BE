@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.request.response.file;
 
-import com.soda.common.file.model.FileBase;
+import com.soda.project.domain.stage.common.file.FileBase;
 import com.soda.project.domain.stage.request.response.Response;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,6 +25,14 @@ public class ResponseFile extends FileBase {
         this.name = name;
         this.url = url;
         this.response = response;
+    }
+
+    public static ResponseFile create(String fileName, String url, Response response) {
+        return ResponseFile.builder()
+                .name(fileName)
+                .url(url)
+                .response(response)
+                .build();
     }
 
     @Override

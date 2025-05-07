@@ -1,11 +1,10 @@
 package com.soda.project.domain.stage.request.response.file;
 
-import com.soda.common.file.strategy.FileStrategy;
 import com.soda.global.response.GeneralException;
+import com.soda.project.domain.stage.common.file.FileStrategy;
 import com.soda.project.domain.stage.request.response.Response;
 import com.soda.project.domain.stage.request.response.ResponseErrorCode;
-import com.soda.project.infrastructure.stage.request.response.ResponseFileRepository;
-import com.soda.project.infrastructure.stage.request.response.ResponseRepository;
+import com.soda.project.domain.stage.request.response.ResponseProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +17,8 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class ResponseFileStrategy implements FileStrategy<Response, ResponseFile> {
 
-    private final ResponseRepository responseRepository;
-    private final ResponseFileRepository responseFileRepository;
+    private final ResponseProvider responseProvider;
+    private final ResponseFileProvider responseFileProvider;
 
     @Override
     public String getSupportedDomain() {
@@ -28,7 +27,7 @@ public class ResponseFileStrategy implements FileStrategy<Response, ResponseFile
 
     @Override
     public Response getDomainOrThrow(Long domainId) {
-        return responseRepository.findById(domainId)
+        return responseProvider.findById(domainId)
                 .orElseThrow(() -> new GeneralException(ResponseErrorCode.RESPONSE_NOT_FOUND));
     }
 
@@ -40,37 +39,27 @@ public class ResponseFileStrategy implements FileStrategy<Response, ResponseFile
     }
 
     @Override
-    public ResponseFile toEntity(String fileName, String url, Response Response) {
-        return ResponseFile.builder()
-                .name(fileName)
-                .url(url)
-                .response(Response)
-                .build();
+    public ResponseFile toEntity(String fileName, String url, Response response) {
+        return ResponseFile.create(fileName, url, response);
     }
 
     @Override
     public List<ResponseFile> toEntities(List<String> urls, List<String> names, Response domain) {
-        if (urls == null || urls.isEmpty()) {
-            return List.of();
-        }
+        if (urls == null || urls.isEmpty()) { return List.of(); }
 
         return IntStream.range(0, urls.size())
-                .mapToObj(i -> ResponseFile.builder()
-                        .url(urls.get(i))
-                        .name(names.get(i))
-                        .response(domain)
-                        .build())
+                .mapToObj(i -> ResponseFile.create(urls.get(i), names.get(i), domain))
                 .toList();
     }
 
     @Override
     public void saveAll(List<ResponseFile> entities) {
-        responseFileRepository.saveAll(entities);
+        responseFileProvider.saveAll(entities);
     }
 
     @Override
     public ResponseFile getFileOrThrow(Long fileId) {
-        return responseFileRepository.findById(fileId)
+        return responseFileProvider.findById(fileId)
                 .orElseThrow(() -> new GeneralException(ResponseErrorCode.RESPONSE_FILE_NOT_FOUND));
     }
 

@@ -1,7 +1,7 @@
 package com.soda.project.application.stats;
 
 import com.soda.project.domain.stats.ProjectDailyStats;
-import com.soda.project.infrastructure.ProjectDailyStatsRepository;
+import com.soda.project.infrastructure.stats.ProjectDailyStatsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

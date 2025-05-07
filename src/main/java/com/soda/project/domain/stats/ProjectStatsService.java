@@ -1,8 +1,8 @@
 package com.soda.project.domain.stats;
 
 import com.querydsl.core.Tuple;
-import com.soda.project.interfaces.dto.ProjectStatsCondition;
-import com.soda.project.interfaces.dto.ProjectStatsResponse;
+import com.soda.project.interfaces.stats.ProjectStatsCondition;
+import com.soda.project.interfaces.stats.ProjectStatsResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

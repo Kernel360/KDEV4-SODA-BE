@@ -43,9 +43,9 @@ public class LinkService {
     }
 
     @Transactional
-    public List<? extends LinkBase> buildLinks(String domainType, Object domain, List<? extends LinkUploadRequest.LinkUploadDTO> dtos) {
-        LinkStrategy<Object, LinkBase> strategy = getStrategy(domainType);
-        return strategy.toEntities(dtos, domain);
+    public <T extends LinkBase> List<T> buildLinks(String domainType, Object domain, List<? extends LinkUploadRequest.LinkUploadDTO> dtos) {
+        LinkStrategy strategy = getStrategy(domainType);
+        return (List<T>) strategy.toEntities(dtos, domain);
     }
 
     private LinkStrategy<Object, LinkBase> getStrategy(String domainType) {

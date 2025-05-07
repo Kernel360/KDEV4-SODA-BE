@@ -50,7 +50,7 @@ public class ResponseLinkStrategy implements LinkStrategy<Response, ResponseLink
     }
 
     @Override
-    public List<ResponseLink> toEntities(List<? extends LinkUploadRequest.LinkUploadDTO> dtos, Object response) {
+    public List<ResponseLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Response response) {
         if (dtos == null || dtos.isEmpty()) {
             return List.of();
         }

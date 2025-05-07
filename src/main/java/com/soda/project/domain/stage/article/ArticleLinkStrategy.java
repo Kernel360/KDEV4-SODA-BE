@@ -48,7 +48,7 @@ public class ArticleLinkStrategy implements LinkStrategy<Article, ArticleLink> {
     }
 
     @Override
-    public List<ArticleLink> toEntities(List<? extends LinkUploadRequest.LinkUploadDTO> dtos, Object article) {
+    public List<ArticleLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Article article) {
         if (dtos == null || dtos.isEmpty()) {
             return List.of();
         }

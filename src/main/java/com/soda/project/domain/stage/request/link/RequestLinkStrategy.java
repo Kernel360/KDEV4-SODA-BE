@@ -49,7 +49,8 @@ public class RequestLinkStrategy implements LinkStrategy<Request, RequestLink> {
                 .build();
     }
 
-    public List<RequestLink> toEntities(List<? extends LinkUploadRequest.LinkUploadDTO> dtos, Object request) {
+    @Override
+    public List<RequestLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Request request) {
         if (dtos == null || dtos.isEmpty()) {
             return List.of();
         }

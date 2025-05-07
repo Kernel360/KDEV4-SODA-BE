@@ -18,8 +18,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -334,18 +337,43 @@ public class MemberService {
 
     }
 
-    public Member findMemberByIdAndCompany(Long userId) {
-        log.debug("Fetching Member with Company using Fetch Join. User ID: {}", userId);
-        return memberRepository.findByIdWithCompany(userId)
-                .orElseThrow(() -> {
-                    log.warn("Member not found with ID: {}", userId);
-                    return new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
-                });
-    }
-
-
     public Member findWithProjectsById(Long memberId) {
         return memberRepository.findWithProjectsById(memberId)
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    public List<Member> findMembersByIdsAndCompany(List<Long> ids, Company company) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return new ArrayList<>(); // 빈 목록이면 빈 리스트 반환
+        }
+        if (company == null || company.getId() == null) {
+            throw new IllegalArgumentException("회사 정보는 필수입니다.");
+        }
+
+        log.debug("ID 목록 {} 과 회사 ID {} 로 멤버 조회 시작", ids, company.getId());
+        // ID 목록으로 활성 멤버 조회
+        List<Member> members = memberRepository.findByIdInAndIsDeletedFalse(ids);
+
+        // 요청한 ID 개수와 조회된 멤버 수가 다르면 예외 (존재하지 않는 ID 포함)
+        if (members.size() != ids.size()) {
+            List<Long> foundIds = members.stream().map(Member::getId).toList();
+            List<Long> notFoundIds = ids.stream().filter(id -> !foundIds.contains(id)).collect(Collectors.toList());
+            log.warn("요청된 멤버 ID 중 일부를 찾을 수 없습니다. Requested: {}, NotFound: {}", ids, notFoundIds);
+            throw new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER);
+        }
+
+        // 모든 멤버가 지정된 회사 소속인지 검증
+        Long expectedCompanyId = company.getId();
+        for (Member member : members) {
+            if (member.getCompany() == null || !member.getCompany().getId().equals(expectedCompanyId)) {
+                log.error("멤버(ID:{})가 예상된 회사(ID:{}, 이름:'{}') 소속이 아닙니다. 실제 소속: {}",
+                        member.getId(), expectedCompanyId, company.getName(),
+                        (member.getCompany() != null ? member.getCompany().getId() + "('" + member.getCompany().getName() + "')" : "없음"));
+                throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_SPECIFIED_COMPANY);
+            }
+        }
+        log.debug("ID 목록 {} 의 모든 멤버가 회사 ID {} 소속임을 확인", ids, company.getId());
+
+        return members;
     }
 }

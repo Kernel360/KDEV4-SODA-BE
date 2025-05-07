@@ -1,7 +1,7 @@
 package com.soda.project.interfaces;
 
 import com.soda.global.response.ApiResponseForm;
-import com.soda.project.domain.ProjectService;
+import com.soda.project.application.ProjectFacade;
 import com.soda.project.interfaces.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ProjectController {
 
-    private final ProjectService projectService;
+    private final ProjectFacade projectFacade;
 
     @PostMapping("")
     public ResponseEntity<ApiResponseForm<ProjectCreateResponse>> createProject(HttpServletRequest request,
                                                                                 @Valid @RequestBody ProjectCreateRequest projectCreateRequest) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        ProjectCreateResponse newProject = projectService.createProject(userRole, projectCreateRequest);
+        ProjectCreateResponse newProject = projectFacade.createProject(userRole, projectCreateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(newProject, "project 생성 성공"));
     }
 
@@ -33,14 +33,14 @@ public class ProjectController {
                                                                                           HttpServletRequest request,
                                                                                           @Valid @RequestBody DevCompanyAssignmentRequest devCompanyAssignmentRequest) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        DevCompanyAssignmentResponse response = projectService.assignDevCompany(projectId, userRole, devCompanyAssignmentRequest);
+        DevCompanyAssignmentResponse response = projectFacade.assignDevCompany(projectId, userRole, devCompanyAssignmentRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "project에 개발사 지정 성공"));
     }
 
     @GetMapping("")
     public ResponseEntity<ApiResponseForm<Page<ProjectListResponse>>> getAllProjects(@ModelAttribute ProjectSearchCondition projectSearchCondition,
                                                                                      @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<ProjectListResponse> projectList = projectService.getAllProjects(projectSearchCondition, pageable);
+        Page<ProjectListResponse> projectList = projectFacade.getAllProjects(projectSearchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(projectList));
     }
 
@@ -49,7 +49,7 @@ public class ProjectController {
                                                                                       @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) request.getAttribute("memberId");
         String userRole = (String) request.getAttribute("userRole").toString();
-        Page<MyProjectListResponse> response = projectService.getMyProjects(projectSearchCondition, userId, userRole, pageable);
+        Page<MyProjectListResponse> response = projectFacade.getMyProjects(projectSearchCondition, userId, userRole, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -57,7 +57,7 @@ public class ProjectController {
     public ResponseEntity<ApiResponseForm<ProjectViewResponse>> getProject(HttpServletRequest request, @PathVariable Long projectId) {
         Long userId = (Long) request.getAttribute("memberId");
         String userRole = (String) request.getAttribute("userRole").toString();
-        ProjectViewResponse response = projectService.getProject(userId, userRole, projectId);
+        ProjectViewResponse response = projectFacade.getProject(userId, userRole, projectId);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -65,31 +65,30 @@ public class ProjectController {
     public ResponseEntity<ApiResponseForm<ProjectStatusUpdateResponse>> updateProjectStatus(HttpServletRequest request, @PathVariable Long projectId,
                                                                                             @Valid @RequestBody ProjectStatusUpdateRequest updateRequest) {
         Long userId = (Long) request.getAttribute("memberId");
-        String userRole = (String) request.getAttribute("userRole").toString();
-        ProjectStatusUpdateResponse response = projectService.updateProjectStatus(userId, userRole, projectId, updateRequest);
+        ProjectStatusUpdateResponse response = projectFacade.updateProjectStatus(userId, projectId, updateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 상태 변경 성공"));
     }
 
     @DeleteMapping("/{projectId}")
     public ResponseEntity<Void> deleteProject(HttpServletRequest request, @PathVariable Long projectId) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        projectService.deleteProject(projectId);
+        projectFacade.deleteProject(projectId, userRole);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{projectId}")
     public ResponseEntity<ApiResponseForm<ProjectInfoUpdateResponse>> updateProjectInfo(HttpServletRequest request, @PathVariable Long projectId,
-                                                                @Valid @RequestBody ProjectInfoUpdateRequest projectInfoUpdateRequest) {
+                                                                                        @Valid @RequestBody ProjectInfoUpdateRequest projectInfoUpdateRequest) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        ProjectInfoUpdateResponse response = projectService.updateProjectInfo(userRole, projectId, projectInfoUpdateRequest);
+        ProjectInfoUpdateResponse response = projectFacade.updateProjectInfo(userRole, projectId, projectInfoUpdateRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트 기본 정보 수정 성공"));
     }
 
     @PostMapping("/{projectId}/companies")
-    public ResponseEntity<ApiResponseForm<ProjectCompanyAddResponse>> addCompanyToProject (HttpServletRequest request, @PathVariable Long projectId,
-                                                                                           @Valid @RequestBody ProjectCompanyAddRequest projectCompanyAddRequest) {
+    public ResponseEntity<ApiResponseForm<ProjectCompanyAddResponse>> addCompanyToProject(HttpServletRequest request, @PathVariable Long projectId,
+                                                                                          @Valid @RequestBody ProjectCompanyAddRequest projectCompanyAddRequest) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        ProjectCompanyAddResponse response = projectService.addCompanyToProject(userRole, projectId, projectCompanyAddRequest);
+        ProjectCompanyAddResponse response = projectFacade.addCompanyToProject(userRole, projectId, projectCompanyAddRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트에 새로운 회사/멤버 추가 성공"));
     }
 
@@ -97,22 +96,22 @@ public class ProjectController {
     public ResponseEntity<Void> deleteCompanyFromProject(@PathVariable Long projectId,
                                                          @PathVariable Long companyId, HttpServletRequest request) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        projectService.deleteCompanyFromProject(userRole, projectId, companyId);
+        projectFacade.deleteCompanyFromProject(userRole, projectId, companyId);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{projectId}/members")
-    public ResponseEntity<ApiResponseForm<ProjectMemberAddResponse>> addMembersToProject (HttpServletRequest request, @PathVariable Long projectId,
-                                                                   @Valid @RequestBody ProjectMemberAddRequest projectMemberAddRequest) {
+    public ResponseEntity<ApiResponseForm<ProjectMemberAddResponse>> addMembersToProject(HttpServletRequest request, @PathVariable Long projectId,
+                                                                                         @Valid @RequestBody ProjectMemberAddRequest projectMemberAddRequest) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        ProjectMemberAddResponse response = projectService.addMemberToProject(userRole, projectId, projectMemberAddRequest);
+        ProjectMemberAddResponse response = projectFacade.addMemberToProject(userRole, projectId, projectMemberAddRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response, "프로젝트에 멤버 추가 성공"));
     }
 
     @DeleteMapping("/{projectId}/members/{memberId}")
-    public ResponseEntity<Void> deleteMemberFromProject (HttpServletRequest request, @PathVariable Long projectId, @PathVariable Long memberId) {
+    public ResponseEntity<Void> deleteMemberFromProject(HttpServletRequest request, @PathVariable Long projectId, @PathVariable Long memberId) {
         String userRole = (String) request.getAttribute("userRole").toString();
-        projectService.deleteMemberFromProject(userRole, projectId, memberId);
+        projectFacade.deleteMemberFromProject(userRole, projectId, memberId);
         return ResponseEntity.noContent().build();
     }
 
@@ -120,17 +119,17 @@ public class ProjectController {
     public ResponseEntity<ApiResponseForm<Page<ProjectMemberResponse>>> getProjectMembers(
             @PathVariable Long projectId,
             @ModelAttribute ProjectMemberSearchCondition searchCondition,
-            @PageableDefault(sort = "member.name", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        Page<ProjectMemberResponse> memberPage = projectService.getProjectMembers(projectId, searchCondition, pageable);
+        Page<ProjectMemberResponse> memberPage = projectFacade.getProjectMembers(projectId, searchCondition, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(memberPage));
     }
 
     @GetMapping("/my-company")
-    public ResponseEntity<ApiResponseForm<Page<MyProjectListResponse>>> getMyCompanyProjects (HttpServletRequest request,
-                                                                          @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<ApiResponseForm<Page<MyProjectListResponse>>> getMyCompanyProjects(HttpServletRequest request,
+                                                                                             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Long userId = (Long) request.getAttribute("memberId");
-        Page<MyProjectListResponse> response = projectService.getMyCompanyProjects(userId, pageable);
+        Page<MyProjectListResponse> response = projectFacade.getMyCompanyProjects(userId, pageable);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
 
@@ -140,7 +139,7 @@ public class ProjectController {
             @Valid @ModelAttribute ProjectStatsCondition statsRequest) {
         Long userId = (Long) request.getAttribute("memberId");
         String userRole = (String) request.getAttribute("userRole").toString();
-        ProjectStatsResponse response = projectService.getProjectCreationTrend(userId, userRole, statsRequest);
+        ProjectStatsResponse response = projectFacade.getProjectCreationTrend(userId, userRole, statsRequest);
         return ResponseEntity.ok(ApiResponseForm.success(response));
     }
-    }
+}

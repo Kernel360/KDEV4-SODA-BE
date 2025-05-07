@@ -4,7 +4,7 @@ import com.soda.project.domain.stage.common.file.FileStrategy;
 import com.soda.global.response.GeneralException;
 import com.soda.project.domain.stage.request.response.Response;
 import com.soda.project.domain.stage.request.response.ResponseErrorCode;
-import com.soda.project.infrastructure.stage.request.response.ResponseFileRepository;
+import com.soda.project.infrastructure.stage.request.response.file.ResponseFileRepository;
 import com.soda.project.infrastructure.stage.request.response.ResponseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

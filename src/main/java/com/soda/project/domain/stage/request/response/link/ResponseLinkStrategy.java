@@ -5,7 +5,7 @@ import com.soda.project.domain.stage.common.link.LinkStrategy;
 import com.soda.global.response.GeneralException;
 import com.soda.project.domain.stage.request.response.Response;
 import com.soda.project.domain.stage.request.response.ResponseErrorCode;
-import com.soda.project.infrastructure.stage.request.response.ResponseLinkRepository;
+import com.soda.project.infrastructure.stage.request.response.link.ResponseLinkRepository;
 import com.soda.project.infrastructure.stage.request.response.ResponseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,12 +1,11 @@
 package com.soda.project.domain.stage.request.link;
 
-import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
-import com.soda.project.domain.stage.common.link.LinkStrategy;
 import com.soda.global.response.GeneralException;
+import com.soda.project.domain.stage.common.link.LinkStrategy;
 import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.RequestErrorCode;
-import com.soda.project.infrastructure.stage.request.link.RequestLinkRepository;
-import com.soda.project.infrastructure.stage.request.RequestRepository;
+import com.soda.project.domain.stage.request.RequestProvider;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class RequestLinkStrategy implements LinkStrategy<Request, RequestLink> {
 
-    private final RequestRepository requestRepository;
-    private final RequestLinkRepository requestLinkRepository;
+    private final RequestProvider requestProvider;
+    private final RequestLinkProvider requestLinkProvider;
 
 
     @Override
@@ -29,7 +28,7 @@ public class RequestLinkStrategy implements LinkStrategy<Request, RequestLink> {
 
     @Override
     public Request getDomainOrThrow(Long domainId) {
-        return requestRepository.findById(domainId)
+        return requestProvider.findById(domainId)
                 .orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_NOT_FOUND));
     }
 
@@ -42,36 +41,27 @@ public class RequestLinkStrategy implements LinkStrategy<Request, RequestLink> {
 
     @Override
     public RequestLink toEntity(LinkUploadRequest.LinkUploadDTO dto, Request request) {
-        return RequestLink.builder()
-                .urlAddress(dto.getUrlAddress())
-                .urlDescription(dto.getUrlDescription())
-                .request(request)
-                .build();
+        return RequestLink.create(dto.getUrlAddress(), dto.getUrlDescription(), request);
     }
 
     @Override
     public List<RequestLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Request request) {
-        if (dtos == null || dtos.isEmpty()) {
-            return List.of();
-        }
+        if (dtos == null || dtos.isEmpty()) { return List.of();}
 
         return dtos.stream()
-                .map(dto -> RequestLink.builder()
-                        .urlAddress(dto.getUrlAddress())
-                        .urlDescription(dto.getUrlDescription())
-                        .request(request)
-                        .build())
+                .map(dto -> RequestLink.create(dto.getUrlAddress(), dto.getUrlDescription(), request))
                 .toList();
     }
 
+    @Transactional
     @Override
     public void saveAll(List<RequestLink> entities) {
-        requestLinkRepository.saveAll(entities);
+        requestLinkProvider.saveAll(entities);
     }
 
     @Override
     public RequestLink getLinkOrThrow(Long linkId) {
-        return requestLinkRepository.findById(linkId)
+        return requestLinkProvider.findById(linkId)
                 .orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_LINK_NOT_FOUND));
     }
 

@@ -27,6 +27,14 @@ public class RequestLink extends LinkBase {
         this.request = request;
     }
 
+    public static RequestLink create(String urlAddress, String urlDescription, Request request) {
+        return RequestLink.builder()
+                .urlAddress(urlAddress)
+                .urlDescription(urlDescription)
+                .request(request)
+                .build();
+    }
+
     public void updateRequest(Request request) {
         this.request = request;
     }

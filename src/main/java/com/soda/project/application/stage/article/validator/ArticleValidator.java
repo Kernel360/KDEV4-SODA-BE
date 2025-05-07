@@ -46,7 +46,7 @@ public class ArticleValidator {
         }
     }
 
-    public void validateDeletePermission(Member requester, String requesterRoleString, Article article) {
+    public void validateUpdatePermission(Member requester, String requesterRoleString, Article article) {
         MemberRole requesterRole = null;
         if (requesterRoleString != null) {
             requesterRole = MemberRole.valueOf(requesterRoleString.toUpperCase());
@@ -56,7 +56,7 @@ public class ArticleValidator {
         boolean isAuthor = article.getMember().getId().equals(requester.getId());
 
         if (!isAdmin && !isAuthor) {
-            throw new GeneralException(ArticleErrorCode.NO_PERMISSION_TO_DELETE_ARTICLE);
+            throw new GeneralException(ArticleErrorCode.NO_PERMISSION_TO_UPDATE_ARTICLE);
         }
     }
 }

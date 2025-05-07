@@ -168,7 +168,20 @@ public class ArticleFacade {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Article article = articleService.validateArticle(articleId);
 
-        articleValidator.validateDeletePermission(member, userRole, article);
+        articleValidator.validateUpdatePermission(member, userRole, article);
         articleService.deleteArticle(article);
+    }
+
+    @LoggableEntityAction(action = "UPDATE", entityClass = Article.class)
+    @Transactional
+    public ArticleModifyResponse updateArticle(Long userId, String userRole, Long articleId, ArticleModifyRequest request) {
+        Member member = memberService.findByIdAndIsDeletedFalse(userId);
+        Article article = articleService.validateArticle(articleId);
+
+        articleValidator.validateUpdatePermission(member, userRole, article);
+        articleValidator.validateLinkSize(request.getLinkList());
+
+        Article updatedArticle = articleService.updateArticle(article, request.getTitle(), request.getContent(), request.getPriority(), request.getDeadLine(), request.getLinkList());
+        return ArticleModifyResponse.fromEntity(updatedArticle);
     }
 }

@@ -73,7 +73,7 @@ public class ArticleController {
                                                                                 @PathVariable Long articleId, @RequestBody ArticleModifyRequest request) {
         Long userId = (Long) user.getAttribute("memberId");
         String userRole = (String) user.getAttribute("userRole").toString();
-        ArticleModifyResponse response = articleService.updateArticle(userId, userRole, articleId, request);
+        ArticleModifyResponse response = articleFacade.updateArticle(userId, userRole, articleId, request);
         return ResponseEntity.ok(ApiResponseForm.success(response, "Article 수정 성공"));
     }
 

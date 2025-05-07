@@ -2,16 +2,9 @@ package com.soda.project.domain.stage.article;
 
 import com.querydsl.core.Tuple;
 import com.soda.common.link.dto.LinkUploadRequest;
-import com.soda.common.link.service.LinkService;
-import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.global.response.GeneralException;
 import com.soda.member.domain.Member;
-import com.soda.member.domain.MemberRole;
 import com.soda.member.domain.MemberService;
-import com.soda.project.domain.Project;
-import com.soda.project.domain.ProjectErrorCode;
-import com.soda.project.domain.ProjectService;
-import com.soda.project.domain.member.MemberProjectService;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.article.enums.PriorityType;
 import com.soda.project.domain.stage.article.error.ArticleErrorCode;
@@ -31,12 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArticleService {
 
-    private final MemberProjectService memberProjectService;
-    private final ProjectService projectService;
-    private final ArticleFileService articleFileService;
-    private final ArticleLinkService articleLinkService;
     private final MemberService memberService;
-    private final LinkService linkService;
 
     private final ArticleProvider articleProvider;
     private final ArticleFactory articleFactory;
@@ -80,28 +68,12 @@ public class ArticleService {
 
     /**
      * 기존 게시글 수정
-     * @param userId 수정하는 사용자 ID
-     * @param userRole 수정하는 사용자의 역할
-     * @param articleId 수정할 게시글의 ID
-     * @param request 수정할 게시글의 새로운 정보
-     * @return 수정된 게시글의 정보
      */
-    @LoggableEntityAction(action = "UPDATE", entityClass = Article.class)
-    @Transactional
-    public ArticleModifyResponse updateArticle(Long userId, String userRole, Long articleId, ArticleModifyRequest request) {
-        Member member = memberService.findByIdAndIsDeletedFalse(userId);
-        Project project = projectService.getValidProject(request.getProjectId());
-
-        checkIfMemberIsAdminOrProjectMember(userRole, member, project);
-
-        Article article = validateArticle(articleId);
-
-        articleLinkService.validateLinkSize(request.getLinkList());
-
-        article.updateArticle(request.getTitle(), request.getContent(), request.getPriority(), request.getDeadLine());
-        article.addLinks(linkService.buildLinks("article", article, request.getLinkList()));
-
-        return ArticleModifyResponse.fromEntity(article);
+    public Article updateArticle(Article article, String title, String content, PriorityType priority, LocalDateTime deadline,
+                                 List<LinkUploadRequest.LinkUploadDTO> linkList) {
+        article.updateArticle(title, content, priority, deadline);
+        articleFactory.updateLinksForArticle(article, linkList);
+        return article;
     }
 
     /**
@@ -127,25 +99,7 @@ public class ArticleService {
     }
 
     /**
-     * 관리자 여부 체크 및 프로젝트 멤버 여부 체크
-     * @param userRole 사용자 역할
-     * @param member 사용자의 멤버 정보
-     * @param project 프로젝트 정보
-     * @throws GeneralException 사용자가 관리자도 아니고 프로젝트 멤버도 아닌 경우 예외 발생
-     */
-    private void checkIfMemberIsAdminOrProjectMember(String userRole, Member member, Project project) {
-        boolean isAdmin = memberService.isAdmin(MemberRole.valueOf(userRole));
-        boolean isProjectMember = memberProjectService.existsByMemberAndProjectAndIsDeletedFalse(member, project);
-
-        if (!isAdmin && !isProjectMember) {
-            throw new GeneralException(ProjectErrorCode.MEMBER_NOT_IN_PROJECT);
-        }
-    }
-
-    /**
      * 게시글을 ID로 검증
-     * @param articleId 게시글 ID
-     * @return 검증된 게시글
      */
     public Article validateArticle(Long articleId) {
         return articleProvider.findByIdAndIsDeletedFalseWithMemberAndCompanyUsingQuerydsl(articleId)

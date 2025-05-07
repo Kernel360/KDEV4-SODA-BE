@@ -83,6 +83,22 @@ public class Article extends BaseEntity {
         this.parentArticle = parentArticle;
     }
 
+    protected static Article createArticle(String title, String content, PriorityType priority, LocalDateTime deadline,
+                                           Member member, Stage stage, Article parentArticle) {
+        return Article.builder()
+                .title(title)
+                .content(content)
+                .priority(priority)
+                .deadline(deadline)
+                .member(member)
+                .stage(stage)
+                .status(ArticleStatus.PENDING)
+                .parentArticle(parentArticle)
+                .articleFileList(null)
+                .articleLinkList(null)
+                .build();
+    }
+
     public void delete() {
         this.markAsDeleted();
         if (this.commentList != null) {

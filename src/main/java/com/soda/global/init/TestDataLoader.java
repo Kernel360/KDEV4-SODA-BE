@@ -12,8 +12,8 @@
 //import com.soda.project.domain.Project;
 //import com.soda.project.domain.stage.Stage;
 //import com.soda.project.enums.ProjectStatus;
-//import com.soda.project.infrastructure.CompanyProjectRepository;
-//import com.soda.project.infrastructure.MemberProjectRepository;
+//import com.soda.project.infrastructure.company.CompanyProjectRepository;
+//import com.soda.project.infrastructure.member.MemberProjectRepository;
 //import com.soda.project.infrastructure.ProjectRepository;
 //import com.soda.project.infrastructure.stage.StageRepository;
 //import com.soda.request.entity.Request;

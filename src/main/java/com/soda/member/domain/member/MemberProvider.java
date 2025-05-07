@@ -44,4 +44,6 @@ public interface MemberProvider {
     MemberDetailDto getMemberDetailWithCompany(Long userId);
 
     List<Member> findMembersByCompany(Company company);
+
+    Optional<Member> findByNameAndEmail(String name, String email);
 }

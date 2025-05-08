@@ -1,6 +1,6 @@
-package com.soda.notification.repository;
+package com.soda.notification.infrastructure;
 
-import com.soda.notification.entity.MemberNotification;
+import com.soda.notification.domain.MemberNotification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;

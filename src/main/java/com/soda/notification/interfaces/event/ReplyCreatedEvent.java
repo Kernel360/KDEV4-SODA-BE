@@ -1,4 +1,4 @@
-package com.soda.notification.event;
+package com.soda.notification.interfaces.event;
 
 public record ReplyCreatedEvent(
         Object source,

@@ -1,13 +1,13 @@
-package com.soda.notification.listener;
+package com.soda.notification.application;
 
 import com.soda.member.domain.member.Member;
-import com.soda.notification.dto.NotificationData;
-import com.soda.notification.entity.MemberNotification;
-import com.soda.notification.entity.Notification;
-import com.soda.notification.event.CommentCreatedEvent;
-import com.soda.notification.event.ReplyCreatedEvent;
-import com.soda.notification.service.MemberNotificationService;
-import com.soda.notification.service.NotificationService;
+import com.soda.notification.interfaces.dto.NotificationData;
+import com.soda.notification.domain.MemberNotification;
+import com.soda.notification.domain.Notification;
+import com.soda.notification.interfaces.event.CommentCreatedEvent;
+import com.soda.notification.interfaces.event.ReplyCreatedEvent;
+import com.soda.notification.domain.MemberNotificationService;
+import com.soda.notification.domain.NotificationService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

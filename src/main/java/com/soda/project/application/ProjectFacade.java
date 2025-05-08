@@ -202,7 +202,7 @@ public class ProjectFacade {
         projectService.deleteProject(project);
     }
 
-    @LoggableEntityAction(action = "UPDATE_STATUS", entityClass = Project.class)
+    @LoggableEntityAction(action = "UPDATE", entityClass = Project.class)
     @Transactional
     public ProjectStatusUpdateResponse updateProjectStatus(Long userId, Long projectId, ProjectStatusUpdateRequest request) {
         Member member = memberService.findMemberById(userId);

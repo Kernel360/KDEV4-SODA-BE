@@ -185,8 +185,11 @@ public class MemberService {
                 .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
     }
 
-    public boolean existsByEmailAndIsDeletedFalse(String email) {
-        return memberProvider.existsByEmailAndIsDeletedFalse(email);
+    public void validateEmailExists(String email) {
+        boolean isExists = memberProvider.existsByEmailAndIsDeletedFalse(email);
+        if (isExists) {
+            throw new GeneralException(MemberErrorCode.DUPLICATE_AUTH_ID);
+        }
     }
 
     public void validateDuplicateAuthId(String authId) {

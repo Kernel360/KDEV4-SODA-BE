@@ -8,6 +8,7 @@ import com.soda.project.interfaces.stage.article.vote.VoteSubmitRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +20,6 @@ public class VoteService {
 
     private final VoteProvider voteProvider;
     private final VoteAnswerFactory voteAnswerFactory;
-    private final VoteFactory voteFactory;
     private final VoteResultCalculator voteResultCalculator;
     private final VoteItemFactory voteItemFactory;
 
@@ -27,10 +27,16 @@ public class VoteService {
                                                  boolean allowTextAnswer, LocalDateTime deadLine, List<String> itemTexts) {
         log.info("Vote 생성 및 저장 시작 (VoteService): articleId={}", article.getId());
 
-        Vote vote = voteFactory.createVoteWithItems(article, title, allowMultipleSelection, allowTextAnswer, deadLine, itemTexts);
+        Vote vote = Vote.create(title, allowMultipleSelection, allowTextAnswer, deadLine, article);
         Vote savedVote = voteProvider.store(vote);
-        log.info("[VoteService] Vote 및 연관 VoteItem 저장 완료: voteId={}", savedVote.getId());
 
+        if (!allowTextAnswer && !CollectionUtils.isEmpty(itemTexts)) {
+            List<VoteItem> createdItems = voteItemFactory.createVoteItems(savedVote, itemTexts);
+            savedVote.getVoteItems().clear(); // 기존 컬렉션 초기화
+            savedVote.getVoteItems().addAll(createdItems);
+        }
+
+        log.info("[VoteService] Vote 및 연관 VoteItem 저장 완료: voteId={}", savedVote.getId());
         return VoteCreateResponse.from(savedVote);
     }
 

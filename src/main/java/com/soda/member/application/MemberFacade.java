@@ -1,6 +1,7 @@
 package com.soda.member.application;
 
 import com.soda.global.response.GeneralException;
+import com.soda.member.domain.company.CompanyService;
 import com.soda.member.domain.member.Member;
 import com.soda.member.domain.member.MemberService;
 import com.soda.member.domain.member.MemberStatus;
@@ -30,7 +31,7 @@ import java.util.List;
 public class MemberFacade {
     private final MemberService memberService;
     private final MemberValidator memberValidator;
-    private final CompanyFacade companyFacade;
+    private final CompanyService companyService;
 
     public FindAuthIdResponse findMaskedAuthId(FindAuthIdRequest request) {
         Member member = memberService.findByNameAndEmail(request.getName(), request.getEmail());
@@ -73,6 +74,7 @@ public class MemberFacade {
     @Transactional
     public void changeUserPassword(Long memberId, ChangePasswordRequest requestDto) {
         Member member = memberService.findByIdAndIsDeletedFalse(memberId);
+        memberValidator.validatePasswordChange(member, requestDto.getCurrentPassword(), requestDto.getNewPassword());
         memberService.changePassword(member, requestDto.getCurrentPassword(), requestDto.getNewPassword());
     }
 
@@ -106,8 +108,8 @@ public class MemberFacade {
     @Transactional
     public MemberDetailDto updateMemberInfo(Long userId, AdminUpdateUserRequestDto requestDto) {
         Member member = memberService.findMemberById(userId);
-        Company company = requestDto.getCompanyId() != null ? companyFacade.getCompany(requestDto.getCompanyId())
-                : member.getCompany();
+        Company company = requestDto.getCompanyId() != null ? companyService.getCompany(requestDto.getCompanyId())
+                : null;
 
         member = memberService.updateAdminInfo(member, requestDto.getName(), requestDto.getEmail(),
                 requestDto.getRole(), company, requestDto.getPosition(), requestDto.getPhoneNumber());
@@ -118,45 +120,5 @@ public class MemberFacade {
 
     public Member findByIdAndIsDeletedFalse(Long memberId) {
         return memberService.findByIdAndIsDeletedFalse(memberId);
-    }
-
-    public Member findMemberById(Long memberId) {
-        return memberService.findMemberById(memberId);
-    }
-
-    public Member findMemberByAuthId(String authId) {
-        return memberService.findMemberByAuthId(authId);
-    }
-
-    public Member findMemberByEmail(String email) {
-        return memberService.findMemberByEmail(email);
-    }
-
-    public List<Member> findByIds(List<Long> ids) {
-        return memberService.findByIds(ids);
-    }
-
-    public Member getMemberWithProjectOrThrow(Long memberId) {
-        return memberService.getMemberWithProjectOrThrow(memberId);
-    }
-
-    public void validateDuplicateEmail(String email) {
-        memberValidator.validateDuplicateEmail(email);
-    }
-
-    public void validateDuplicateAuthId(String authId) {
-        memberValidator.validateDuplicateAuthId(authId);
-    }
-
-    public void validateEmailExists(String email) {
-        memberValidator.validateEmailExists(email);
-    }
-
-    public Member findWithProjectsById(Long memberId) {
-        return memberService.findWithProjectsById(memberId);
-    }
-
-    public List<Member> findMembersByIdsAndCompany(List<Long> ids, Company company) {
-        return memberService.findMembersByIdsAndCompany(ids, company);
     }
 }

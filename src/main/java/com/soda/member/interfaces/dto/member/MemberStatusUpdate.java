@@ -1,6 +1,6 @@
 package com.soda.member.interfaces.dto.member;
 
-import com.soda.member.domain.MemberStatus;
+import com.soda.member.domain.member.MemberStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 

@@ -2,9 +2,11 @@ package com.soda.project.application.validator;
 
 import com.soda.global.response.CommonErrorCode;
 import com.soda.global.response.GeneralException;
-import com.soda.member.domain.*;
 import com.soda.member.domain.company.Company;
 import com.soda.member.domain.company.CompanyService;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberRole;
+import com.soda.member.domain.member.MemberService;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectErrorCode;
 import com.soda.project.domain.member.MemberProjectRole;

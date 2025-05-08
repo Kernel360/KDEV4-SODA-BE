@@ -1,4 +1,4 @@
-package com.soda.common.mail.service;
+package com.soda.member.application;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;

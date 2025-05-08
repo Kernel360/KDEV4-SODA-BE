@@ -1,8 +1,8 @@
 package com.soda.project.application.stage.article.validator;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.domain.Member;
-import com.soda.member.domain.MemberRole;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberRole;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectErrorCode;
 import com.soda.project.domain.member.MemberProjectService;

@@ -1,8 +1,8 @@
 package com.soda.project.application.stage.request.response;
 
 import com.soda.global.log.data.annotation.LoggableEntityAction;
-import com.soda.member.domain.Member;
-import com.soda.member.domain.MemberService;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberService;
 import com.soda.project.application.stage.request.response.validator.ResponseValidator;
 import com.soda.project.application.stage.request.validator.RequestApproverValidator;
 import com.soda.project.application.validator.ProjectValidator;

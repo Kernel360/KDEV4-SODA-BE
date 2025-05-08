@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.article.vote;
 
-import com.soda.member.domain.Member;
+import com.soda.member.domain.member.Member;
 import com.soda.project.interfaces.stage.article.vote.VoteSubmitRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

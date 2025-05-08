@@ -1,8 +1,8 @@
 package com.soda.project.application.stage.request.approver;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.domain.Member;
-import com.soda.member.domain.MemberRole;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberRole;
 import com.soda.project.domain.stage.request.approver.ApproverDesignation;
 import com.soda.project.domain.stage.request.RequestErrorCode;
 import lombok.RequiredArgsConstructor;

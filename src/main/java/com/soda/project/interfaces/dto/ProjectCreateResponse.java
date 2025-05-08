@@ -1,7 +1,7 @@
 package com.soda.project.interfaces.dto;
 
 import com.soda.member.domain.company.Company; // Company import
-import com.soda.member.domain.Member;   // Member import
+import com.soda.member.domain.member.Member;   // Member import
 import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.member.MemberProject;
 import com.soda.project.domain.member.MemberProjectRole; // 역할 확인용 (선택적)

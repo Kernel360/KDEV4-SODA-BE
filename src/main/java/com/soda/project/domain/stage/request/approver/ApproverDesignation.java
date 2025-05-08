@@ -1,7 +1,7 @@
 package com.soda.project.domain.stage.request.approver;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.domain.Member;
+import com.soda.member.domain.member.Member;
 import com.soda.project.domain.stage.request.Request;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

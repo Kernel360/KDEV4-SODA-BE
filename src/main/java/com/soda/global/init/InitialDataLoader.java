@@ -1,9 +1,9 @@
 package com.soda.global.init;
 
-import com.soda.member.domain.Member;
-import com.soda.member.domain.MemberRole;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberRole;
 import com.soda.member.application.CompanyFacade;
-import com.soda.member.infrastructure.MemberRepository;
+import com.soda.member.infrastructure.member.MemberRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

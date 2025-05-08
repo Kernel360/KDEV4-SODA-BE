@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.article;
 
-import com.soda.member.domain.Member;
+import com.soda.member.domain.member.Member;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.article.enums.PriorityType;
 import com.soda.project.domain.stage.common.link.LinkService;

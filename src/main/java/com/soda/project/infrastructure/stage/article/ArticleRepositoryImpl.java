@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-import static com.soda.member.domain.QMember.member;
+import static com.soda.member.domain.member.QMember.member;
 import static com.soda.member.domain.company.QCompany.company;
 import static com.soda.project.domain.QProject.project;
 import static com.soda.project.domain.stage.QStage.stage;

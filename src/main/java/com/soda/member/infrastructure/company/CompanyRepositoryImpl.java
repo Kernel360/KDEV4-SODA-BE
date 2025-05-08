@@ -1,4 +1,4 @@
-package com.soda.member.infrastructure;
+package com.soda.member.infrastructure.company;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.NumberExpression;

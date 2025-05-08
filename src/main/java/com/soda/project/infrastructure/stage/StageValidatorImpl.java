@@ -20,19 +20,9 @@ public class StageValidatorImpl implements StageValidator {
 
     @Override
     public void validateStageName(Project project, String name, Long stageId) {
-        if (name == null || name.isBlank()) {
-            log.error("단계 이름 검증 실패: 이름이 비어있음");
-            throw new GeneralException(StageErrorCode.INVALID_STAGE_NAME);
-        }
-
-        if (name.length() > StageConstants.MAX_STAGE_NAME_LENGTH) {
-            log.error("단계 이름 검증 실패: 이름 길이 초과 (최대 {}자)", StageConstants.MAX_STAGE_NAME_LENGTH);
-            throw new GeneralException(StageErrorCode.INVALID_STAGE_NAME);
-        }
-
         boolean isDuplicate = stageProvider.existsByProjectAndNameAndIsDeletedFalseAndIdNot(project, name, stageId);
         if (isDuplicate) {
-            log.warn("단계 이름 검증 실패: 프로젝트 ID {} 내에 이미 '{}' 이름의 단계가 존재함", project.getId(), name);
+            log.warn("단계 이름 중복: projectId={}, name={}, stageId={}", project.getId(), name, stageId);
             throw new GeneralException(StageErrorCode.DUPLICATE_STAGE_NAME);
         }
     }
@@ -55,7 +45,8 @@ public class StageValidatorImpl implements StageValidator {
         }
 
         if (prevOrder != null && nextOrder != null && prevOrder >= nextOrder) {
-            log.error("단계 순서 검증 실패: 이전 단계 순서({})가 다음 단계 순서({})보다 크거나 같음", prevOrder, nextOrder);
+            log.error("단계 순서 검증 실패: projectId={}, prevStageId={}, nextStageId={}, prevOrder={}, nextOrder={}",
+                    project.getId(), prevStageId, nextStageId, prevOrder, nextOrder);
             throw new GeneralException(StageErrorCode.INVALID_STAGE_ORDER);
         }
     }
@@ -64,6 +55,8 @@ public class StageValidatorImpl implements StageValidator {
     public void validateStageCount(Project project) {
         int stageCount = stageProvider.countByProjectAndIsDeletedFalse(project);
         if (stageCount >= StageConstants.MAX_STAGES_PER_PROJECT) {
+            log.error("단계 개수 초과: projectId={}, currentCount={}, maxCount={}",
+                    project.getId(), stageCount, StageConstants.MAX_STAGES_PER_PROJECT);
             throw new GeneralException(StageErrorCode.STAGE_LIMIT_EXCEEDED);
         }
     }
@@ -71,6 +64,8 @@ public class StageValidatorImpl implements StageValidator {
     @Override
     public void validateStageProject(Stage stage, Project project) {
         if (!stage.getProject().equals(project)) {
+            log.error("잘못된 단계-프로젝트 관계: stageId={}, stageProjectId={}, requestProjectId={}",
+                    stage.getId(), stage.getProject().getId(), project.getId());
             throw new GeneralException(ProjectErrorCode.INVALID_STAGE_FOR_PROJECT);
         }
     }
@@ -78,7 +73,10 @@ public class StageValidatorImpl implements StageValidator {
     @Override
     public Stage validateStage(Long stageId, Project project) {
         Stage stage = stageProvider.findById(stageId).orElseThrow(
-                () -> new GeneralException(StageErrorCode.STAGE_NOT_FOUND));
+                () -> {
+                    log.error("단계를 찾을 수 없음: stageId={}, projectId={}", stageId, project.getId());
+                    return new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
+                });
 
         validateStageProject(stage, project);
         return stage;

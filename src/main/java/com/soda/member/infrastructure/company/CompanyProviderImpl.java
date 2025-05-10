@@ -54,4 +54,9 @@ public class CompanyProviderImpl implements CompanyProvider {
     public List<Company> findByIdInAndIsDeletedFalse(List<Long> companyIds) {
         return companyRepository.findByIdInAndIsDeletedFalse(companyIds);
     }
+
+    @Override
+    public List<Company> findByIsDeletedTrue() {
+        return companyRepository.findByIsDeletedTrue();
+    }
 }

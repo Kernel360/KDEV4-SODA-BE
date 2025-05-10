@@ -27,8 +27,9 @@ public class CompanyController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponseForm<List<CompanyResponse>>> getAllCompanies() {
-        List<CompanyResponse> companies = companyFacade.getAllCompanies();
+    public ResponseEntity<ApiResponseForm<List<CompanyResponse>>> getAllCompanies(
+            @RequestParam(name = "view", defaultValue = "ACTIVE") CompanyViewOption viewOption) {
+        List<CompanyResponse> companies = companyFacade.getAllCompanies(viewOption);
         return ResponseEntity.ok(ApiResponseForm.success(companies, "회사리스트 조회 성공"));
     }
 

@@ -1,10 +1,7 @@
 package com.soda.member.domain.company;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.interfaces.dto.company.CompanyCreateRequest;
-import com.soda.member.interfaces.dto.company.CompanyResponse;
-import com.soda.member.interfaces.dto.company.CompanyUpdateRequest;
-import com.soda.member.interfaces.dto.company.MemberResponse;
+import com.soda.member.interfaces.dto.company.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,8 +24,24 @@ public class CompanyService {
         return CompanyResponse.fromEntity(companyProvider.store(company));
     }
 
-    public List<CompanyResponse> getAllCompanies() {
-        return companyProvider.findByIsDeletedFalse().stream()
+    public List<CompanyResponse> getAllCompanies(CompanyViewOption viewOption) {
+        List<Company> companies;
+        switch (viewOption) {
+            case ALL:
+                log.debug("모든 회사 조회 (삭제 포함)");
+                companies = companyProvider.findAll();
+                break;
+            case DELETED:
+                log.debug("삭제된 회사만 조회");
+                companies = companyProvider.findByIsDeletedTrue();
+                break;
+            case ACTIVE:
+            default:
+                log.debug("활성 회사만 조회 (삭제 안된 회사)");
+                companies = companyProvider.findByIsDeletedFalse();
+                break;
+        }
+        return companies.stream()
                 .map(CompanyResponse::fromEntity)
                 .collect(Collectors.toList());
     }

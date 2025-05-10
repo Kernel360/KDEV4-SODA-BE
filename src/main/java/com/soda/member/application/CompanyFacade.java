@@ -25,8 +25,8 @@ public class CompanyFacade {
         return companyService.createCompany(request);
     }
 
-    public List<CompanyResponse> getAllCompanies() {
-        return companyService.getAllCompanies();
+    public List<CompanyResponse> getAllCompanies(CompanyViewOption viewOption) {
+        return companyService.getAllCompanies(viewOption);
     }
 
     public CompanyResponse getCompanyById(Long id) {

@@ -3,6 +3,7 @@ package com.soda.project.infrastructure.stage;
 import com.soda.global.response.GeneralException;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectErrorCode;
+import com.soda.project.domain.ProjectProvider;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.StageErrorCode;
 import com.soda.project.domain.stage.StageProvider;
@@ -17,7 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class StageProviderImpl implements StageProvider {
     private final StageRepository stageRepository;
-    private final ProjectRepository projectRepository;
+    private final ProjectProvider projectProvider   ;
 
     @Override
     public Stage store(Stage stage) {
@@ -46,7 +47,7 @@ public class StageProviderImpl implements StageProvider {
 
     @Override
     public Project getProjectOrThrow(Long projectId) {
-        return projectRepository.findById(projectId)
+        return projectProvider.findById(projectId)
                 .orElseThrow(() -> new GeneralException(ProjectErrorCode.PROJECT_NOT_FOUND));
     }
 

@@ -1,13 +1,13 @@
 package com.soda.project.infrastructure.stage;
 
 import com.soda.global.response.GeneralException;
+import com.soda.project.application.stage.validator.StageValidator;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectErrorCode;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.StageConstants;
 import com.soda.project.domain.stage.StageErrorCode;
 import com.soda.project.domain.stage.StageProvider;
-import com.soda.project.domain.stage.StageValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,15 +20,15 @@ public class StageValidatorImpl implements StageValidator {
 
     @Override
     public void validateStageName(Project project, String name, Long stageId) {
-        boolean isDuplicate = stageProvider.existsByProjectAndNameAndIsDeletedFalseAndIdNot(project, name, stageId);
+        boolean isDuplicate = stageProvider.existsByProjectAndNameAndIsDeletedFalseAndIdNot(project, name.trim(), stageId);
         if (isDuplicate) {
-            log.warn("단계 이름 중복: projectId={}, name={}, stageId={}", project.getId(), name, stageId);
+            log.warn("단계 이름 중복: projectId={}, name={}, stageId={}", project.getId(), name.trim(), stageId);
             throw new GeneralException(StageErrorCode.DUPLICATE_STAGE_NAME);
         }
     }
 
     @Override
-    public void validateStageOrder(Project project, Long prevStageId, Long nextStageId) {
+    public float validateAndGetNewOrder(Project project, Long prevStageId, Long nextStageId) {
         Float prevOrder = null;
         Float nextOrder = null;
 
@@ -49,6 +49,7 @@ public class StageValidatorImpl implements StageValidator {
                     project.getId(), prevStageId, nextStageId, prevOrder, nextOrder);
             throw new GeneralException(StageErrorCode.INVALID_STAGE_ORDER);
         }
+        return Stage.calculateNewOrder(prevOrder, nextOrder);
     }
 
     @Override
@@ -70,15 +71,4 @@ public class StageValidatorImpl implements StageValidator {
         }
     }
 
-    @Override
-    public Stage validateStage(Long stageId, Project project) {
-        Stage stage = stageProvider.findById(stageId).orElseThrow(
-                () -> {
-                    log.error("단계를 찾을 수 없음: stageId={}, projectId={}", stageId, project.getId());
-                    return new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
-                });
-
-        validateStageProject(stage, project);
-        return stage;
-    }
 }

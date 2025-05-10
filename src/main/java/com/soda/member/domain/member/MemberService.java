@@ -1,7 +1,7 @@
 package com.soda.member.domain.member;
 
 import com.soda.global.response.GeneralException;
-import com.soda.member.application.validator.MemberValidator;
+import com.soda.member.domain.AuthErrorCode;
 import com.soda.member.domain.company.Company;
 import com.soda.member.interfaces.dto.FindAuthIdRequest;
 import com.soda.member.interfaces.dto.FindAuthIdResponse;
@@ -25,7 +25,6 @@ public class MemberService {
 
     private final MemberProvider memberProvider;
     private final PasswordEncoder passwordEncoder;
-    private final MemberValidator memberValidator;
 
     public Member findByIdAndIsDeletedFalse(Long memberId) {
         return memberProvider.findByIdAndIsDeletedFalse(memberId)
@@ -69,14 +68,6 @@ public class MemberService {
         return new FindAuthIdResponse(maskedAuthId);
     }
 
-    public void validateDuplicateAuthId(String authId) {
-        memberValidator.validateDuplicateAuthId(authId);
-    }
-
-    public void validateEmailExists(String email) {
-        memberValidator.validateEmailExists(email);
-    }
-
     public Member saveMember(Member member) {
         log.info("회원 정보 저장 완료: memberId={}", member.getId());
         return memberProvider.store(member);
@@ -112,8 +103,6 @@ public class MemberService {
 
     @Transactional
     public Member changePassword(Member member, String currentPassword, String newPassword) {
-        memberValidator.validatePasswordChange(member, currentPassword, newPassword);
-
         if (!passwordEncoder.matches(currentPassword, member.getPassword())) {
             throw new GeneralException(MemberErrorCode.INVALID_PASSWORD);
         }
@@ -153,7 +142,7 @@ public class MemberService {
 
     @Transactional
     public void setupInitialProfile(Member member, String name, String email, String phoneNumber,
-                                    String authId, String password, String position) {
+            String authId, String password, String position) {
         member.initialProfile(name, email, phoneNumber, authId, passwordEncoder.encode(password), position);
         memberProvider.store(member);
     }
@@ -176,8 +165,6 @@ public class MemberService {
         return authId.substring(0, 2) + "*".repeat(length - 4) + authId.substring(length - 2);
     }
 
-
-
     public Page<MemberListDto> getAllUsers(Pageable pageable, String searchKeyword) {
         Page<Member> memberPage;
 
@@ -196,5 +183,19 @@ public class MemberService {
     public Member findByNameAndEmail(String name, String email) {
         return memberProvider.findByNameAndEmail(name, email)
                 .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
+    }
+
+    public void validateEmailExists(String email) {
+        boolean isExists = memberProvider.existsByEmailAndIsDeletedFalse(email);
+        if (isExists) {
+            throw new GeneralException(MemberErrorCode.DUPLICATE_AUTH_ID);
+        }
+    }
+
+    public void validateDuplicateAuthId(String authId) {
+        boolean isExists = memberProvider.existsByAuthId(authId);
+        if (isExists) {
+            throw new GeneralException(MemberErrorCode.DUPLICATE_AUTH_ID);
+        }
     }
 }

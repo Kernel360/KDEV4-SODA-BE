@@ -1,7 +1,6 @@
-package com.soda.notification.entity;
+package com.soda.notification.domain;
 
 import com.soda.common.BaseEntity;
-import com.soda.notification.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

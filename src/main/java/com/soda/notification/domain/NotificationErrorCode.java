@@ -1,4 +1,4 @@
-package com.soda.notification.error;
+package com.soda.notification.domain;
 
 import com.soda.global.response.ErrorCode;
 import org.springframework.http.HttpStatus;

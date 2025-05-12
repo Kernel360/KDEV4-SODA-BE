@@ -64,8 +64,8 @@ public class ArticleService {
 
     // 게시글 수정
     public Article updateArticle(Article article, String title, String content, PriorityType priority, LocalDateTime deadline,
-                                 List<LinkUploadRequest.LinkUploadDTO> linkList) {
-        article.updateArticle(title, content, priority, deadline);
+                                 List<LinkUploadRequest.LinkUploadDTO> linkList, Stage newStage) {
+        article.updateArticle(title, content, priority, deadline, newStage);
         articleFactory.updateLinksForArticle(article, linkList);
         return article;
     }

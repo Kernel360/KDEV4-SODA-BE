@@ -1,8 +1,7 @@
 package com.soda.project.domain.company;
 
 import com.soda.common.BaseEntity;
-import com.soda.member.entity.Company;
-import com.soda.project.domain.company.enums.CompanyProjectRole;
+import com.soda.member.domain.company.Company;
 import com.soda.project.domain.Project;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -31,6 +30,22 @@ public class CompanyProject extends BaseEntity {
         this.company = company;
         this.project = project;
         this.companyProjectRole = companyProjectRole;
+    }
+
+    public static CompanyProject createClientCompany(Company clientCompany, Project project) {
+        return CompanyProject.builder()
+                .company(clientCompany)
+                .project(project)
+                .companyProjectRole(CompanyProjectRole.CLIENT_COMPANY)
+                .build();
+    }
+
+    public static CompanyProject createDevCompany(Company devCompany, Project project) {
+        return CompanyProject.builder()
+                .company(devCompany)
+                .project(project)
+                .companyProjectRole(CompanyProjectRole.DEV_COMPANY)
+                .build();
     }
 
     public void delete() {

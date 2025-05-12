@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.article;
 
-import com.soda.common.link.model.LinkBase;
+import com.soda.project.domain.stage.common.link.LinkBase;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -24,6 +24,14 @@ public class ArticleLink extends LinkBase {
         this.urlAddress = urlAddress;
         this.urlDescription = urlDescription;
         this.article = article;
+    }
+
+    public static ArticleLink create(String urlAddress, String urlDescription, Article article) {
+        return ArticleLink.builder()
+                .urlAddress(urlAddress)
+                .urlDescription(urlDescription)
+                .article(article)
+                .build();
     }
 
     public void delete() {

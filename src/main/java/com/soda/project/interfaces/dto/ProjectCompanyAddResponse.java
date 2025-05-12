@@ -1,8 +1,8 @@
 package com.soda.project.interfaces.dto;
 
-import com.soda.member.entity.Company;
-import com.soda.member.entity.Member;
-import com.soda.project.domain.company.enums.CompanyProjectRole;
+import com.soda.member.domain.company.Company;
+import com.soda.member.domain.member.Member;
+import com.soda.project.domain.company.CompanyProjectRole;
 import lombok.Builder;
 import lombok.Getter;
 

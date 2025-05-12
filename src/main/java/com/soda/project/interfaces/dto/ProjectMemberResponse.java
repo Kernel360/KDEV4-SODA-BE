@@ -1,8 +1,8 @@
 package com.soda.project.interfaces.dto;
 
-import com.soda.member.entity.Company;
-import com.soda.member.entity.Member;
-import com.soda.project.domain.member.enums.MemberProjectRole;
+import com.soda.member.domain.company.Company;
+import com.soda.member.domain.member.Member;
+import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.domain.member.MemberProject;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,6 +16,7 @@ public class ProjectMemberResponse {
     private Long memberId;
     private String memberName;
     private MemberProjectRole role;
+    private String memberStatus;
 
     public static ProjectMemberResponse from(MemberProject memberProject) {
         Member member = memberProject.getMember();
@@ -27,6 +28,7 @@ public class ProjectMemberResponse {
                 .memberId(member != null ? member.getId() : null)
                 .memberName(member != null ? member.getName() : "알 수 없는 멤버")
                 .role(memberProject.getRole())
+                .memberStatus(member != null ? member.getMemberStatus().getDescription():null)
                 .build();
     }
 

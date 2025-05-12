@@ -1,12 +1,11 @@
 package com.soda.project.domain.stage.request.response.link;
 
-import com.soda.common.link.dto.LinkUploadRequest;
-import com.soda.common.link.strategy.LinkStrategy;
 import com.soda.global.response.GeneralException;
+import com.soda.project.domain.stage.common.link.LinkStrategy;
 import com.soda.project.domain.stage.request.response.Response;
-import com.soda.project.domain.stage.request.response.error.ResponseErrorCode;
-import com.soda.project.infrastructure.ResponseLinkRepository;
-import com.soda.project.infrastructure.ResponseRepository;
+import com.soda.project.domain.stage.request.response.ResponseErrorCode;
+import com.soda.project.domain.stage.request.response.ResponseProvider;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ResponseLinkStrategy implements LinkStrategy<Response, ResponseLink> {
 
-    private final ResponseRepository responseRepository;
-    private final ResponseLinkRepository responseLinkRepository;
+    private final ResponseProvider responseProvider;
+    private final ResponseLinkProvider responseLinkProvider;
 
 
     @Override
@@ -29,7 +28,7 @@ public class ResponseLinkStrategy implements LinkStrategy<Response, ResponseLink
 
     @Override
     public Response getDomainOrThrow(Long domainId) {
-        return responseRepository.findById(domainId)
+        return responseProvider.findById(domainId)
                 .orElseThrow(() -> new GeneralException(ResponseErrorCode.RESPONSE_NOT_FOUND));
     }
 
@@ -42,36 +41,26 @@ public class ResponseLinkStrategy implements LinkStrategy<Response, ResponseLink
 
     @Override
     public ResponseLink toEntity(LinkUploadRequest.LinkUploadDTO dto, Response response) {
-        return ResponseLink.builder()
-                .urlAddress(dto.getUrlAddress())
-                .urlDescription(dto.getUrlDescription())
-                .response(response)
-                .build();
+        return ResponseLink.create(dto.getUrlAddress(), dto.getUrlDescription(), response);
     }
 
     @Override
     public List<ResponseLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Response response) {
-        if (dtos == null || dtos.isEmpty()) {
-            return List.of();
-        }
+        if (dtos == null || dtos.isEmpty()) { return List.of();}
 
         return dtos.stream()
-                .map(dto -> ResponseLink.builder()
-                        .urlAddress(dto.getUrlAddress())
-                        .urlDescription(dto.getUrlDescription())
-                        .response(response)
-                        .build())
+                .map(dto -> ResponseLink.create(dto.getUrlAddress(), dto.getUrlDescription(), response))
                 .toList();
     }
 
     @Override
     public void saveAll(List<ResponseLink> entities) {
-        responseLinkRepository.saveAll(entities);
+        responseLinkProvider.saveAll(entities);
     }
 
     @Override
     public ResponseLink getLinkOrThrow(Long linkId) {
-        return responseLinkRepository.findById(linkId)
+        return responseLinkProvider.findById(linkId)
                 .orElseThrow(() -> new GeneralException(ResponseErrorCode.RESPONSE_LINK_NOT_FOUND));
     }
 

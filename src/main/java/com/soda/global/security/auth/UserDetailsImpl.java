@@ -1,6 +1,6 @@
 package com.soda.global.security.auth;
 
-import com.soda.member.entity.Member;
+import com.soda.member.domain.member.Member;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

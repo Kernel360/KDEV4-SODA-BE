@@ -1,6 +1,6 @@
 package com.soda.project.domain.stage.request.file;
 
-import com.soda.common.file.model.FileBase;
+import com.soda.project.domain.stage.common.file.FileBase;
 import com.soda.project.domain.stage.request.Request;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -22,6 +22,14 @@ public class RequestFile extends FileBase {
         this.name = name;
         this.url = url;
         this.request = request;
+    }
+
+    public static RequestFile create(String name, String url, Request request) {
+        return RequestFile.builder()
+                .name(name)
+                .url(url)
+                .request(request)
+                .build();
     }
 
     @Override

@@ -2,13 +2,15 @@ package com.soda.project.domain.stage.request;
 
 import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
-import com.soda.member.entity.Member;
+import com.soda.member.domain.member.Member;
 import com.soda.project.domain.stage.Stage;
-import com.soda.project.domain.stage.request.enums.RequestStatus;
+import com.soda.project.domain.stage.request.approver.ApproverDesignation;
+import com.soda.project.interfaces.stage.request.dto.ReRequestCreateRequest;
+import com.soda.project.interfaces.stage.request.dto.RequestCreateRequest;
 import com.soda.project.domain.stage.request.file.RequestFile;
 import com.soda.project.domain.stage.request.link.RequestLink;
 import com.soda.project.domain.stage.request.response.Response;
-import com.soda.project.domain.stage.request.response.enums.ResponseStatus;
+import com.soda.project.domain.stage.request.response.ResponseStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -71,23 +73,41 @@ public class Request extends BaseEntity {
         this.links = links;
     }
 
-    public void updateTitle(String title) {
-        this.title = title;
+    public static Request createRequest(Member member, Stage stage, RequestCreateRequest requestCreateRequest) {
+        return Request.builder()
+                .member(member)
+                .stage(stage)
+                .title(requestCreateRequest.getTitle())
+                .content(requestCreateRequest.getContent())
+                .status(RequestStatus.PENDING)
+                .build();
     }
-    public void updateContent(String content) {
-        this.content = content;
+
+    public static Request createReRequest(Long requestId, Member member, Stage stage, ReRequestCreateRequest reRequestCreateRequest) {
+        return Request.builder()
+                .member(member)
+                .stage(stage)
+                .title(reRequestCreateRequest.getTitle())
+                .content(reRequestCreateRequest.getContent())
+                .parentId(requestId)
+                .status(RequestStatus.PENDING)
+                .build();
     }
+
+    public void updateContents(String title, String content) {
+        if(title != null) {
+            this.title = title;
+        }
+        if(content != null) {
+            this.content = content;
+        }
+    }
+
     public void addLinks(List<RequestLink> newLinks) {
         if (this.links == null) {
             this.links = new ArrayList<>();
         }
         this.links.addAll(newLinks);
-    }
-    public void addFiles(List<RequestFile> newFiles) {
-        if (this.files == null) {
-            this.files = new ArrayList<>();
-        }
-        this.files.addAll(newFiles);
     }
 
     public void delete() {

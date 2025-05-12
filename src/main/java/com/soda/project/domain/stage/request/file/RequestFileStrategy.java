@@ -1,11 +1,10 @@
 package com.soda.project.domain.stage.request.file;
 
-import com.soda.common.file.strategy.FileStrategy;
 import com.soda.global.response.GeneralException;
+import com.soda.project.domain.stage.common.file.FileStrategy;
 import com.soda.project.domain.stage.request.Request;
-import com.soda.project.domain.stage.request.error.RequestErrorCode;
-import com.soda.project.infrastructure.RequestFileRepository;
-import com.soda.project.infrastructure.RequestRepository;
+import com.soda.project.domain.stage.request.RequestErrorCode;
+import com.soda.project.domain.stage.request.RequestProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +13,13 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class RequestFileStrategy implements FileStrategy<Request, RequestFile> {
 
-    private final RequestRepository requestRepository;
-    private final RequestFileRepository requestFileRepository;
+    private final RequestProvider requestProvider;
+    private final RequestFileProvider requestFileProvider;
+
 
     @Override
     public String getSupportedDomain() {
@@ -28,7 +28,7 @@ public class RequestFileStrategy implements FileStrategy<Request, RequestFile> {
 
     @Override
     public Request getDomainOrThrow(Long domainId) {
-        return requestRepository.findById(domainId)
+        return requestProvider.findById(domainId)
                 .orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_NOT_FOUND));
     }
 
@@ -41,36 +41,27 @@ public class RequestFileStrategy implements FileStrategy<Request, RequestFile> {
 
     @Override
     public RequestFile toEntity(String fileName, String url, Request request) {
-        return RequestFile.builder()
-                .name(fileName)
-                .url(url)
-                .request(request)
-                .build();
+        return RequestFile.create(fileName, url, request);
     }
 
     @Override
-    public List<RequestFile> toEntities(List<String> urls, List<String> names, Request domain) {
-        if (urls == null || urls.isEmpty()) {
-            return List.of();
-        }
+    public List<RequestFile> toEntities(List<String> urls, List<String> names, Request request) {
+        if (urls == null || urls.isEmpty()) { return List.of();}
 
         return IntStream.range(0, urls.size())
-                .mapToObj(i -> RequestFile.builder()
-                        .url(urls.get(i))
-                        .name(names.get(i))
-                        .request(domain)
-                        .build())
+                .mapToObj(i -> RequestFile.create(names.get(i), urls.get(i), request))
                 .toList();
     }
 
+    @Transactional
     @Override
     public void saveAll(List<RequestFile> entities) {
-        requestFileRepository.saveAll(entities);
+        requestFileProvider.saveAll(entities);
     }
 
     @Override
     public RequestFile getFileOrThrow(Long fileId) {
-        return requestFileRepository.findById(fileId)
+        return requestFileProvider.findById(fileId)
                 .orElseThrow(() -> new GeneralException(RequestErrorCode.REQUEST_FILE_NOT_FOUND));
     }
 

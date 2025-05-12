@@ -1,11 +1,9 @@
 package com.soda.project.domain.stage.article;
 
-import com.soda.project.domain.stage.article.error.ArticleErrorCode;
-import com.soda.project.infrastructure.ArticleLinkRepository;
-import com.soda.project.infrastructure.ArticleRepository;
-import com.soda.common.link.dto.LinkUploadRequest;
-import com.soda.common.link.strategy.LinkStrategy;
 import com.soda.global.response.GeneralException;
+import com.soda.project.domain.stage.article.error.ArticleErrorCode;
+import com.soda.project.domain.stage.common.link.LinkStrategy;
+import com.soda.project.interfaces.stage.common.link.dto.LinkUploadRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArticleLinkStrategy implements LinkStrategy<Article, ArticleLink> {
 
-    private final ArticleRepository articleRepository;
-    private final ArticleLinkRepository articleLinkRepository;
+    private final ArticleProvider articleProvider;
+    private final ArticleLinkProvider articleLinkProvider;
 
     @Override
     public String getSupportedDomain() {
@@ -27,7 +25,7 @@ public class ArticleLinkStrategy implements LinkStrategy<Article, ArticleLink> {
 
     @Override
     public Article getDomainOrThrow(Long domainId) {
-        return articleRepository.findById(domainId)
+        return articleProvider.findById(domainId)
                 .orElseThrow(() -> new GeneralException(ArticleErrorCode.INVALID_ARTICLE));
     }
 
@@ -40,36 +38,26 @@ public class ArticleLinkStrategy implements LinkStrategy<Article, ArticleLink> {
 
     @Override
     public ArticleLink toEntity(LinkUploadRequest.LinkUploadDTO dto, Article article) {
-        return ArticleLink.builder()
-                .urlAddress(dto.getUrlAddress())
-                .urlDescription(dto.getUrlDescription())
-                .article(article)
-                .build();
+        return ArticleLink.create(dto.getUrlAddress(), dto.getUrlDescription(), article);
     }
 
     @Override
     public List<ArticleLink> toEntities(List<LinkUploadRequest.LinkUploadDTO> dtos, Article article) {
-        if (dtos == null || dtos.isEmpty()) {
-            return List.of();
-        }
+        if (dtos == null || dtos.isEmpty()) {return List.of();}
 
         return dtos.stream()
-                .map(dto -> ArticleLink.builder()
-                        .urlAddress(dto.getUrlAddress())
-                        .urlDescription(dto.getUrlDescription())
-                        .article(article)
-                        .build())
+                .map(dto -> ArticleLink.create(dto.getUrlAddress(), dto.getUrlDescription(), article))
                 .toList();
     }
 
     @Override
     public void saveAll(List<ArticleLink> entities) {
-        articleLinkRepository.saveAll(entities);
+        articleLinkProvider.saveAll(entities);
     }
 
     @Override
     public ArticleLink getLinkOrThrow(Long linkId) {
-        return articleLinkRepository.findById(linkId)
+        return articleLinkProvider.findById(linkId)
                 .orElseThrow(() -> new GeneralException(ArticleErrorCode.ARTICLE_LINK_NOT_FOUND));
     }
 

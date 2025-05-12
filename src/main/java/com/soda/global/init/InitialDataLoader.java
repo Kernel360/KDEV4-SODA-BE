@@ -1,9 +1,9 @@
 package com.soda.global.init;
 
-import com.soda.member.entity.Member;
-import com.soda.member.enums.MemberRole;
-import com.soda.member.repository.CompanyRepository;
-import com.soda.member.repository.MemberRepository;
+import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberRole;
+import com.soda.member.application.CompanyFacade;
+import com.soda.member.infrastructure.member.MemberRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,9 +16,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class InitialDataLoader {
 
-    private final CompanyRepository companyRepository;
+    private final CompanyFacade companyFacade;
     private final MemberRepository memberRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     @Value("${init.admin.authid}")
@@ -26,7 +25,6 @@ public class InitialDataLoader {
 
     @Value("${init.admin.password}")
     private String adminPassword;
-
 
     @PostConstruct
     public void init() {

@@ -1,10 +1,12 @@
 package com.soda.project.domain.stage.article;
 
+import com.soda.project.domain.stage.article.comment.Comment;
 import com.soda.project.domain.stage.article.enums.ArticleStatus;
 import com.soda.project.domain.stage.article.enums.PriorityType;
 import com.soda.common.BaseEntity;
-import com.soda.member.entity.Member;
+import com.soda.member.domain.member.Member;
 import com.soda.project.domain.stage.Stage;
+import com.soda.project.domain.stage.article.vote.Vote;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -79,6 +81,22 @@ public class Article extends BaseEntity {
         this.articleFileList = articleFileList != null ? articleFileList : new ArrayList<>();
         this.articleLinkList = articleLinkList != null ? articleLinkList : new ArrayList<>();
         this.parentArticle = parentArticle;
+    }
+
+    protected static Article createArticle(String title, String content, PriorityType priority, LocalDateTime deadline,
+                                           Member member, Stage stage, Article parentArticle) {
+        return Article.builder()
+                .title(title)
+                .content(content)
+                .priority(priority)
+                .deadline(deadline)
+                .member(member)
+                .stage(stage)
+                .status(ArticleStatus.PENDING)
+                .parentArticle(parentArticle)
+                .articleFileList(null)
+                .articleLinkList(null)
+                .build();
     }
 
     public void delete() {

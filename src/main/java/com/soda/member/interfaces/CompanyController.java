@@ -6,6 +6,8 @@ import com.soda.member.interfaces.dto.company.*;
 import com.soda.member.application.CompanyFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,10 +29,12 @@ public class CompanyController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponseForm<List<CompanyResponse>>> getAllCompanies(
-            @RequestParam(name = "view", defaultValue = "ACTIVE") CompanyViewOption viewOption) {
-        List<CompanyResponse> companies = companyFacade.getAllCompanies(viewOption);
-        return ResponseEntity.ok(ApiResponseForm.success(companies, "회사리스트 조회 성공"));
+    public ResponseEntity<ApiResponseForm<Page<CompanyResponse>>> getAllCompanies(
+            @RequestParam(name = "view", defaultValue = "ACTIVE") CompanyViewOption viewOption,
+            @RequestParam(required = false) String searchKeyword,
+            Pageable pageable) {
+        Page<CompanyResponse> companies = companyFacade.getAllCompaniesWithSearch(viewOption, searchKeyword, pageable);
+        return ResponseEntity.ok(ApiResponseForm.success(companies, "회사 리스트 조회 성공"));
     }
 
     @GetMapping("/{id}")

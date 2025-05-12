@@ -4,6 +4,8 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.interfaces.dto.company.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -22,13 +24,6 @@ public class CompanyService {
     public CompanyResponse createCompany(CompanyCreateRequest request) {
         Company company = Company.create(request);
         return CompanyResponse.fromEntity(companyProvider.store(company));
-    }
-
-    public List<CompanyResponse> getAllCompanies(CompanyViewOption viewOption) {
-        List<Company> companies = viewOption.getCompanies(companyProvider);
-        return companies.stream()
-                .map(CompanyResponse::fromEntity)
-                .collect(Collectors.toList());
     }
 
     public CompanyResponse getCompanyById(Long id) {
@@ -80,5 +75,11 @@ public class CompanyService {
         List<Company> companies = companyProvider.findByIdInAndIsDeletedFalse(companyIds);
         log.debug("ID 목록 {} 로 활성 회사 {}개 조회 완료", companyIds, companies.size());
         return companies;
+    }
+
+    public Page<CompanyResponse> getAllCompaniesWithSearch(CompanyViewOption viewOption, String searchKeyword,
+            Pageable pageable) {
+        Page<Company> companies = companyProvider.findAllCompaniesWithSearch(viewOption, searchKeyword, pageable);
+        return companies.map(CompanyResponse::fromEntity);
     }
 }

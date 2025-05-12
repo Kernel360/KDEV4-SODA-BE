@@ -25,22 +25,7 @@ public class CompanyService {
     }
 
     public List<CompanyResponse> getAllCompanies(CompanyViewOption viewOption) {
-        List<Company> companies;
-        switch (viewOption) {
-            case ALL:
-                log.debug("모든 회사 조회 (삭제 포함)");
-                companies = companyProvider.findAll();
-                break;
-            case DELETED:
-                log.debug("삭제된 회사만 조회");
-                companies = companyProvider.findByIsDeletedTrue();
-                break;
-            case ACTIVE:
-            default:
-                log.debug("활성 회사만 조회 (삭제 안된 회사)");
-                companies = companyProvider.findByIsDeletedFalse();
-                break;
-        }
+        List<Company> companies = viewOption.getCompanies(companyProvider);
         return companies.stream()
                 .map(CompanyResponse::fromEntity)
                 .collect(Collectors.toList());

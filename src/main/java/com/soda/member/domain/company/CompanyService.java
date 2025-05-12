@@ -64,10 +64,10 @@ public class CompanyService {
         return CompanyResponse.fromEntity(companyProvider.store(company));
     }
 
-    public List<MemberResponse> getCompanyMembers(Long companyId) {
+    public List<MemberResponse> getCompanyMembers(Long companyId, MemberViewOption viewOption) {
         Company company = companyProvider.findByIdAndIsDeletedFalse(companyId)
                 .orElseThrow(() -> new GeneralException(CompanyErrorCode.NOT_FOUND_COMPANY));
-        return company.getMemberList().stream()
+        return viewOption.filterMembers(company.getMemberList()).stream()
                 .map(MemberResponse::fromEntity)
                 .collect(Collectors.toList());
     }

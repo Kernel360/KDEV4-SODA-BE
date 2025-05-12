@@ -60,8 +60,10 @@ public class CompanyController {
     }
 
     @GetMapping("/{id}/members")
-    public ResponseEntity<ApiResponseForm<List<MemberResponse>>> getCompanyMembers(@PathVariable Long id) {
-        List<MemberResponse> members = companyFacade.getCompanyMembers(id);
+    public ResponseEntity<ApiResponseForm<List<MemberResponse>>> getCompanyMembers(
+            @PathVariable Long id,
+            @RequestParam(name = "view", defaultValue = "ACTIVE") MemberViewOption viewOption) {
+        List<MemberResponse> members = companyFacade.getCompanyMembers(id, viewOption);
         return ResponseEntity.ok(ApiResponseForm.success(members, "회사 멤버 정보 조회 성공"));
     }
 

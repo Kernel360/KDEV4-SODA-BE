@@ -54,8 +54,8 @@ public class CompanyFacade {
         return companyService.restoreCompany(id);
     }
 
-    public List<MemberResponse> getCompanyMembers(Long companyId) {
-        return companyService.getCompanyMembers(companyId);
+    public List<MemberResponse> getCompanyMembers(Long companyId, MemberViewOption viewOption) {
+        return companyService.getCompanyMembers(companyId, viewOption);
     }
 
     public List<CompanyCreationTrend> getCompanyCreationTrend(CompanyTrendSearchCondition condition) {

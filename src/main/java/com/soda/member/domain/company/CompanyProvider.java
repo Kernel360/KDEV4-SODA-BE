@@ -11,17 +11,15 @@ public interface CompanyProvider {
 
         Optional<Company> findById(Long id);
 
-        List<Company> findAll();
+        List<Company> findAllByOrderByCreatedAtDesc();
 
-        Optional<Company> findByCompanyNumber(String companyNumber);
+        List<Company> findByIsDeletedFalseOrderByCreatedAtDesc();
 
-        List<Company> findByIsDeletedFalse();
+        List<Company> findByIsDeletedTrueOrderByCreatedAtDesc();
 
         Optional<Company> findByIdAndIsDeletedFalse(Long id);
 
         List<CompanyCreationStatRaw> countCompaniesByDayRaw(LocalDateTime startDateTime, LocalDateTime endDateTime);
 
         List<Company> findByIdInAndIsDeletedFalse(List<Long> companyIds);
-
-        List<Company> findByIsDeletedTrue();
 }

@@ -25,19 +25,16 @@ public class CompanyProviderImpl implements CompanyProvider {
         return companyRepository.findById(id);
     }
 
-    @Override
-    public List<Company> findAll() {
-        return companyRepository.findAll();
-    }
 
     @Override
-    public Optional<Company> findByCompanyNumber(String companyNumber) {
-        return companyRepository.findByCompanyNumber(companyNumber);
+    public List<Company> findAllByOrderByCreatedAtDesc() {
+        return companyRepository.findAllByOrderByCreatedAtDesc();
     }
 
+
     @Override
-    public List<Company> findByIsDeletedFalse() {
-        return companyRepository.findByIsDeletedFalse();
+    public List<Company> findByIsDeletedFalseOrderByCreatedAtDesc() {
+        return companyRepository.findByIsDeletedFalseOrderByCreatedAtDesc();
     }
 
     @Override
@@ -56,7 +53,7 @@ public class CompanyProviderImpl implements CompanyProvider {
     }
 
     @Override
-    public List<Company> findByIsDeletedTrue() {
-        return companyRepository.findByIsDeletedTrue();
+    public List<Company> findByIsDeletedTrueOrderByCreatedAtDesc() {
+        return companyRepository.findByIsDeletedTrueOrderByCreatedAtDesc();
     }
 }

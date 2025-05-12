@@ -7,11 +7,10 @@ import java.util.List;
 import java.util.function.Function;
 
 public enum CompanyViewOption {
-    ACTIVE(provider -> provider.findByIsDeletedFalse()),
-    ALL(provider -> provider.findAll()),
-    DELETED(provider -> provider.findByIsDeletedTrue());
+    ACTIVE(CompanyProvider::findByIsDeletedFalseOrderByCreatedAtDesc),
+    ALL(CompanyProvider::findAllByOrderByCreatedAtDesc),
+    DELETED(CompanyProvider::findByIsDeletedTrueOrderByCreatedAtDesc);
 
-    // 방법 1: Function<CompanyProvider, List<Company>> 사용
     private final Function<CompanyProvider, List<Company>> retrievalFunction;
 
     CompanyViewOption(Function<CompanyProvider, List<Company>> retrievalFunction) {

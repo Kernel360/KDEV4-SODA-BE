@@ -26,6 +26,7 @@ public class S3Service {
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(awsS3Config.getBucket())
                 .key(S3_URL_PREFIX + uniqueFileName)
+                .acl("public-read")
                 .contentType(contentType)
                 .build();
 

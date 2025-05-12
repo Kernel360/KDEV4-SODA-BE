@@ -1,4 +1,4 @@
-package com.soda.notification.enums;
+package com.soda.notification.domain;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

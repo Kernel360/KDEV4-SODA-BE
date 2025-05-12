@@ -33,7 +33,7 @@ public class RequestFacade {
     public RequestCreateResponse createRequest(Long memberId, RequestCreateRequest requestCreateRequest) {
         Member member = memberService.getMemberWithProjectOrThrow(memberId);
         Stage stage = stageService.getStageOrThrow(requestCreateRequest.getStageId());
-        projectValidator.validateProjectAuthority(member, requestCreateRequest.getProjectId());
+        projectValidator.validateProjectDevAuthority(member, requestCreateRequest.getProjectId());
 
         return requestService.createRequest(member, stage, requestCreateRequest);
     }
@@ -44,7 +44,7 @@ public class RequestFacade {
         Member member = memberService.getMemberWithProjectOrThrow(memberId);
         Request parentRequest = requestService.getRequestOrThrow(requestId);
         Stage stage = stageService.getStageOrThrow(parentRequest.getStage().getId());
-        projectValidator.validateProjectAuthority(member, requestId);
+        projectValidator.validateProjectDevAuthority(member, requestId);
         requestValidator.validateRequestStatus(parentRequest);
 
         return requestService.createReRequest(requestId, member, stage, reRequestCreateRequest);

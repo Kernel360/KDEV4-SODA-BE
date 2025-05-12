@@ -187,7 +187,7 @@ public class MemberService {
 
     public void validateEmailExists(String email) {
         boolean isExists = memberProvider.existsByEmailAndIsDeletedFalse(email);
-        if (isExists) {
+        if (!isExists) {
             throw new GeneralException(MemberErrorCode.DUPLICATE_AUTH_ID);
         }
     }

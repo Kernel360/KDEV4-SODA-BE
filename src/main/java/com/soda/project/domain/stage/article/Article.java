@@ -115,11 +115,21 @@ public class Article extends BaseEntity {
         }
     }
 
-    public void updateArticle(String title, String content, PriorityType priority, LocalDateTime deadline) {
-        this.title = title;
-        this.content = content;
-        this.priority = priority;
+    public void updateArticle(String title, String content, PriorityType priority, LocalDateTime deadline, Stage newStage) {
+        if (title != null) {
+            this.title = title;
+        }
+        if (content != null) {
+            this.content = content;
+        }
+        if (priority != null) {
+            this.priority = priority;
+        }
         this.deadline = deadline;
+
+        if (newStage != null) {
+            this.stage = newStage;
+        }
     }
 
     public void addLinks(List<ArticleLink> links) {

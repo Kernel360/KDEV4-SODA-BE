@@ -44,7 +44,7 @@ public class RequestFacade {
         Member member = memberService.getMemberWithProjectOrThrow(memberId);
         Request parentRequest = requestService.getRequestOrThrow(requestId);
         Stage stage = stageService.getStageOrThrow(parentRequest.getStage().getId());
-        projectValidator.validateProjectDevAuthority(member, requestId);
+        projectValidator.validateProjectDevAuthority(member, stage.getProject().getId());
         requestValidator.validateRequestStatus(parentRequest);
 
         return requestService.createReRequest(requestId, member, stage, reRequestCreateRequest);

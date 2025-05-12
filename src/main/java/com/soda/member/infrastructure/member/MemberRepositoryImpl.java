@@ -19,39 +19,6 @@ import java.util.Optional;
 public class MemberRepositoryImpl implements MemberRepositoryCustom {
         private final JPAQueryFactory queryFactory;
 
-        @Override
-        public Optional<Member> findByIdWithCompany(Long id) {
-                QMember member = QMember.member;
-
-                Member foundMember = queryFactory
-                                .selectFrom(member)
-                                .leftJoin(member.company).fetchJoin()
-                                .where(member.id.eq(id))
-                                .fetchOne();
-
-                return Optional.ofNullable(foundMember);
-        }
-
-        @Override
-        public Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable) {
-                QMember member = QMember.member;
-                BooleanExpression keywordCondition = createKeywordCondition(member, keyword);
-
-                List<Member> members = queryFactory
-                                .selectFrom(member)
-                                .where(keywordCondition)
-                                .offset(pageable.getOffset())
-                                .limit(pageable.getPageSize())
-                                .fetch();
-
-                Long total = queryFactory
-                                .select(member.count())
-                                .from(member)
-                                .where(keywordCondition)
-                                .fetchOne();
-
-                return PageableExecutionUtils.getPage(members, pageable, () -> total);
-        }
 
         @Override
         public Page<Member> findByKeywordIncludingDeletedOrderByCreatedAtDesc(String keyword, Pageable pageable) {
@@ -70,49 +37,6 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                                 .select(member.count())
                                 .from(member)
                                 .where(keywordCondition)
-                                .fetchOne();
-
-                return PageableExecutionUtils.getPage(members, pageable, () -> total);
-        }
-
-        @Override
-        public Page<Member> findAllWithCompany(Pageable pageable) {
-                QMember member = QMember.member;
-
-                List<Member> members = queryFactory
-                                .selectFrom(member)
-                                .leftJoin(member.company).fetchJoin()
-                                .where(member.isDeleted.eq(false))
-                                .offset(pageable.getOffset())
-                                .limit(pageable.getPageSize())
-                                .fetch();
-
-                Long total = queryFactory
-                                .select(member.count())
-                                .from(member)
-                                .where(member.isDeleted.eq(false))
-                                .fetchOne();
-
-                return PageableExecutionUtils.getPage(members, pageable, () -> total);
-        }
-
-        @Override
-        public Page<Member> findByKeywordWithCompany(String keyword, Pageable pageable) {
-                QMember member = QMember.member;
-                BooleanExpression keywordCondition = createKeywordCondition(member, keyword);
-
-                List<Member> members = queryFactory
-                                .selectFrom(member)
-                                .leftJoin(member.company).fetchJoin()
-                                .where(member.isDeleted.eq(false).and(keywordCondition))
-                                .offset(pageable.getOffset())
-                                .limit(pageable.getPageSize())
-                                .fetch();
-
-                Long total = queryFactory
-                                .select(member.count())
-                                .from(member)
-                                .where(member.isDeleted.eq(false).and(keywordCondition))
                                 .fetchOne();
 
                 return PageableExecutionUtils.getPage(members, pageable, () -> total);

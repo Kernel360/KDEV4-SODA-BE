@@ -21,33 +21,19 @@ public interface MemberProvider {
 
     Optional<Member> findByEmailAndIsDeletedFalse(String email);
 
-    Optional<Member> findByNameAndEmailAndIsDeletedFalse(String name, String email);
-
     Optional<Member> findWithProjectsById(Long id);
 
     List<Member> findByIdInAndIsDeletedFalse(List<Long> ids);
 
     List<Member> findMembersByIdsAndCompany(List<Long> ids, Company company);
 
-    Page<Member> findAll(Pageable pageable);
-
     Page<Member> findAllByOrderByCreatedAtDesc(Pageable pageable);
-
-    Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable);
 
     Page<Member> findByKeywordIncludingDeletedOrderByCreatedAtDesc(String keyword, Pageable pageable);
 
     boolean existsByAuthId(String authId);
 
     boolean existsByEmailAndIsDeletedFalse(String email);
-
-    Page<Member> findAllWithCompany(Pageable pageable);
-
-    Page<Member> findByKeywordWithCompany(String keyword, Pageable pageable);
-
-    MemberDetailDto getMemberDetailWithCompany(Long userId);
-
-    List<Member> findMembersByCompany(Company company);
 
     Optional<Member> findByNameAndEmail(String name, String email);
 }

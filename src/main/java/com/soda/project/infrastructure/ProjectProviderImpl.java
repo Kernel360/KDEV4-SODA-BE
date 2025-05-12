@@ -47,4 +47,9 @@ public class ProjectProviderImpl implements ProjectProvider {
         project.delete();
         projectRepository.save(project);
     }
+
+    @Override
+    public Optional<Project> findById(Long projectId) {
+        return projectRepository.findById(projectId);
+    }
 }

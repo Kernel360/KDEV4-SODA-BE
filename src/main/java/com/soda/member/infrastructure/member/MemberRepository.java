@@ -1,7 +1,7 @@
 package com.soda.member.infrastructure.member;
 
-import com.soda.member.domain.member.Member;
 import com.soda.member.domain.company.Company;
+import com.soda.member.domain.member.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,7 +40,11 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
 
     Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable);
 
+    Page<Member> findByKeywordIncludingDeletedOrderByCreatedAtDesc(String keyword, Pageable pageable);
+
     Page<Member> findAllWithCompany(Pageable pageable);
+
+    Page<Member> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     Page<Member> findByKeywordWithCompany(String keyword, Pageable pageable);
 

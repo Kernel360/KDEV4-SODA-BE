@@ -9,6 +9,8 @@ import java.util.Optional;
 public interface MemberRepositoryCustom {
     Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable);
 
+    Page<Member> findByKeywordIncludingDeletedOrderByCreatedAtDesc(String keyword, Pageable pageable);
+
     Page<Member> findAllWithCompany(Pageable pageable);
 
     Page<Member> findByKeywordWithCompany(String keyword, Pageable pageable);

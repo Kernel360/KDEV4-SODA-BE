@@ -112,8 +112,18 @@ public class MemberProviderImpl implements MemberProvider {
     }
 
     @Override
+    public Page<Member> findAllByOrderByCreatedAtDesc(Pageable pageable) {
+        return memberRepository.findAllByOrderByCreatedAtDesc(pageable);
+    }
+
+    @Override
     public Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable) {
         return memberRepository.findByKeywordIncludingDeleted(keyword, pageable);
+    }
+
+    @Override
+    public Page<Member> findByKeywordIncludingDeletedOrderByCreatedAtDesc(String keyword, Pageable pageable) {
+        return memberRepository.findByKeywordIncludingDeletedOrderByCreatedAtDesc(keyword, pageable);
     }
 
     @Override

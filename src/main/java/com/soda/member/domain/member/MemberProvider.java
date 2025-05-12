@@ -31,7 +31,11 @@ public interface MemberProvider {
 
     Page<Member> findAll(Pageable pageable);
 
+    Page<Member> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
     Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable);
+
+    Page<Member> findByKeywordIncludingDeletedOrderByCreatedAtDesc(String keyword, Pageable pageable);
 
     boolean existsByAuthId(String authId);
 

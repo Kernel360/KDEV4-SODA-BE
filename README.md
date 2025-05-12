@@ -1,17 +1,28 @@
-# 소통의 사다리, SODA
+<div align="center">
 
-## ✨ 서비스 소개
-SODA는 웹 에이전시와 고객사 간의 원활한 협업을 위한
-올인원 프로젝트 관리 플랫폼입니다.
-#### [SODA 바로가기](https://www.s0da.co.kr/)
+  <img src="https://github.com/user-attachments/assets/76917afe-33de-49c9-a239-b85911faf3b7" alt="SODA 로고" width="200"/>
 
-<br/>
+  <h1><strong>SODA</strong> : 소통의 사다리</h1>
 
-## 🏃 프로젝트 기간
- 2025.03.17 ~ 2025.05.16
+  <p>
+    웹 에이전시와 고객사 간의 원활한 협업을 위한<br/>
+    ✨ <strong>올인원 프로젝트 관리 플랫폼</strong> ✨
+  </p>
 
+  <p>
+    <a href="https://www.s0da.co.kr/" target="_blank">
+      <img src="https://img.shields.io/badge/SODA%20웹사이트%20방문하기-F59E0B?style=for-the-badge&logo=Rocket&logoColor=white" alt="SODA 바로가기"/>
+    </a>
+  </p>
+
+</div>
  <br/>
 <br/>
+
+  <br/>
+  <h2>🏃 프로젝트 기간</h2>
+  <p><strong>2025년 03월 17일 ~ 2025년 05월 16일</strong></p>
+  <br/>
 
 ## 💡 주요 기능
 ### 1. 관리자
@@ -94,6 +105,9 @@ SODA는 웹 에이전시와 고객사 간의 원활한 협업을 위한
   <img src="https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white" alt="Gradle" height="24"/>
   <img src="https://img.shields.io/badge/JUnit%205-25A162?style=for-the-badge&logo=junit5&logoColor=white" alt="JUnit 5" height="24"/>
 </p>
+
+<br/>
+<br/>
 
 ### 🎨 프론트엔드 기술 스택
 <p>

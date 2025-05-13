@@ -26,7 +26,7 @@ public class FileFactory {
 
     public List<FileBase> makeFileEntities(FileStrategy<Object, FileBase> strategy, Object domain, List<ConfirmedFile> confirmedFiles) {
         return confirmedFiles.stream()
-                .map(file -> strategy.toEntity(file.getFileName(), file.getUrl(), domain))
+                .map(file -> strategy.toEntity(file.getFileName().substring(file.getFileName().lastIndexOf("_") + 1), file.getUrl(), domain))
                 .collect(Collectors.toList());
     }
 }

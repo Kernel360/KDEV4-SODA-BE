@@ -104,11 +104,13 @@ public class ArticleFacade {
     public ArticleModifyResponse updateArticle(Long userId, String userRole, Long articleId, ArticleModifyRequest request) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Article article = articleService.validateArticle(articleId);
+        Stage stage = stageService.getvalidateStage(request.getStageId());
 
         articleValidator.validateUpdatePermission(member, userRole, article);
         articleValidator.validateLinkSize(request.getLinkList());
 
-        Article updatedArticle = articleService.updateArticle(article, request.getTitle(), request.getContent(), request.getPriority(), request.getDeadLine(), request.getLinkList());
+        Article updatedArticle = articleService.updateArticle(article, request.getTitle(), request.getContent(),
+                request.getPriority(), request.getDeadLine(), request.getLinkList(), stage);
         return ArticleModifyResponse.fromEntity(updatedArticle);
     }
 

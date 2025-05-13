@@ -69,4 +69,12 @@ public class StageService {
                 });
     }
 
+    public Stage getvalidateStage(Long stageId) {
+        return stageProvider.findById(stageId).orElseThrow(
+                () -> {
+                    log.error("단계를 찾을 수 없음: stageId={}", stageId);
+                    return new GeneralException(StageErrorCode.STAGE_NOT_FOUND);
+                });
+    }
+
 }

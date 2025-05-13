@@ -17,11 +17,12 @@ public class FileFactory {
 
     public List<PresignedUploadResponse.Entry> generateFileEntries(List<FileUploadRequest> files) {
         return files.stream().map(file -> {
-            String presignedUrl = s3Service.generatePresignedPutUrl(file.getFileName(), file.getContentType());
-            String fileUrl = s3Service.buildCloudFrontUrl(file.getFileName());
-            return new PresignedUploadResponse.Entry(file.getFileName(), fileUrl, presignedUrl);
+            PresignedUrlWithKey presigned = s3Service.generatePresignedPutUrl(file.getFileName(), file.getContentType());
+            String fileUrl = s3Service.buildCloudFrontUrl(presigned.getKey());
+            return new PresignedUploadResponse.Entry(presigned.getKey(), fileUrl, presigned.getUrl());
         }).collect(Collectors.toList());
     }
+
 
     public List<FileBase> makeFileEntities(FileStrategy<Object, FileBase> strategy, Object domain, List<ConfirmedFile> confirmedFiles) {
         return confirmedFiles.stream()

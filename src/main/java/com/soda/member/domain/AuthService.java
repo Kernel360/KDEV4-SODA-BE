@@ -6,6 +6,7 @@ import com.soda.global.security.jwt.JwtTokenProvider;
 import com.soda.member.domain.company.Company;
 import com.soda.member.domain.company.CompanyService;
 import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberErrorCode;
 import com.soda.member.domain.member.MemberRole;
 import com.soda.member.domain.member.MemberService;
 import com.soda.member.domain.member.MemberStatus;
@@ -73,7 +74,7 @@ public class AuthService {
         log.info("회원 가입 시도: authId={}", requestDto.getAuthId());
         memberService.validateDuplicateAuthId(requestDto.getAuthId());
         Company company = null;
-        if(requestDto.getRole().equals(MemberRole.USER)){
+        if (requestDto.getRole().equals(MemberRole.USER)) {
             company = companyService.getCompany(requestDto.getCompanyId());
         }
 
@@ -386,5 +387,43 @@ public class AuthService {
         refreshTokenCookie.setMaxAge(0);
         response.addCookie(refreshTokenCookie);
         log.debug("Refresh Token 쿠키를 삭제(만료)하도록 응답에 설정했습니다.");
+    }
+
+    /**
+     * 아이디 사용 가능 여부를 확인합니다.
+     * 
+     * @param authId 확인할 아이디
+     * @return 아이디 사용 가능 여부 (true: 사용 가능, false: 이미 사용 중)
+     */
+    public boolean checkIdAvailability(String authId) {
+        log.info("아이디 중복 확인 요청: authId={}", authId);
+        try {
+            memberService.validateDuplicateAuthId(authId);
+            return true;
+        } catch (GeneralException e) {
+            if (e.getErrorCode() == MemberErrorCode.DUPLICATE_AUTH_ID) {
+                return false;
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * 이메일 사용 가능 여부를 확인합니다.
+     * 
+     * @param email 확인할 이메일
+     * @return 이메일 사용 가능 여부 (true: 사용 가능, false: 이미 사용 중)
+     */
+    public boolean checkEmailAvailability(String email) {
+        log.info("이메일 중복 확인 요청: email={}", email);
+        try {
+            memberService.validateEmailExists(email);
+            return false;
+        } catch (GeneralException e) {
+            if (e.getErrorCode() == MemberErrorCode.NOT_FOUND_MEMBER) {
+                return true;
+            }
+            throw e;
+        }
     }
 }

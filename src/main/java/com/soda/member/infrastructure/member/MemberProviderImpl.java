@@ -57,11 +57,6 @@ public class MemberProviderImpl implements MemberProvider {
     }
 
     @Override
-    public Optional<Member> findByNameAndEmailAndIsDeletedFalse(String name, String email) {
-        return memberRepository.findByNameAndEmailAndIsDeletedFalse(name, email);
-    }
-
-    @Override
     public Optional<Member> findWithProjectsById(Long id) {
         return memberRepository.findWithProjectsById(id);
     }
@@ -107,13 +102,13 @@ public class MemberProviderImpl implements MemberProvider {
     }
 
     @Override
-    public Page<Member> findAll(Pageable pageable) {
-        return memberRepository.findAll(pageable);
+    public Page<Member> findAllByOrderByCreatedAtDesc(Pageable pageable) {
+        return memberRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
     @Override
-    public Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable) {
-        return memberRepository.findByKeywordIncludingDeleted(keyword, pageable);
+    public Page<Member> findByKeywordIncludingDeletedOrderByCreatedAtDesc(String keyword, Pageable pageable) {
+        return memberRepository.findByKeywordIncludingDeletedOrderByCreatedAtDesc(keyword, pageable);
     }
 
     @Override
@@ -124,31 +119,6 @@ public class MemberProviderImpl implements MemberProvider {
     @Override
     public boolean existsByEmailAndIsDeletedFalse(String email) {
         return memberRepository.existsByEmailAndIsDeletedFalse(email);
-    }
-
-    @Override
-    public Page<Member> findAllWithCompany(Pageable pageable) {
-        return memberRepository.findAllWithCompany(pageable);
-    }
-
-    @Override
-    public Page<Member> findByKeywordWithCompany(String keyword, Pageable pageable) {
-        return memberRepository.findByKeywordWithCompany(keyword, pageable);
-    }
-
-    @Override
-    public MemberDetailDto getMemberDetailWithCompany(Long userId) {
-        Member member = findById(userId)
-                .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
-        return MemberDetailDto.fromEntity(member);
-    }
-
-    @Override
-    public List<Member> findMembersByCompany(Company company) {
-        if (company == null || company.getId() == null) {
-            throw new GeneralException(CommonErrorCode.BAD_REQUEST);
-        }
-        return memberRepository.findByCompanyAndIsDeletedFalse(company);
     }
 
     @Override

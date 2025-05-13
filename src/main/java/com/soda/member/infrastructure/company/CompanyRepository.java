@@ -11,9 +11,6 @@ import java.util.Optional;
 public interface CompanyRepository extends JpaRepository<Company, Long>, CompanyRepositoryCustom {
     Optional<Company> findByIdAndIsDeletedFalse(Long companyId);
 
-    List<Company> findByIsDeletedFalse();
-
-    Optional<Company> findByCompanyNumber(String companyNumber);
-
     List<Company> findByIdInAndIsDeletedFalse(List<Long> companyIds);
+
 }

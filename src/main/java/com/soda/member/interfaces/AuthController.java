@@ -9,15 +9,11 @@ import com.soda.member.interfaces.dto.member.LoginRequest;
 import com.soda.member.interfaces.dto.member.LoginResponse;
 import com.soda.member.interfaces.dto.member.admin.CreateMemberRequest;
 import com.soda.member.domain.AuthService;
-import com.soda.member.domain.member.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -26,7 +22,6 @@ import java.io.IOException;
 public class AuthController {
 
     private final AuthService authService;
-    private final MemberService memberService;
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponseForm<Void>> signup(@RequestBody CreateMemberRequest requestDto) {
@@ -68,6 +63,18 @@ public class AuthController {
     public ResponseEntity<ApiResponseForm<Void>> logout(HttpServletResponse response) {
         authService.logout(response);
         return ResponseEntity.ok(ApiResponseForm.success(null, "로그아웃 성공"));
+    }
+
+    @GetMapping("/check-id")
+    public ResponseEntity<ApiResponseForm<Boolean>> checkIdAvailability(@RequestParam String authId) {
+        boolean isAvailable = authService.checkIdAvailability(authId);
+        return ResponseEntity.ok(ApiResponseForm.success(isAvailable, "아이디 중복 확인 성공"));
+    }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<ApiResponseForm<Boolean>> checkEmailAvailability(@RequestParam String email) {
+        boolean isAvailable = authService.checkEmailAvailability(email);
+        return ResponseEntity.ok(ApiResponseForm.success(isAvailable, "이메일 중복 확인 성공"));
     }
 
 }

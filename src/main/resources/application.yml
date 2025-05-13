@@ -18,7 +18,7 @@ spring:
       - /verification
       - /verification/confirm
       - /members/find-id
-      - /password/change
+      - /password/reset
       - /refresh
 
   mail:

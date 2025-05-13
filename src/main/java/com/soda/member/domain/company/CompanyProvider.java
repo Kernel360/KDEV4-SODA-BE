@@ -1,6 +1,9 @@
 package com.soda.member.domain.company;
 
 import com.soda.member.interfaces.dto.CompanyCreationStatRaw;
+import com.soda.member.interfaces.dto.company.CompanyViewOption;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,15 +14,11 @@ public interface CompanyProvider {
 
         Optional<Company> findById(Long id);
 
-        List<Company> findAll();
-
-        Optional<Company> findByCompanyNumber(String companyNumber);
-
-        List<Company> findByIsDeletedFalse();
-
         Optional<Company> findByIdAndIsDeletedFalse(Long id);
 
         List<CompanyCreationStatRaw> countCompaniesByDayRaw(LocalDateTime startDateTime, LocalDateTime endDateTime);
 
         List<Company> findByIdInAndIsDeletedFalse(List<Long> companyIds);
+
+        Page<Company> findAllCompaniesWithSearch(CompanyViewOption viewOption, String searchKeyword, Pageable pageable);
 }

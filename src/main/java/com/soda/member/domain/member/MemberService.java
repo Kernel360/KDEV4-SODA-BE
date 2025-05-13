@@ -60,14 +60,6 @@ public class MemberService {
                 .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
     }
 
-    public FindAuthIdResponse findMaskedAuthId(FindAuthIdRequest request) {
-        Member member = memberProvider.findByNameAndEmailAndIsDeletedFalse(request.getName(), request.getEmail())
-                .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
-
-        String maskedAuthId = maskAuthId(member.getAuthId());
-        return new FindAuthIdResponse(maskedAuthId);
-    }
-
     public Member saveMember(Member member) {
         log.info("회원 정보 저장 완료: memberId={}", member.getId());
         return memberProvider.store(member);
@@ -120,24 +112,12 @@ public class MemberService {
         return memberProvider.findMembersByIdsAndCompany(ids, company);
     }
 
-    public List<Member> findMembersByCompany(Company company) {
-        return memberProvider.findMembersByCompany(company);
+    public Page<Member> findAllByOrderByCreatedAtDesc(Pageable pageable) {
+        return memberProvider.findAllByOrderByCreatedAtDesc(pageable);
     }
 
-    public Page<Member> findAll(Pageable pageable) {
-        return memberProvider.findAll(pageable);
-    }
-
-    public Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable) {
-        return memberProvider.findByKeywordIncludingDeleted(keyword, pageable);
-    }
-
-    public Page<Member> findAllWithCompany(Pageable pageable) {
-        return memberProvider.findAllWithCompany(pageable);
-    }
-
-    public Page<Member> findByKeywordWithCompany(String keyword, Pageable pageable) {
-        return memberProvider.findByKeywordWithCompany(keyword, pageable);
+    public Page<Member> findByKeywordIncludingDeletedOrderByCreatedAtDesc(String keyword, Pageable pageable) {
+        return memberProvider.findByKeywordIncludingDeletedOrderByCreatedAtDesc(keyword, pageable);
     }
 
     @Transactional
@@ -165,21 +145,6 @@ public class MemberService {
         return authId.substring(0, 2) + "*".repeat(length - 4) + authId.substring(length - 2);
     }
 
-    public Page<MemberListDto> getAllUsers(Pageable pageable, String searchKeyword) {
-        Page<Member> memberPage;
-
-        if (StringUtils.hasText(searchKeyword)) {
-            memberPage = findByKeywordIncludingDeleted(searchKeyword, pageable);
-            log.info("관리자 사용자 목록 검색 조회: keyword={}, page={}, size={}", searchKeyword, pageable.getPageNumber(),
-                    pageable.getPageSize());
-        } else {
-            memberPage = findAll(pageable);
-            log.info("관리자 전체 사용자 목록 조회: page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
-        }
-
-        return memberPage.map(MemberListDto::fromEntity);
-    }
-
     public Member findByNameAndEmail(String name, String email) {
         return memberProvider.findByNameAndEmail(name, email)
                 .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
@@ -187,7 +152,7 @@ public class MemberService {
 
     public void validateEmailExists(String email) {
         boolean isExists = memberProvider.existsByEmailAndIsDeletedFalse(email);
-        if (isExists) {
+        if (!isExists) {
             throw new GeneralException(MemberErrorCode.DUPLICATE_AUTH_ID);
         }
     }

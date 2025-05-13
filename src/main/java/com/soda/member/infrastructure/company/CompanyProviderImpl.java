@@ -3,7 +3,10 @@ package com.soda.member.infrastructure.company;
 import com.soda.member.domain.company.Company;
 import com.soda.member.domain.company.CompanyProvider;
 import com.soda.member.interfaces.dto.CompanyCreationStatRaw;
+import com.soda.member.interfaces.dto.company.CompanyViewOption;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -26,21 +29,6 @@ public class CompanyProviderImpl implements CompanyProvider {
     }
 
     @Override
-    public List<Company> findAll() {
-        return companyRepository.findAll();
-    }
-
-    @Override
-    public Optional<Company> findByCompanyNumber(String companyNumber) {
-        return companyRepository.findByCompanyNumber(companyNumber);
-    }
-
-    @Override
-    public List<Company> findByIsDeletedFalse() {
-        return companyRepository.findByIsDeletedFalse();
-    }
-
-    @Override
     public Optional<Company> findByIdAndIsDeletedFalse(Long id) {
         return companyRepository.findByIdAndIsDeletedFalse(id);
     }
@@ -53,5 +41,11 @@ public class CompanyProviderImpl implements CompanyProvider {
     @Override
     public List<Company> findByIdInAndIsDeletedFalse(List<Long> companyIds) {
         return companyRepository.findByIdInAndIsDeletedFalse(companyIds);
+    }
+
+    @Override
+    public Page<Company> findAllCompaniesWithSearch(CompanyViewOption viewOption, String searchKeyword,
+            Pageable pageable) {
+        return companyRepository.findAllCompaniesWithSearch(viewOption, searchKeyword, pageable);
     }
 }

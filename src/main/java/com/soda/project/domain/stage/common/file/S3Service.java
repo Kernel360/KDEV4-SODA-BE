@@ -18,15 +18,15 @@ public class S3Service {
 
     private final AWSS3Config awsS3Config;
 
-    public String generatePresignedPutUrl(String fileName, String contentType) {
+    public PresignedUrlWithKey generatePresignedPutUrl(String fileName, String contentType) {
         S3Presigner presigner = awsS3Config.getPresigner();
 
         String uniqueFileName = UUID.randomUUID() + "_" + fileName;
+        String key = S3_URL_PREFIX + uniqueFileName;
 
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(awsS3Config.getBucket())
-                .key(S3_URL_PREFIX + uniqueFileName)
-                .acl("public-read")
+                .key(key)
                 .contentType(contentType)
                 .build();
 
@@ -35,10 +35,12 @@ public class S3Service {
                         .putObjectRequest(objectRequest)
         );
 
-        return presignedRequest.url().toString();
+        return new PresignedUrlWithKey(key, presignedRequest.url().toString());
     }
 
-    public String buildCloudFrontUrl(String fileName) {
-        return awsS3Config.getCloudFrontDomain() + "/" + S3_URL_PREFIX + fileName;
+
+    public String buildCloudFrontUrl(String key) {
+        return awsS3Config.getCloudFrontDomain() + "/" + key;
     }
+
 }

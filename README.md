@@ -110,7 +110,8 @@
 <br/>
 
 ## ⚙️ 시스템 아키텍처
-첨부 예정
+![image](https://github.com/user-attachments/assets/fe24f694-c722-4a0f-b234-813e162f3687)
+
 
 <br/>
 <br/>

@@ -31,14 +31,16 @@
 |<b>유저 생성</b>|<b>프로젝트 생성</b>|<b>데이터 확인</b>|
 |![유저생성](https://github.com/user-attachments/assets/5166a8d2-5dd5-4243-8a16-1c03eaa80189)|![프로젝트생성](https://github.com/user-attachments/assets/f9be97b3-ba92-4f57-bafb-c41f0e4c3dcc)|![데이터로그](https://github.com/user-attachments/assets/fce435f3-b795-40c4-b552-a944ee242ca1)|
 |<b>온보딩</b>|<b>유저 대시보드</b>|<b>승인요청 목록</b>|
-||||
+||![사용자대시보드](https://github.com/user-attachments/assets/b7f75d03-7213-4041-bc8d-197d521f0a5c)|![승인요청목록](https://github.com/user-attachments/assets/b2ad3773-d811-451c-aa96-966450cd6c7f)|
 |<b>질문 목록</b>|<b>알림</b>|<b>승인요청 생성</b>|
-|||![승인요청생성](https://github.com/user-attachments/assets/e95f61e6-ce5c-496c-8524-c16d1ebd578d)|
+|![질문목록](https://github.com/user-attachments/assets/f5f2c8a1-e8d1-4106-9097-04d2d1cf5af7)|![알림](https://github.com/user-attachments/assets/ee1d5441-ac5f-4fec-b6c4-92df55d8a53c)|![승인요청생성](https://github.com/user-attachments/assets/e95f61e6-ce5c-496c-8524-c16d1ebd578d)|
 |<b>승인응답 생성</b>|<b>질문 생성</b>||
-|![승인응답생성](https://github.com/user-attachments/assets/2d2deeb8-d445-4044-bc67-d6052cb79c6f)|||
+|![승인응답생성](https://github.com/user-attachments/assets/2d2deeb8-d445-4044-bc67-d6052cb79c6f)|![질문작성](https://github.com/user-attachments/assets/50a8deb6-7061-4c98-bd69-72d9fc4d5477)||
 
 <br/>
 <br/>
+
+
 
 ## 👨‍🔧 기술 스택
 <p>

@@ -29,13 +29,13 @@
 |:-:|:-:|:-:|
 |![로그인](https://github.com/user-attachments/assets/16f01831-dc6a-4cd5-923d-956f398f33c5)|![어드민대시보드](https://github.com/user-attachments/assets/e6fb4afa-2cc4-4763-8170-9ad166416fb0)|![회사생성](https://github.com/user-attachments/assets/97fdde2f-b88f-44bb-9758-6f7cf8ff4f6b)|
 |<b>유저 생성</b>|<b>프로젝트 생성</b>|<b>데이터 확인</b>|
-|![유저생성](https://github.com/user-attachments/assets/5166a8d2-5dd5-4243-8a16-1c03eaa80189)|![프로젝트생성](https://github.com/user-attachments/assets/f9be97b3-ba92-4f57-bafb-c41f0e4c3dcc)||
+|![유저생성](https://github.com/user-attachments/assets/5166a8d2-5dd5-4243-8a16-1c03eaa80189)|![프로젝트생성](https://github.com/user-attachments/assets/f9be97b3-ba92-4f57-bafb-c41f0e4c3dcc)|![데이터로그](https://github.com/user-attachments/assets/fce435f3-b795-40c4-b552-a944ee242ca1)|
 |<b>온보딩</b>|<b>유저 대시보드</b>|<b>승인요청 목록</b>|
 ||||
 |<b>질문 목록</b>|<b>알림</b>|<b>승인요청 생성</b>|
-||||
+|||![승인요청생성](https://github.com/user-attachments/assets/e95f61e6-ce5c-496c-8524-c16d1ebd578d)|
 |<b>승인응답 생성</b>|<b>질문 생성</b>||
-||||
+|![승인응답생성](https://github.com/user-attachments/assets/2d2deeb8-d445-4044-bc67-d6052cb79c6f)|||
 
 <br/>
 <br/>

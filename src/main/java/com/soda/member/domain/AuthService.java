@@ -178,7 +178,10 @@ public class AuthService {
     @Transactional
     public void sendVerificationCode(String email) {
         log.info("이메일 인증 코드 발송 요청: {}", email);
-        memberService.validateEmailExists(email);
+        boolean isExists = memberService.validateEmailExists(email);
+        if (!isExists) {
+            throw new GeneralException(AuthErrorCode.NOT_FOUND_EMAIL);
+        }
         String code = generateVerificationCode();
         sendVerificationEmail(email, code);
         storeVerificationCode(email, code);
@@ -416,14 +419,6 @@ public class AuthService {
      */
     public boolean checkEmailAvailability(String email) {
         log.info("이메일 중복 확인 요청: email={}", email);
-        try {
-            memberService.validateEmailExists(email);
-            return false;
-        } catch (GeneralException e) {
-            if (e.getErrorCode() == MemberErrorCode.NOT_FOUND_MEMBER) {
-                return true;
-            }
-            throw e;
-        }
+        return !memberService.validateEmailExists(email);
     }
 }

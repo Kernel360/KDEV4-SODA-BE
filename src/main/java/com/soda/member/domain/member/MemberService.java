@@ -150,11 +150,8 @@ public class MemberService {
                 .orElseThrow(() -> new GeneralException(MemberErrorCode.NOT_FOUND_MEMBER));
     }
 
-    public void validateEmailExists(String email) {
-        boolean isExists = memberProvider.existsByEmailAndIsDeletedFalse(email);
-        if (!isExists) {
-            throw new GeneralException(MemberErrorCode.DUPLICATE_AUTH_ID);
-        }
+    public boolean validateEmailExists(String email) {
+        return memberProvider.existsByEmailAndIsDeletedFalse(email);
     }
 
     public void validateDuplicateAuthId(String authId) {

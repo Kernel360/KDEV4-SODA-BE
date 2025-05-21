@@ -79,6 +79,8 @@ dependencies {
 	// logstash
 	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 
+	// actuator health check
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 tasks.named('test') {

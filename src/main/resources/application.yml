@@ -24,6 +24,7 @@ spring:
       - /members/find-id
       - /password/reset
       - /refresh
+      - /actuator/health
 
   mail:
     host: smtp.gmail.com
@@ -94,3 +95,12 @@ cloud:
       bucket: ${AWS_S3_BUCKET}
     cloudfront:
       domain: ${AWS_CLOUDFRONT_DOMAIN}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

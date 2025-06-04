@@ -1,9 +1,10 @@
 package com.soda.project.interfaces.stage.request.dto;
 
-import com.soda.project.interfaces.stage.common.file.dto.FileDTO;
-import com.soda.project.interfaces.stage.common.link.dto.LinkDTO;
+import com.querydsl.core.annotations.QueryProjection;
 import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.RequestStatus;
+import com.soda.project.interfaces.stage.common.file.dto.FileDTO;
+import com.soda.project.interfaces.stage.common.link.dto.LinkDTO;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,7 +12,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Builder
 @Getter
 public class RequestDTO {
     private Long requestId;
@@ -28,6 +28,44 @@ public class RequestDTO {
     private RequestStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Builder
+    public RequestDTO(Long requestId, Long projectId, Long stageId, Long memberId, String memberName,
+                      Long parentId, String title, String content, List<LinkDTO> links,
+                      List<FileDTO> files, List<ApproverDTO> approvers, RequestStatus status,
+                      LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.requestId = requestId;
+        this.projectId = projectId;
+        this.stageId = stageId;
+        this.memberId = memberId;
+        this.memberName = memberName;
+        this.parentId = parentId == null ? -1 : parentId;
+        this.title = title;
+        this.content = content;
+        this.links = links;
+        this.files = files;
+        this.approvers = approvers;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    @QueryProjection
+    public RequestDTO(Long requestId, Long projectId, Long stageId, Long memberId, String memberName,
+                      Long parentId, String title, String content, RequestStatus status,
+                      LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.requestId = requestId;
+        this.projectId = projectId;
+        this.stageId = stageId;
+        this.memberId = memberId;
+        this.memberName = memberName;
+        this.parentId = parentId == null ? -1 : parentId;
+        this.title = title;
+        this.content = content;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     // Entity → DTO 변환
     public static RequestDTO fromEntity(Request request) {

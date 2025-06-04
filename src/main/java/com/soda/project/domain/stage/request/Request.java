@@ -5,17 +5,18 @@ import com.soda.common.TrackUpdate;
 import com.soda.member.domain.member.Member;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.request.approver.ApproverDesignation;
-import com.soda.project.interfaces.stage.request.dto.ReRequestCreateRequest;
-import com.soda.project.interfaces.stage.request.dto.RequestCreateRequest;
 import com.soda.project.domain.stage.request.file.RequestFile;
 import com.soda.project.domain.stage.request.link.RequestLink;
 import com.soda.project.domain.stage.request.response.Response;
 import com.soda.project.domain.stage.request.response.ResponseStatus;
+import com.soda.project.interfaces.stage.request.dto.ReRequestCreateRequest;
+import com.soda.project.interfaces.stage.request.dto.RequestCreateRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,17 +49,21 @@ public class Request extends BaseEntity {
 
     @TrackUpdate
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
+    @BatchSize(size = 50)
     private List<RequestFile> files;
 
     @TrackUpdate
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
+    @BatchSize(size = 50)
     private List<RequestLink> links;
 
     @TrackUpdate
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
+    @BatchSize(size = 50)
     private List<ApproverDesignation> approvers;
 
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
+    @BatchSize(size = 50)
     private List<Response> responses;
 
     @Builder

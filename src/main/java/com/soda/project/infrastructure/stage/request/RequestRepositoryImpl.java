@@ -2,9 +2,7 @@ package com.soda.project.infrastructure.stage.request;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
-import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.soda.member.domain.member.QMember;
 import com.soda.project.domain.QProject;
@@ -24,11 +22,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.soda.member.domain.member.QMember.member;
 
@@ -95,69 +91,102 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
     @Override
     public Page<RequestDTO> searchDtosByMemberCondition(Long memberId, GetMemberRequestCondition condition, Pageable pageable) {
         QRequest request = QRequest.request;
-        QMember member = QMember.member;
         QStage stage = QStage.stage;
         QProject project = QProject.project;
         QApproverDesignation approver = QApproverDesignation.approverDesignation;
+        QMember member = QMember.member;
 
-        BooleanBuilder baseCondition = new BooleanBuilder();
+        BooleanBuilder commonCondition = buildCommonCondition(condition);
 
+        // 요청자 기준 ID
+        List<Long> requesterIds = queryFactory
+                .select(request.id)
+                .from(request)
+                .join(request.stage, stage)
+                .join(stage.project, project)
+                .where(new BooleanBuilder(commonCondition).and(request.member.id.eq(memberId)))
+                .fetch();
+
+        // 결재자 기준 ID
+        List<Long> approverIds = queryFactory
+                .select(request.id)
+                .from(request)
+                .join(request.stage, stage)
+                .join(stage.project, project)
+                .join(request.approvers, approver)
+                .where(new BooleanBuilder(commonCondition).and(approver.member.id.eq(memberId)))
+                .fetch();
+
+        // 병합, 중복제거, 최신순 정렬
+        List<Long> mergedIds = mergeAndSortIds(requesterIds, approverIds);
+        List<Long> pagedIds = getPagedIds(mergedIds, pageable);
+
+        List<RequestDTO> content = pagedIds.isEmpty() ? Collections.emptyList() :
+                queryFactory
+                        .select(new QRequestDTO(
+                                request.id,
+                                project.id,
+                                stage.id,
+                                request.member.id,
+                                request.member.name,
+                                request.parentId,
+                                request.title,
+                                request.content,
+                                request.status,
+                                request.createdAt,
+                                request.updatedAt
+                        ))
+                        .from(request)
+                        .join(request.member, member)
+                        .join(request.stage, stage)
+                        .join(stage.project, project)
+                        .where(request.id.in(pagedIds))
+                        .orderBy(request.createdAt.desc())
+                        .fetch();
+
+        return new PageImpl<>(content, pageable, mergedIds.size());
+    }
+
+    private BooleanBuilder buildCommonCondition(GetMemberRequestCondition condition) {
+        QRequest request = QRequest.request;
+        QProject project = QProject.project;
+
+        BooleanBuilder builder = new BooleanBuilder();
         if (condition.getProjectId() != null) {
-            baseCondition.and(project.id.eq(condition.getProjectId()));
+            builder.and(project.id.eq(condition.getProjectId()));
         }
         if (condition.getKeyword() != null && !condition.getKeyword().isBlank()) {
-            baseCondition.and(request.title.containsIgnoreCase(condition.getKeyword()));
+            builder.and(request.title.containsIgnoreCase(condition.getKeyword()));
         }
-        baseCondition.and(project.isDeleted.eq(false));
-
-        BooleanExpression requesterCondition = request.member.id.eq(memberId);
-
-        JPQLQuery<RequestDTO> query = queryFactory
-                .select(new QRequestDTO(
-                        request.id,
-                        project.id,
-                        stage.id,
-                        member.id,
-                        member.name,
-                        request.parentId,
-                        request.title,
-                        request.content,
-                        request.status,
-                        request.createdAt,
-                        request.updatedAt
-                ))
-                .from(request)
-                .join(request.member, member)
-                .join(request.stage, stage)
-                .join(stage.project, project)
-                .leftJoin(request.approvers, approver)
-                .where(baseCondition.and(
-                        requesterCondition.or(approver.member.id.eq(memberId))
-                ))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize());
-
-        List<OrderSpecifier<?>> orderSpecifiers = getOrderSpecifiers(pageable.getSort(), request);
-        if (!orderSpecifiers.isEmpty()) {
-            query.orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]));
-        } else {
-            query.orderBy(request.createdAt.desc());
-        }
-
-        List<RequestDTO> content = query.fetch();
-
-        long total = queryFactory
-                .selectFrom(request)
-                .leftJoin(request.approvers, approver)
-                .join(request.stage, stage)
-                .join(stage.project, project)
-                .where(baseCondition.and(
-                        requesterCondition.or(approver.member.id.eq(memberId))
-                ))
-                .fetchCount();
-
-        return new PageImpl<>(content, pageable, total);
+        builder.and(project.isDeleted.eq(false));
+        return builder;
     }
+
+    private List<Long> mergeAndSortIds(List<Long> list1, List<Long> list2) {
+        return Stream.concat(list1.stream(), list2.stream())
+                .distinct()
+                .sorted(Comparator.reverseOrder()) // 최신순
+                .toList();
+    }
+
+    private List<Long> getPagedIds(List<Long> ids, Pageable pageable) {
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), ids.size());
+        return (start >= ids.size()) ? Collections.emptyList() : ids.subList(start, end);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     private List<OrderSpecifier<?>> getOrderSpecifiers(Sort sort, QRequest request) {

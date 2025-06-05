@@ -98,7 +98,6 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
 
         BooleanBuilder commonCondition = buildCommonCondition(condition);
 
-        // 요청자 기준 ID
         List<Long> requesterIds = queryFactory
                 .select(request.id)
                 .from(request)
@@ -107,7 +106,6 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
                 .where(new BooleanBuilder(commonCondition).and(request.member.id.eq(memberId)))
                 .fetch();
 
-        // 결재자 기준 ID
         List<Long> approverIds = queryFactory
                 .select(request.id)
                 .from(request)
@@ -117,7 +115,6 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
                 .where(new BooleanBuilder(commonCondition).and(approver.member.id.eq(memberId)))
                 .fetch();
 
-        // 병합, 중복제거, 최신순 정렬
         List<Long> mergedIds = mergeAndSortIds(requesterIds, approverIds);
         List<Long> pagedIds = getPagedIds(mergedIds, pageable);
 

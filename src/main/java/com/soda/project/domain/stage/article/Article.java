@@ -24,6 +24,7 @@ import org.hibernate.annotations.BatchSize;
 @Table(name = "article", indexes = {
     @Index(name = "idx_article_member_deleted_created", columnList = "member_id, is_deleted, created_at")
 })
+@BatchSize(size = 50)
 public class Article extends BaseEntity {
 
     private String title;

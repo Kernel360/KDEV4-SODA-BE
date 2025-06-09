@@ -109,7 +109,6 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
                 .selectFrom(article) // Article
                 .leftJoin(article.stage, stage).fetchJoin()    // WHERE 조건 때문에 stage 필요
                 .leftJoin(article.member, member).fetchJoin()    // member가 DTO에 필요
-                .leftJoin(article.parentArticle).fetchJoin()
                 .where(
                         stage.project.id.eq(projectId),
                         article.isDeleted.isFalse(),

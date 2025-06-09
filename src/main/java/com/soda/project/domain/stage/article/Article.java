@@ -20,6 +20,9 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
+@Table(name = "article", indexes = {
+    @Index(name = "idx_article_member_deleted_created", columnList = "member_id, is_deleted, created_at")
+})
 public class Article extends BaseEntity {
 
     private String title;

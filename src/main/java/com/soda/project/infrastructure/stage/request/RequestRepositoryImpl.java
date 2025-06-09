@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.soda.member.domain.member.QMember.member;
+import static com.soda.project.domain.QProject.project;
+import static com.soda.project.domain.stage.QStage.stage;
 
 
 @Slf4j
@@ -61,6 +63,8 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
         List<Request> allRequests = queryFactory
                 .selectFrom(request)
                 .join(request.member, member).fetchJoin()
+                .join(request.stage, stage).fetchJoin()
+                .join(stage.project, project).fetchJoin()
                 .where(builder.and(request.isDeleted.eq(false)))
                 .orderBy(request.createdAt.desc())
                 .fetch();

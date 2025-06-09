@@ -24,6 +24,9 @@ import java.util.List;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Table(name = "request", indexes = {
+        @Index(name = "idx_request_member_stage", columnList = "member_id, stage_id")
+})
 public class Request extends BaseEntity {
 
     @Enumerated(EnumType.STRING)

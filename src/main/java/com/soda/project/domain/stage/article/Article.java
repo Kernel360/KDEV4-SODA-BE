@@ -10,15 +10,20 @@ import com.soda.project.domain.stage.article.vote.Vote;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.ToString;
 import org.hibernate.annotations.BatchSize;
 
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(exclude = {"vote", "commentList", "articleFileList", "articleLinkList", "childArticles", "parentArticle", "member", "stage"})
+@EqualsAndHashCode(callSuper = false)
 @Getter
 @Entity
 @Table(name = "article", indexes = {
@@ -145,19 +150,6 @@ public class Article extends BaseEntity {
         for (ArticleLink link : links) {
             link.updateResponse(this);
             this.articleLinkList.add(link);
-        }
-    }
-
-    public void associateVote(Vote vote) {
-        if (vote == null) {
-            // 만약 기존 vote가 있었다면 연결 해제 (orphanRemoval=true로 인해 DB에서 삭제될 수 있음)
-            if (this.vote != null) {
-                this.vote.disassociateArticle();
-            }
-            this.vote = null;
-        } else {
-            this.vote = vote;
-            vote.associateArticle(this);
         }
     }
 

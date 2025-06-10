@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.soda.member.domain.member.QMember.member;
+import static com.soda.project.domain.QProject.project;
+import static com.soda.project.domain.stage.QStage.stage;
 
 
 @Slf4j
@@ -44,7 +46,7 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
         QRequest request = QRequest.request;
         BooleanBuilder builder = new BooleanBuilder();
 
-        builder.and(request.stage.project.id.eq(projectId));
+        builder.and(request.project.id.eq(projectId));
         if (condition.getStageId() != null) {
             builder.and(request.stage.id.eq(condition.getStageId()));
         }
@@ -61,6 +63,8 @@ public class RequestRepositoryImpl implements RequestRepositoryCustom {
         List<Request> allRequests = queryFactory
                 .selectFrom(request)
                 .join(request.member, member).fetchJoin()
+                .join(request.stage, stage).fetchJoin()
+                .join(request.project, project).fetchJoin()
                 .where(builder.and(request.isDeleted.eq(false)))
                 .orderBy(request.createdAt.desc())
                 .fetch();

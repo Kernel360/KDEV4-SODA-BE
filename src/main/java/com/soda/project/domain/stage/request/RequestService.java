@@ -50,8 +50,7 @@ public class RequestService {
     }
 
     public Page<RequestDTO> findMemberRequests(Long memberId, GetMemberRequestCondition condition, Pageable pageable) {
-        return requestProvider.searchByMemberCondition(memberId, condition, pageable)
-                .map(RequestDTO::fromEntity);
+        return requestProvider.searchDtosByMemberCondition(memberId, condition, pageable);
     }
 
     public List<RequestDTO> findAllByStageId(Long stageId) {

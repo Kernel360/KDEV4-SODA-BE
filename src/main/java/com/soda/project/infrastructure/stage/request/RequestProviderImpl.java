@@ -4,6 +4,7 @@ import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.RequestProvider;
 import com.soda.project.interfaces.stage.request.dto.GetMemberRequestCondition;
 import com.soda.project.interfaces.stage.request.dto.GetRequestCondition;
+import com.soda.project.interfaces.stage.request.dto.RequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,8 +29,8 @@ public class RequestProviderImpl implements RequestProvider {
     }
 
     @Override
-    public Page<Request> searchByMemberCondition(Long memberId, GetMemberRequestCondition condition, Pageable pageable) {
-        return requestRepository.searchByMemberCondition(memberId, condition, pageable);
+    public Page<RequestDTO> searchDtosByMemberCondition(Long memberId, GetMemberRequestCondition condition, Pageable pageable) {
+        return requestRepository.searchDtosByMemberCondition(memberId, condition, pageable);
     }
 
     @Override

@@ -26,7 +26,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "request", indexes = {
-        @Index(name = "idx_request_member_stage", columnList = "member_id, stage_id")
+        @Index(name = "idx_request_member_stage", columnList = "member_id, stage_id"),
+        @Index(name = "idx_request_project_deleted_created", columnList = "project_id, is_deleted, created_at DESC")
 })
 public class Request extends BaseEntity {
 

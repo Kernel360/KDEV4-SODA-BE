@@ -10,20 +10,16 @@ import com.soda.project.domain.stage.article.vote.Vote;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.ToString;
 import org.hibernate.annotations.BatchSize;
 
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString(exclude = {"vote", "commentList", "articleFileList", "articleLinkList", "childArticles", "parentArticle", "member", "stage"})
-@EqualsAndHashCode(callSuper = false)
 @Getter
 @Entity
 @Table(name = "article", indexes = {

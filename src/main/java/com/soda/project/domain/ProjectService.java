@@ -5,6 +5,7 @@ import com.soda.global.response.GeneralException;
 import com.soda.member.domain.member.Member;
 import com.soda.member.domain.company.Company;
 import com.soda.project.domain.company.CompanyProjectRole;
+import com.soda.project.interfaces.dto.MyProjectListResponse;
 import com.soda.project.interfaces.dto.ProjectListResponse;
 import com.soda.project.interfaces.dto.ProjectSearchCondition;
 import lombok.RequiredArgsConstructor;
@@ -87,7 +88,7 @@ public class ProjectService {
     /**
      * 특정 사용자가 참여한 프로젝트 목록 조회 메서드
      */
-    public Page<Tuple> findMyProjectsData(ProjectSearchCondition condition, Long userId, Pageable pageable) {
+    public Page<MyProjectListResponse> findMyProjectsData(ProjectSearchCondition condition, Long userId, Pageable pageable) {
         return projectProvider.findMyProjectsData(condition, userId, pageable);
     }
 

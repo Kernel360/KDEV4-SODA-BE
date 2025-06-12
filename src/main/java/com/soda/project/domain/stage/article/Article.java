@@ -16,6 +16,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.annotations.BatchSize;
+
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -23,6 +25,7 @@ import java.util.List;
 @Table(name = "article", indexes = {
     @Index(name = "idx_article_member_deleted_created", columnList = "member_id, is_deleted, created_at")
 })
+@BatchSize(size = 50)
 public class Article extends BaseEntity {
 
     private String title;
@@ -54,7 +57,7 @@ public class Article extends BaseEntity {
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private List<ArticleLink> articleLinkList = new ArrayList<>();
 
-    @OneToOne(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true, optional = true)
+    @OneToOne(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true, optional = true, fetch = FetchType.LAZY)
     private Vote vote;
 
     // 부모 게시글을 위한 필드 (답글이 부모 게시글을 참조)
@@ -64,6 +67,7 @@ public class Article extends BaseEntity {
 
     // 자식 게시글 리스트 (양방향 관계에서 부모 게시글이 자식 게시글을 가질 수 있게 설정)
     @OneToMany(mappedBy = "parentArticle", cascade = CascadeType.ALL)
+    @BatchSize(size = 50)
     private List<Article> childArticles = new ArrayList<>();
 
     // 부모 게시글이 없으면 일반 게시글, 있으면 답글
@@ -142,19 +146,6 @@ public class Article extends BaseEntity {
         for (ArticleLink link : links) {
             link.updateResponse(this);
             this.articleLinkList.add(link);
-        }
-    }
-
-    public void associateVote(Vote vote) {
-        if (vote == null) {
-            // 만약 기존 vote가 있었다면 연결 해제 (orphanRemoval=true로 인해 DB에서 삭제될 수 있음)
-            if (this.vote != null) {
-                this.vote.disassociateArticle();
-            }
-            this.vote = null;
-        } else {
-            this.vote = vote;
-            vote.associateArticle(this);
         }
     }
 

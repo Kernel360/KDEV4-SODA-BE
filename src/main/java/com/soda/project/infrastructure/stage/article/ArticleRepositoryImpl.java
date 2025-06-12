@@ -11,9 +11,11 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.soda.project.domain.stage.article.Article;
+import com.soda.project.domain.stage.article.QArticle;
 import com.soda.project.domain.stage.article.enums.ArticleStatus;
 import com.soda.project.domain.stage.article.enums.PriorityType;
 import com.soda.project.interfaces.stage.article.dto.ArticleSearchCondition;
+import com.soda.project.interfaces.stage.article.dto.ArticleSearchCondition.SearchType;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -104,10 +106,9 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
     @Override
     public Page<Article> searchArticles(Long projectId, ArticleSearchCondition request, Pageable pageable) {
         List<Article> content = queryFactory
-                .selectFrom(article)
-                .leftJoin(article.stage, stage).fetchJoin()    // Fetch Join 유지 또는 필요시 제거/변경
-                .leftJoin(article.member, member).fetchJoin()    // Fetch Join 유지 또는 필요시 제거/변경
-                .leftJoin(member.company, company).fetchJoin() // Company 정보도 필요하면 Fetch Join
+                .selectFrom(article) // Article
+                .leftJoin(article.stage, stage).fetchJoin()    // WHERE 조건 때문에 stage 필요
+                .leftJoin(article.member, member).fetchJoin()    // member가 DTO에 필요
                 .where(
                         stage.project.id.eq(projectId),
                         article.isDeleted.isFalse(),
@@ -125,14 +126,20 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
         JPAQuery<Long> countQuery = queryFactory
                 .select(article.count())
                 .from(article)
-                .join(article.stage, stage) // where 조건에서 stage 사용하므로 필요
-                .join(article.member, member) // where 조건에서 member 사용하면 필요 (searchCondition 확인)
-                .where(
-                        stage.project.id.eq(projectId),
-                        article.isDeleted.isFalse(),
-                        stageIdEq(request.getStageId()),
-                        searchCondition(request.getSearchType(), request.getKeyword())
-                );
+                .join(article.stage, stage);
+
+        if (request.getSearchType() == SearchType.AUTHOR && StringUtils.hasText(request.getKeyword())) {
+            countQuery.join(article.member, member);
+        }
+
+        countQuery.where(
+            stage.project.id.eq(projectId),
+            article.isDeleted.isFalse(),
+            stageIdEq(request.getStageId()),
+            searchCondition(request.getSearchType(), request.getKeyword()),
+            articleStatusEq(request.getStatus()),
+            priorityTypeEq(request.getPriorityType())
+        );
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }

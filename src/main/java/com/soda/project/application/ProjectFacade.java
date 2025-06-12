@@ -170,9 +170,8 @@ public class ProjectFacade {
         // 1. 권한 검증
         if (!"USER".equals(userRole)) return Page.empty(pageable);
         // 2. 데이터 조회
-        Page<Tuple> tuplePage = projectService.findMyProjectsData(request, userId, pageable);
-        // 3. DTO 변환
-        return projectResponseBuilder.createMyProjectListResponsePage(tuplePage, true);
+        Page<MyProjectListResponse> tuplePage = projectService.findMyProjectsData(request, userId, pageable);
+        return tuplePage;
     }
 
     public ProjectViewResponse getProject(Long userId, String userRole, Long projectId) {

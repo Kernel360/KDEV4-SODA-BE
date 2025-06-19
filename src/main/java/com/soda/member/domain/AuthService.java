@@ -361,17 +361,13 @@ public class AuthService {
      * @param refreshToken 쿠키 값으로 설정할 Refresh Token 문자열
      */
     private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(Duration.ofMillis(refreshTokenValidTimeMillis))
-                .sameSite("None")
-                .domain(".s0da.co.kr")
-                .build();
-
-        response.addHeader("Set-Cookie", cookie.toString());
-        log.debug("Refresh Token 쿠키(SameSite=None, Domain=.soda.co.kr)를 응답에 추가했습니다.");
+        long maxAgeInSeconds = refreshTokenValidTimeMillis / 1000;
+        String cookieValue = String.format(
+                "refreshToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None; Domain=.s0da.co.kr",
+                refreshToken,
+                maxAgeInSeconds
+        );
+        response.addHeader("Set-Cookie", cookieValue);
     }
 
 
@@ -381,16 +377,8 @@ public class AuthService {
      * @param response 쿠키를 설정할 HttpServletResponse 객체
      */
     private void clearRefreshTokenCookie(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", null)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .sameSite("None")
-                .domain(".s0da.co.kr")
-                .build();
-
-        response.addHeader("Set-Cookie", cookie.toString());
+        String cookieValue = "refreshToken=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=None; Domain=.s0da.co.kr";
+        response.addHeader("Set-Cookie", cookieValue);
         log.debug("Refresh Token 쿠키를 삭제(만료)하도록 응답에 설정했습니다.");
     }
 

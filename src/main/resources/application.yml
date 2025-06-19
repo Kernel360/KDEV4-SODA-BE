@@ -1,3 +1,5 @@
+server:
+  forward-headers-strategy: NATIVE
 spring:
   config:
     import: optional:file:.env[.properties]

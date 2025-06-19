@@ -1,31 +1,27 @@
 package com.soda.member.domain;
 
-import com.soda.member.application.EmailService;
 import com.soda.global.response.GeneralException;
 import com.soda.global.security.jwt.JwtTokenProvider;
+import com.soda.member.application.EmailService;
 import com.soda.member.domain.company.Company;
 import com.soda.member.domain.company.CompanyService;
-import com.soda.member.domain.member.Member;
-import com.soda.member.domain.member.MemberErrorCode;
-import com.soda.member.domain.member.MemberRole;
-import com.soda.member.domain.member.MemberService;
-import com.soda.member.domain.member.MemberStatus;
+import com.soda.member.domain.member.*;
+import com.soda.member.infrastructure.RefreshTokenRepository;
+import com.soda.member.infrastructure.VerificationCodeRepository;
 import com.soda.member.interfaces.dto.ResetPasswordRequest;
 import com.soda.member.interfaces.dto.VerificationConfirmResponse;
 import com.soda.member.interfaces.dto.member.LoginRequest;
 import com.soda.member.interfaces.dto.member.LoginResponse;
 import com.soda.member.interfaces.dto.member.admin.CreateMemberRequest;
-import com.soda.member.infrastructure.RefreshTokenRepository;
-import com.soda.member.infrastructure.VerificationCodeRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -360,41 +356,47 @@ public class AuthService {
     }
 
     /**
-     * Refresh Token을 HttpOnly, Secure 속성을 가진 쿠키로 만들어 응답에 추가합니다.
      *
      * @param response 쿠키를 추가할 HttpServletResponse 객체
      * @param refreshToken 쿠키 값으로 설정할 Refresh Token 문자열
      */
     private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge((int) (refreshTokenValidTimeMillis / 1000));
-        response.addCookie(refreshTokenCookie);
-        log.debug("Refresh Token 쿠키를 응답에 추가했습니다.");
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofMillis(refreshTokenValidTimeMillis))
+                .sameSite("None")
+                .domain(".soda.co.kr")
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+        log.debug("Refresh Token 쿠키(SameSite=None, Domain=.soda.co.kr)를 응답에 추가했습니다.");
     }
 
 
     /**
-     * Refresh Token 쿠키를 삭제(만료)하기 위해 응답에 설정합니다.
-     * 쿠키를 생성할 때와 동일한 속성(Path, HttpOnly, Secure)을 사용해야 합니다.
+     * 생성할 때와 동일한 속성(Path, Domain, SameSite)을 사용해야 정상적으로 삭제됩니다.
      *
      * @param response 쿠키를 설정할 HttpServletResponse 객체
      */
     private void clearRefreshTokenCookie(HttpServletResponse response) {
-        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(0);
-        response.addCookie(refreshTokenCookie);
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", null)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .domain(".soda.co.kr")
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
         log.debug("Refresh Token 쿠키를 삭제(만료)하도록 응답에 설정했습니다.");
     }
 
     /**
      * 아이디 사용 가능 여부를 확인합니다.
-     * 
+     *
      * @param authId 확인할 아이디
      * @return 아이디 사용 가능 여부 (true: 사용 가능, false: 이미 사용 중)
      */
@@ -413,7 +415,7 @@ public class AuthService {
 
     /**
      * 이메일 사용 가능 여부를 확인합니다.
-     * 
+     *
      * @param email 확인할 이메일
      * @return 이메일 사용 가능 여부 (true: 사용 가능, false: 이미 사용 중)
      */

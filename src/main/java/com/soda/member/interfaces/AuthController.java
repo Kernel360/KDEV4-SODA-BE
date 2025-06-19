@@ -12,16 +12,22 @@ import com.soda.member.domain.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponseForm<Void>> signup(@RequestBody CreateMemberRequest requestDto) {
@@ -75,6 +81,28 @@ public class AuthController {
     public ResponseEntity<ApiResponseForm<Boolean>> checkEmailAvailability(@RequestParam String email) {
         boolean isAvailable = authService.checkEmailAvailability(email);
         return ResponseEntity.ok(ApiResponseForm.success(isAvailable, "이메일 중복 확인 성공"));
+    }
+
+    @GetMapping("/system-check/headers")
+    public ResponseEntity<Map<String, String>> getHeadersAndScheme(HttpServletRequest request) {
+        log.info("===== [DEBUG] Request Headers Check Start =====");
+        Map<String, String> result = new HashMap<>();
+
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            String headerValue = request.getHeader(headerName);
+            result.put(headerName, headerValue);
+            log.info("Header: {} = {}", headerName, headerValue);
+        }
+
+        String scheme = request.getScheme();
+        result.put("X-REQUEST-SCHEME", scheme);
+        log.info(">>>>>> Final Scheme Detected: {}", scheme);
+
+        log.info("===== [DEBUG] Request Headers Check End =====");
+
+        return ResponseEntity.ok(result);
     }
 
 }

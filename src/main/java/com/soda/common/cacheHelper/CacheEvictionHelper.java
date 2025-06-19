@@ -1,4 +1,4 @@
-package com.soda.common;
+package com.soda.common.cacheHelper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;

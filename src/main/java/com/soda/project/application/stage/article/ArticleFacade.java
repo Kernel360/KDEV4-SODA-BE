@@ -21,6 +21,8 @@ import com.soda.project.domain.stage.article.vote.VoteService;
 import com.soda.project.interfaces.stage.article.dto.*;
 import com.soda.project.interfaces.stage.article.vote.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -30,6 +32,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -114,8 +117,24 @@ public class ArticleFacade {
         return ArticleModifyResponse.fromEntity(updatedArticle);
     }
 
+    @Cacheable(
+        value = "myArticles",
+        key = "'memberId:' + #memberId + " +
+            "':projectId:' + (#projectId == null ? 'null' : #projectId.toString()) + " +
+            "':page:' + #pageable.pageNumber + " +
+            "':size:' + #pageable.pageSize + " +
+            "':sort:' +"
+            + "T(com.soda.global.util.CacheKeyHelper).generateSortKey(#pageable.sort)",
+        cacheManager = "myCacheManager",
+        unless = "#result == null or !#result.hasContent()"
+    )
     public Page<MyArticleListResponse> getMyArticles(Long memberId, Long projectId, Pageable pageable) {
+        log.info("===> [Cache Miss] DB에서 사용자 ID {}의 '내 게시글' 목록(Tuple)을 조회합니다. projectId: {}, pageable: {}",
+            memberId, projectId, pageable);
+
         Page<Tuple> tuplePage = articleService.findMyArticlesData(memberId, projectId, pageable);
+
+        log.info("===> [Cache Miss] 조회된 Tuple 데이터를 MyArticleListResponse DTO로 변환합니다.");
         return articleResponseBuilder.buildMyArticleListPage(tuplePage);
     }
 

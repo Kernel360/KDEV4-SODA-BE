@@ -367,7 +367,7 @@ public class AuthService {
                 .path("/")
                 .maxAge(Duration.ofMillis(refreshTokenValidTimeMillis))
                 .sameSite("None")
-                .domain(".soda.co.kr")
+                .domain(".s0da.co.kr")
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
@@ -387,7 +387,7 @@ public class AuthService {
                 .path("/")
                 .maxAge(0)
                 .sameSite("None")
-                .domain(".soda.co.kr")
+                .domain(".s0da.co.kr")
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());

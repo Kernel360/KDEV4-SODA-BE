@@ -10,6 +10,7 @@ import com.soda.project.interfaces.dto.ProjectListResponse;
 import com.soda.project.interfaces.dto.ProjectSearchCondition;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -88,7 +89,17 @@ public class ProjectService {
     /**
      * 특정 사용자가 참여한 프로젝트 목록 조회 메서드
      */
+    @Cacheable(value = "myProjects",
+            key = "'user:' + #userId + " +
+                    "':status:' + (#condition.status == null ? 'null' : #condition.status.name()) + " +
+                    "':keyword:' + (#condition.keyword == null ? 'null' : #condition.keyword) + " +
+                    "':page:' + #pageable.pageNumber + " +
+                    "':size:' + #pageable.pageSize + " +
+                    "':sort:' + (#pageable.sort.isSorted() ? #pageable.sort.toString() : 'UNSORTED')",
+            cacheManager = "myCacheManager",
+            unless = "#result == null or !#result.hasContent()")
     public Page<MyProjectListResponse> findMyProjectsData(ProjectSearchCondition condition, Long userId, Pageable pageable) {
+        log.info("===> [Cache Miss] DB에서 사용자 {}의 프로젝트 목록을 조회합니다. 조건: {}, 페이지: {}", userId, condition, pageable);
         return projectProvider.findMyProjectsData(condition, userId, pageable);
     }
 

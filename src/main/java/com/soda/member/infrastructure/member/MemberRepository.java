@@ -1,7 +1,7 @@
 package com.soda.member.infrastructure.member;
 
-import com.soda.member.domain.member.Member;
 import com.soda.member.domain.company.Company;
+import com.soda.member.domain.member.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,15 +20,11 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
 
     Optional<Member> findByIdAndIsDeletedFalse(Long memberId);
 
-    Optional<Member> findByEmail(String email);
-
     Optional<Member> findWithProjectsById(Long id);
 
     boolean existsByEmailAndIsDeletedFalse(String email);
 
     List<Member> findByIdInAndIsDeletedFalse(List<Long> memberIds);
-
-    List<Member> findByIdIn(List<Long> ids);
 
     Optional<Member> findByNameAndEmailAndIsDeletedFalse(String name, String email);
 
@@ -36,13 +32,8 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
 
     Optional<Member> findByEmailAndIsDeletedFalse(String email);
 
-    List<Member> findByCompanyAndIsDeletedFalse(Company company);
+    Page<Member> findByKeywordIncludingDeletedOrderByCreatedAtDesc(String keyword, Pageable pageable);
 
-    Page<Member> findByKeywordIncludingDeleted(String keyword, Pageable pageable);
+    Page<Member> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
-    Page<Member> findAllWithCompany(Pageable pageable);
-
-    Page<Member> findByKeywordWithCompany(String keyword, Pageable pageable);
-
-    Optional<Member> findByIdWithCompany(Long id);
 }

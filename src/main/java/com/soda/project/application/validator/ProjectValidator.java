@@ -33,13 +33,27 @@ public class ProjectValidator {
     private final MemberService memberService;
     private final MemberProjectService memberProjectService;
 
-    public void validateProjectAuthority(Member member, Long projectId) {
+    public void validateProjectCliAuthority(Member member, Long projectId) {
         if (!isCliInCurrentProject(projectId, member) && !isAdmin(member.getRole())) {
             throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_CLI);
         }
     }
 
-    private static boolean isCliInCurrentProject(Long projectId, Member member) {
+    public void validateProjectDevAuthority(Member member, Long projectId) {
+        if (!isDevInCurrentProject(projectId, member) && !isAdmin(member.getRole())) {
+            throw new GeneralException(CommonErrorCode.USER_NOT_IN_PROJECT_DEV);
+        }
+    }
+
+    private boolean isDevInCurrentProject(Long projectId, Member member) {
+        return member.getMemberProjects().stream()
+                .anyMatch(mp ->
+                        mp.getProject().getId().equals(projectId) &&
+                                (mp.getRole() == MemberProjectRole.DEV_MANAGER || mp.getRole() == MemberProjectRole.DEV_PARTICIPANT)
+                );
+    }
+
+    private boolean isCliInCurrentProject(Long projectId, Member member) {
         return member.getMemberProjects().stream()
                 .anyMatch(mp ->
                         mp.getProject().getId().equals(projectId) &&

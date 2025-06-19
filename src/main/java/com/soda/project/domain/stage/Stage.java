@@ -1,8 +1,8 @@
 package com.soda.project.domain.stage;
 
-import com.soda.project.domain.stage.article.Article;
 import com.soda.common.BaseEntity;
 import com.soda.project.domain.Project;
+import com.soda.project.domain.stage.article.Article;
 import com.soda.project.domain.stage.request.Request;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -19,12 +19,6 @@ import java.util.List;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Stage extends BaseEntity {
-    private static final float INITIAL_ORDER = 1000.0f;
-    private static final float ORDER_INCREMENT = 1000.0f;
-    private static final List<String> DEFAULT_INITIAL_STAGE_NAMES = List.of(
-            "요구사항 정의", "화면 설계", "디자인", "퍼블리싱", "개발", "검수"
-    );
-
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -42,45 +36,66 @@ public class Stage extends BaseEntity {
 
     @Builder
     public Stage(String name, Float stageOrder, Project project) {
-        this.name = name;
+        this.name = name.trim();
         this.stageOrder = stageOrder;
         this.project = project;
     }
 
+    public static Stage createStage(Project project, String name,float newOrder) {
+        return Stage.builder()
+                .project(project)
+                .name(name)
+                .stageOrder(newOrder)
+                .build();
+    }
+
     public static List<Stage> createInitialStages(Project project, List<String> initialStageNames) {
-        List<String> namesToUse = (CollectionUtils.isEmpty(initialStageNames))
-                ? DEFAULT_INITIAL_STAGE_NAMES
-                : initialStageNames;
-
-        if (namesToUse.isEmpty()) {
-            return Collections.emptyList(); // 생성할 이름 없으면 빈 리스트 반환
+        if (CollectionUtils.isEmpty(initialStageNames)) {
+            return Collections.emptyList();
         }
-        List<Stage> initialStages = new ArrayList<>();
-        float currentOrder = INITIAL_ORDER;
 
-        for (String name : namesToUse) {
-            // 각 스테이지 생성 (Builder 사용)
+        List<Stage> initialStages = new ArrayList<>();
+        float currentOrder = StageConstants.INITIAL_ORDER;
+        for (String name : initialStageNames) {
             Stage stage = Stage.builder()
-                    .project(project) // 연관 프로젝트 설정
-                    .name(name.trim()) // 이름 설정 (공백 제거)
-                    .stageOrder(currentOrder) // 순서 설정
+                    .project(project)
+                    .name(name)
+                    .stageOrder(currentOrder)
                     .build();
             initialStages.add(stage);
-            currentOrder += ORDER_INCREMENT; // 다음 순서 계산
-        }
-
+            currentOrder += StageConstants.ORDER_INCREMENT;
+}
         return initialStages;
     }
 
+
     public void updateName(String newName) {
-        this.name = newName;
+        if (!this.name.equals(newName)) {
+            this.name = newName.trim();
+        }
     }
 
     public void delete() {
         this.markAsDeleted();
     }
 
-    public void moveStageOrder(Float stageOrder) {
-        this.stageOrder = stageOrder;
+    public boolean moveStageOrder(Float newStageOrder) {
+        if (Float.compare(this.stageOrder, newStageOrder) != 0) {
+            this.stageOrder = newStageOrder;
+            return true;
+        }
+        return false;
+    }
+
+    public static float calculateNewOrder(Float prevOrder, Float nextOrder) {
+        if (prevOrder == null && nextOrder == null) {
+            return StageConstants.INITIAL_ORDER;
+        } else if (prevOrder == null) {
+            return nextOrder - StageConstants.ORDER_INCREMENT;
+        } else if (nextOrder == null) {
+            return prevOrder + StageConstants.ORDER_INCREMENT;
+        } else {
+            return (prevOrder + nextOrder) / 2.0f;
+        }
     }
 }

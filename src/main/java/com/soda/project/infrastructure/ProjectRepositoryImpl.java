@@ -11,16 +11,23 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.soda.project.domain.QProject;
-import com.soda.project.domain.company.QCompanyProject;
+import com.soda.member.domain.company.QCompany;
+import com.soda.member.domain.member.QMember;
+import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectStatus;
+import com.soda.project.domain.QProject;
+import com.soda.project.domain.company.CompanyProjectRole;
+import com.soda.project.domain.company.QCompanyProject;
+import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.domain.member.QMemberProject;
 import com.soda.project.domain.stage.QStage;
 import com.soda.project.domain.stage.article.QArticle;
 import com.soda.project.domain.stage.request.QRequest;
+import com.soda.project.interfaces.dto.MyProjectListResponse;
 import com.soda.project.interfaces.dto.ProjectListResponse;
 import com.soda.project.interfaces.dto.ProjectSearchCondition;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -30,8 +37,12 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
@@ -41,27 +52,19 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
     private static final QProject project = QProject.project;
     private static final QMemberProject memberProject = QMemberProject.memberProject;
     private static final QCompanyProject companyProject = QCompanyProject.companyProject;
+    private static final QMember member = QMember.member;
+    private static final QCompany company = QCompany.company;
 
     @Override
-    public Page<Tuple> findMyProjectsData(ProjectSearchCondition projectSearchCondition, Long memberId, Pageable pageable) {
-        List<Tuple> content = queryFactory
-                .select(
-                        project,
-                        companyProject.companyProjectRole,
-                        memberProject.role
-                )
+    public Page<MyProjectListResponse> findMyProjectsData(ProjectSearchCondition projectSearchCondition, Long memberId, Pageable pageable) {
+        List<Long> projectIds = queryFactory
+                .select(project.id)
                 .from(project)
-                // 1. 특정 멤버가 참여하는 프로젝트 필터링
                 .join(project.memberProjects, memberProject)
-                .join(project.companyProjects, companyProject)
-                .on(companyProject.company.id.eq(
-                        memberProject.member.company.id
-                ))
                 .where(
-                        memberProject.member.id.eq(memberId),
                         project.isDeleted.isFalse(),
+                        memberProject.member.id.eq(memberId),
                         memberProject.isDeleted.isFalse(),
-                        companyProject.isDeleted.isFalse(), // 회사 연결도 활성 상태
                         statusEq(projectSearchCondition.getStatus()),
                         titleContains(projectSearchCondition.getKeyword())
                 )
@@ -70,18 +73,58 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // Count 쿼리도 동일한 조인 및 조건 적용
-        JPAQuery<Long> countQuery = queryFactory
-                .select(project.countDistinct())
+        if (projectIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<Tuple> tuples = queryFactory
+                .select(
+                        project,
+                        companyProject.companyProjectRole,
+                        memberProject.role
+                )
                 .from(project)
                 .join(project.memberProjects, memberProject)
-                .join(project.companyProjects, companyProject)
-                .on(companyProject.company.id.eq(memberProject.member.company.id))
+                .on(memberProject.project.id.in(projectIds)
+                        .and(memberProject.member.id.eq(memberId))
+                        .and(memberProject.isDeleted.isFalse()))
+                .join(memberProject.member, member)
+                .leftJoin(project.companyProjects, companyProject)
+                .on(companyProject.project.eq(project)
+                        .and(companyProject.company.id.eq(member.company.id))
+                        .and(companyProject.isDeleted.isFalse()))
+                .fetch();
+
+        Map<Long, Tuple> tupleMap = tuples.stream()
+                .collect(Collectors.toMap(t -> t.get(project).getId(), Function.identity(), (t1, t2) -> t1));
+
+        List<MyProjectListResponse> content = projectIds.stream()
+                .map(pId -> {
+                    Tuple tuple = tupleMap.get(pId);
+                    if (tuple == null) {
+                        log.warn("Tuple not found for projectId: {} in tupleMap for /projects/my. This might happen if there's data inconsistency.", pId);
+                        return null;
+                    }
+                    Project p = tuple.get(project);
+                    CompanyProjectRole cpr = tuple.get(companyProject.companyProjectRole);
+                    MemberProjectRole mpr = tuple.get(memberProject.role);
+                    if (p == null || mpr == null) {
+                        log.error("Critical: Project or MemberProjectRole is null in tuple for projectId {} and memberId {}.", (p != null ? p.getId() : "null_project"), memberId);
+                        return null;
+                    }
+                    return MyProjectListResponse.from(p, cpr, mpr);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        JPAQuery<Long> countQuery = queryFactory
+                .select(project.count())
+                .from(project)
+                .join(project.memberProjects, memberProject)
                 .where(
-                        memberProject.member.id.eq(memberId),
                         project.isDeleted.isFalse(),
+                        memberProject.member.id.eq(memberId),
                         memberProject.isDeleted.isFalse(),
-                        companyProject.isDeleted.isFalse(),
                         statusEq(projectSearchCondition.getStatus()),
                         titleContains(projectSearchCondition.getKeyword())
                 );
@@ -98,11 +141,9 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
                         memberProject.role
                 )
                 .from(project)
-                // 회사가 참여한 프로젝트 찾기
                 .join(project.companyProjects, companyProject)
-                // 현재 사용자의 멤버 역할 찾기
                 .leftJoin(project.memberProjects, memberProject)
-                .on(memberProject.member.id.eq(memberId) // 현재 사용자
+                .on(memberProject.member.id.eq(memberId)
                         .and(memberProject.isDeleted.isFalse()))
                 .where(
                         companyProject.company.id.eq(companyId),
@@ -114,7 +155,6 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // Count 쿼리 (회사 기준으로 count)
         JPAQuery<Long> countQuery = queryFactory
                 .select(project.countDistinct())
                 .from(project)
@@ -130,7 +170,6 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
 
     @Override
     public Page<ProjectListResponse> searchProjects(ProjectSearchCondition condition, Pageable pageable) {
-        QProject project = QProject.project;
         QStage stage = QStage.stage;
         QRequest requestEntity = QRequest.request;
         QArticle article = QArticle.article;
@@ -221,7 +260,6 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
     }
 
     private BooleanExpression titleContains(String keyword) {
-        // StringUtils.hasText 사용하여 null 또는 빈 문자열 체크
         return StringUtils.hasText(keyword) ? project.title.containsIgnoreCase(keyword) : null;
     }
 }

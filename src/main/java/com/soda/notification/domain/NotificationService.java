@@ -1,11 +1,8 @@
-package com.soda.notification.service;
+package com.soda.notification.domain;
 
 import com.soda.global.response.GeneralException;
-import com.soda.notification.dto.NotificationResponse;
-import com.soda.notification.entity.MemberNotification;
-import com.soda.notification.entity.Notification;
-import com.soda.notification.error.NotificationErrorCode;
-import com.soda.notification.repository.NotificationRepository;
+import com.soda.notification.interfaces.dto.NotificationResponse;
+import com.soda.notification.infrastructure.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

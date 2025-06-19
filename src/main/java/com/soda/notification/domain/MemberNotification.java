@@ -1,4 +1,4 @@
-package com.soda.notification.entity;
+package com.soda.notification.domain;
 
 import com.soda.common.BaseEntity;
 import com.soda.member.domain.member.Member;

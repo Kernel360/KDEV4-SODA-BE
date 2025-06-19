@@ -12,6 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
+@Table(name = "member_project", indexes = {
+    @Index(name = "idx_member_project_deleted", columnList = "member_id, project_id, is_deleted")
+})
 public class MemberProject extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

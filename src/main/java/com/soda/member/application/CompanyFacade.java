@@ -7,6 +7,8 @@ import com.soda.member.domain.company.CompanyStatsService;
 import com.soda.member.interfaces.dto.CompanyCreationTrend;
 import com.soda.member.interfaces.dto.company.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +25,6 @@ public class CompanyFacade {
     @LoggableEntityAction(action = "CREATE", entityClass = Company.class)
     public CompanyResponse createCompany(CompanyCreateRequest request) {
         return companyService.createCompany(request);
-    }
-
-    public List<CompanyResponse> getAllCompanies() {
-        return companyService.getAllCompanies();
     }
 
     public CompanyResponse getCompanyById(Long id) {
@@ -54,11 +52,16 @@ public class CompanyFacade {
         return companyService.restoreCompany(id);
     }
 
-    public List<MemberResponse> getCompanyMembers(Long companyId) {
-        return companyService.getCompanyMembers(companyId);
+    public List<MemberResponse> getCompanyMembers(Long companyId, MemberViewOption viewOption) {
+        return companyService.getCompanyMembers(companyId, viewOption);
     }
 
     public List<CompanyCreationTrend> getCompanyCreationTrend(CompanyTrendSearchCondition condition) {
         return companyStatsService.getCompanyCreationTrend(condition);
+    }
+
+    public Page<CompanyResponse> getAllCompaniesWithSearch(CompanyViewOption viewOption, String searchKeyword,
+            Pageable pageable) {
+        return companyService.getAllCompaniesWithSearch(viewOption, searchKeyword, pageable);
     }
 }

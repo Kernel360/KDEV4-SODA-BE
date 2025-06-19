@@ -1,10 +1,10 @@
-package com.soda.notification.controller;
+package com.soda.notification.interfaces;
 
 import com.soda.global.response.ApiResponseForm;
 import com.soda.global.response.GeneralException;
-import com.soda.notification.dto.NotificationResponse;
-import com.soda.notification.error.NotificationErrorCode;
-import com.soda.notification.service.NotificationService;
+import com.soda.notification.interfaces.dto.NotificationResponse;
+import com.soda.notification.domain.NotificationErrorCode;
+import com.soda.notification.domain.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

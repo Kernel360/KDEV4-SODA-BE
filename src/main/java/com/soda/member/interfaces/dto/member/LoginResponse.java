@@ -1,6 +1,7 @@
 package com.soda.member.interfaces.dto.member;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.soda.member.domain.member.MemberStatus;
 import com.soda.member.interfaces.dto.company.CompanyResponse;
 import com.soda.member.domain.member.Member;
 import com.soda.member.domain.member.MemberRole;
@@ -20,6 +21,7 @@ public class LoginResponse {
     private MemberRole role;
     private boolean firstLogin;
     private CompanyResponse company;
+    private MemberStatus status;
 
     public static LoginResponse fromEntity(Member member) {
         boolean firstLogin = (member.getEmail() == null);
@@ -33,6 +35,7 @@ public class LoginResponse {
                 .phoneNumber(member.getPhoneNumber())
                 .role(memberRole)
                 .firstLogin(firstLogin)
+                .status(member.getMemberStatus())
                 .company(CompanyResponse.fromEntity(member.getCompany()))
                 .build();
     }

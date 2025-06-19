@@ -1,28 +1,26 @@
 package com.soda.member.application;
 
 import com.soda.global.response.GeneralException;
+import com.soda.member.application.validator.MemberValidator;
+import com.soda.member.domain.company.Company;
 import com.soda.member.domain.company.CompanyService;
 import com.soda.member.domain.member.Member;
+import com.soda.member.domain.member.MemberErrorCode;
 import com.soda.member.domain.member.MemberService;
 import com.soda.member.domain.member.MemberStatus;
-import com.soda.member.domain.company.Company;
 import com.soda.member.interfaces.dto.*;
 import com.soda.member.interfaces.dto.member.ChangePasswordRequest;
 import com.soda.member.interfaces.dto.member.MemberStatusResponse;
 import com.soda.member.interfaces.dto.member.admin.MemberDetailDto;
 import com.soda.member.interfaces.dto.member.admin.MemberListDto;
 import com.soda.member.interfaces.dto.member.admin.UpdateUserStatusRequestDto;
-import com.soda.member.application.validator.MemberValidator;
-import com.soda.member.domain.member.MemberErrorCode;
-import org.springframework.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -95,11 +93,11 @@ public class MemberFacade {
     public Page<MemberListDto> getAllUsers(Pageable pageable, String searchKeyword) {
         Page<Member> memberPage;
         if (StringUtils.hasText(searchKeyword)) {
-            memberPage = memberService.findByKeywordIncludingDeleted(searchKeyword, pageable);
+            memberPage = memberService.findByKeywordIncludingDeletedOrderByCreatedAtDesc(searchKeyword, pageable);
             log.info("관리자 사용자 목록 검색 조회: keyword={}, page={}, size={}", searchKeyword, pageable.getPageNumber(),
                     pageable.getPageSize());
         } else {
-            memberPage = memberService.findAll(pageable);
+            memberPage = memberService.findAllByOrderByCreatedAtDesc(pageable);
             log.info("관리자 전체 사용자 목록 조회: page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
         }
         return memberPage.map(MemberListDto::fromEntity);

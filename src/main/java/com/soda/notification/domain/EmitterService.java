@@ -1,4 +1,4 @@
-package com.soda.notification.service;
+package com.soda.notification.domain;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -32,6 +32,7 @@ public class EmitterService {
         });
         emitter.onTimeout(() -> {
             log.warn("SSE 연결 시간 초과 (onTimeout). 사용자 ID: {}", userId);
+            removeEmitterInternal(userId, emitter, "타임아웃");
         });
         emitter.onError(throwable -> {
             log.error("SSE 연결 오류 발생 (onError). 사용자 ID: {}. 오류: {}", userId, throwable.getMessage());

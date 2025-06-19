@@ -3,19 +3,21 @@ package com.soda.project.domain.stage.request;
 import com.soda.common.BaseEntity;
 import com.soda.common.TrackUpdate;
 import com.soda.member.domain.member.Member;
+import com.soda.project.domain.Project;
 import com.soda.project.domain.stage.Stage;
 import com.soda.project.domain.stage.request.approver.ApproverDesignation;
-import com.soda.project.interfaces.stage.request.dto.ReRequestCreateRequest;
-import com.soda.project.interfaces.stage.request.dto.RequestCreateRequest;
 import com.soda.project.domain.stage.request.file.RequestFile;
 import com.soda.project.domain.stage.request.link.RequestLink;
 import com.soda.project.domain.stage.request.response.Response;
 import com.soda.project.domain.stage.request.response.ResponseStatus;
+import com.soda.project.interfaces.stage.request.dto.ReRequestCreateRequest;
+import com.soda.project.interfaces.stage.request.dto.RequestCreateRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +25,10 @@ import java.util.List;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Table(name = "request", indexes = {
+        @Index(name = "idx_request_member_stage", columnList = "member_id, stage_id"),
+        @Index(name = "idx_request_project_deleted_created", columnList = "project_id, is_deleted, created_at DESC")
+})
 public class Request extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
@@ -37,6 +43,10 @@ public class Request extends BaseEntity {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stage_id")
     private Stage stage;
 
@@ -48,22 +58,27 @@ public class Request extends BaseEntity {
 
     @TrackUpdate
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
+    @BatchSize(size = 50)
     private List<RequestFile> files;
 
     @TrackUpdate
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
+    @BatchSize(size = 50)
     private List<RequestLink> links;
 
     @TrackUpdate
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
+    @BatchSize(size = 50)
     private List<ApproverDesignation> approvers;
 
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL)
+    @BatchSize(size = 50)
     private List<Response> responses;
 
     @Builder
-    public Request(Member member, Stage stage, Long parentId, String title, String content, RequestStatus status, List<RequestFile> files, List<RequestLink> links) {
+    public Request(Member member, Project project, Stage stage, Long parentId, String title, String content, RequestStatus status, List<RequestFile> files, List<RequestLink> links) {
         this.member = member;
+        this.project = project;
         this.stage = stage;
         this.parentId = parentId;
         this.title = title;
@@ -76,6 +91,7 @@ public class Request extends BaseEntity {
     public static Request createRequest(Member member, Stage stage, RequestCreateRequest requestCreateRequest) {
         return Request.builder()
                 .member(member)
+                .project(stage.getProject())
                 .stage(stage)
                 .title(requestCreateRequest.getTitle())
                 .content(requestCreateRequest.getContent())
@@ -86,6 +102,7 @@ public class Request extends BaseEntity {
     public static Request createReRequest(Long requestId, Member member, Stage stage, ReRequestCreateRequest reRequestCreateRequest) {
         return Request.builder()
                 .member(member)
+                .project(stage.getProject())
                 .stage(stage)
                 .title(reRequestCreateRequest.getTitle())
                 .content(reRequestCreateRequest.getContent())

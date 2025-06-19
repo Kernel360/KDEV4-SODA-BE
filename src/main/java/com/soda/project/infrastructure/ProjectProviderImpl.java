@@ -3,6 +3,7 @@ package com.soda.project.infrastructure;
 import com.querydsl.core.Tuple;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectProvider;
+import com.soda.project.interfaces.dto.MyProjectListResponse;
 import com.soda.project.interfaces.dto.ProjectListResponse;
 import com.soda.project.interfaces.dto.ProjectSearchCondition;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +34,8 @@ public class ProjectProviderImpl implements ProjectProvider {
     }
 
     @Override
-    public Page<Tuple> findMyProjectsData(ProjectSearchCondition request, Long userId, Pageable pageable) {
-        return projectRepository.findMyProjectsData(request, userId,pageable);
+    public Page<MyProjectListResponse> findMyProjectsData(ProjectSearchCondition request, Long userId, Pageable pageable) {
+        return projectRepository.findMyProjectsData(request, userId, pageable);
     }
 
     @Override
@@ -46,5 +47,10 @@ public class ProjectProviderImpl implements ProjectProvider {
     public void delete(Project project) {
         project.delete();
         projectRepository.save(project);
+    }
+
+    @Override
+    public Optional<Project> findById(Long projectId) {
+        return projectRepository.findById(projectId);
     }
 }

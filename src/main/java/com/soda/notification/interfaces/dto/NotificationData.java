@@ -1,7 +1,7 @@
-package com.soda.notification.dto;
+package com.soda.notification.interfaces.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.soda.notification.enums.NotificationType;
+import com.soda.notification.domain.NotificationType;
 
 /**
  * @param type       알림 종류

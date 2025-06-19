@@ -52,6 +52,8 @@ dependencies {
 	// redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+
 	// smtp
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
@@ -79,6 +81,8 @@ dependencies {
 	// logstash
 	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 
+	// actuator health check
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 tasks.named('test') {

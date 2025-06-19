@@ -36,7 +36,7 @@ public class ResponseFacade {
                                                  RequestApproveRequest requestApproveRequest) {
         Member member = memberService.getMemberWithProjectOrThrow(memberId);
         Request request = requestService.getRequestOrThrow(requestId);
-        projectValidator.validateProjectAuthority(member, requestApproveRequest.getProjectId());
+        projectValidator.validateProjectCliAuthority(member, requestApproveRequest.getProjectId());
         requestApproverValidator.validateApprover(member, request.getApprovers());
 
         return responseService.approveRequest(member, request, requestApproveRequest);
@@ -48,7 +48,7 @@ public class ResponseFacade {
                                                RequestRejectRequest requestRejectRequest) {
         Member member = memberService.getMemberWithProjectOrThrow(memberId);
         Request request = requestService.getRequestOrThrow(requestId);
-        projectValidator.validateProjectAuthority(member, requestRejectRequest.getProjectId());
+        projectValidator.validateProjectCliAuthority(member, requestRejectRequest.getProjectId());
         requestApproverValidator.validateApprover(member, request.getApprovers());
 
         return responseService.rejectRequest(member, request, requestRejectRequest);

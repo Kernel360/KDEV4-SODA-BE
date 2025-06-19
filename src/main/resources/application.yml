@@ -2,6 +2,10 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
+  mvc:
+    async:
+      request-timeout: -1
+
   datasource:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}
     username: ${MYSQL_USER}
@@ -18,8 +22,9 @@ spring:
       - /verification
       - /verification/confirm
       - /members/find-id
-      - /password/change
+      - /password/reset
       - /refresh
+      - /actuator/health
 
   mail:
     host: smtp.gmail.com
@@ -46,6 +51,8 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: 6379
+  cache:
+    type: redis
 
   servlet:
     multipart:
@@ -90,3 +97,12 @@ cloud:
       bucket: ${AWS_S3_BUCKET}
     cloudfront:
       domain: ${AWS_CLOUDFRONT_DOMAIN}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

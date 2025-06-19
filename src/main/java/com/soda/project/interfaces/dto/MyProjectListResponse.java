@@ -4,13 +4,17 @@ import com.soda.project.domain.company.CompanyProjectRole;
 import com.soda.project.domain.member.MemberProjectRole;
 import com.soda.project.domain.Project;
 import com.soda.project.domain.ProjectStatus;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MyProjectListResponse {
 
     private Long projectId;

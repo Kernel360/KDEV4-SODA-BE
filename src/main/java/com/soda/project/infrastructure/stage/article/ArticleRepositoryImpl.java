@@ -1,30 +1,29 @@
 package com.soda.project.infrastructure.stage.article;
 
+import static com.soda.member.domain.company.QCompany.company;
+import static com.soda.member.domain.member.QMember.member;
+import static com.soda.project.domain.QProject.project;
+import static com.soda.project.domain.stage.QStage.stage;
+import static com.soda.project.domain.stage.article.QArticle.article;
+
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.soda.project.interfaces.stage.article.dto.ArticleSearchCondition;
 import com.soda.project.domain.stage.article.Article;
+import com.soda.project.domain.stage.article.QArticle;
 import com.soda.project.domain.stage.article.enums.ArticleStatus;
 import com.soda.project.domain.stage.article.enums.PriorityType;
+import com.soda.project.interfaces.stage.article.dto.ArticleSearchCondition;
+import com.soda.project.interfaces.stage.article.dto.ArticleSearchCondition.SearchType;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
-
-import java.util.List;
-import java.util.Optional;
-
-
-import static com.soda.member.domain.member.QMember.member;
-import static com.soda.member.domain.company.QCompany.company;
-import static com.soda.project.domain.QProject.project;
-import static com.soda.project.domain.stage.QStage.stage;
-import static com.soda.project.domain.stage.article.QArticle.article;
-
 
 @Repository
 @RequiredArgsConstructor
@@ -34,51 +33,58 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
 
     @Override
     public Page<Tuple> findMyArticlesData(Long authorId, Long projectId, Pageable pageable) {
+        List<Tuple> content = executeContentQuery(authorId, projectId, pageable);
+        Long totalCount = executeCountQuery(authorId, projectId);
+        return PageableExecutionUtils.getPage(content, pageable, () -> totalCount);
+    }
 
-        List<Tuple> content = queryFactory
-                .select( // DTO 필드 순서에 맞춰 데이터 선택
-                        article.id,        // articleId
-                        article.title,     // title
-                        project.id,        // projectId (stage를 통해 조인)
-                        project.title,     // projectName (stage를 통해 조인)
-                        stage.id,          // stageId
-                        stage.name,   // stageName
-                        article.createdAt  // createdAt
-                )
-                .from(article)
-                // Article -> Stage 조인
-                .join(article.stage, stage)
-                // Stage -> Project 조인 (Stage 엔티티에 'project' 필드가 있다고 가정)
-                .join(stage.project, project)
-                // Article -> Member 조인 (where 절에서만 사용하므로 명시적 조인 불필요 가능하나, 가독성을 위해 포함)
-                // .join(article.member, member) // member Q 클래스 정의 필요
-                .where(
-                        // article.member 필드를 통해 바로 작성자 ID 비교
-                        article.member.id.eq(authorId),
-                        article.isDeleted.isFalse(),
-                        // projectIdEq 헬퍼 메서드는 project 별칭을 사용
-                        projectIdEq(projectId)
-                )
-                .orderBy(article.createdAt.desc()) // 최신순 정렬
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+    // Content Query 로직 분리
+    private List<Tuple> executeContentQuery(Long authorId, Long projectId, Pageable pageable) {
+        return queryFactory
+            .select(
+                article.id,
+                article.title,
+                project.id,
+                project.title,
+                stage.id,
+                stage.name,
+                article.createdAt
+            )
+            .from(article)
+            .join(article.stage, stage)
+            .join(stage.project, project)
+            .where(
+                article.member.id.eq(authorId),
+                article.isDeleted.isFalse(),
+                projectIdEq(projectId) // projectId가 null이면 이 조건은 무시
+            )
+            .orderBy(article.createdAt.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+    }
 
-        // Count 쿼리
+    // Count Query 로직 분리
+    private Long executeCountQuery(Long authorId, Long projectId) {
         JPAQuery<Long> countQuery = queryFactory
-                .select(article.count())
-                .from(article)
-                // where 조건에서 project.id를 사용하므로 조인이 필요함
-                .join(article.stage, stage)
-                .join(stage.project, project)
-                // .join(article.member, member) // where 조건에서만 사용 시 count 쿼리 조인 불필요 가능
-                .where(
-                        article.member.id.eq(authorId),
-                        article.isDeleted.isFalse(),
-                        projectIdEq(projectId)
-                );
+            .select(article.count())
+            .from(article);
 
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+        // projectId가 유효할 때만 stage, project 조인하고, where 조건에 추가
+        if (projectId != null && projectId > 0) {
+            countQuery.join(article.stage, stage)
+                .join(stage.project, project)
+                .where(project.id.eq(projectId));
+        }
+
+        // 공통 where 조건 추가
+        countQuery.where(
+            article.member.id.eq(authorId),
+            article.isDeleted.isFalse()
+        );
+
+        Long total = countQuery.fetchOne();
+        return (total == null) ? 0L : total;
     }
 
     @Override
@@ -100,10 +106,9 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
     @Override
     public Page<Article> searchArticles(Long projectId, ArticleSearchCondition request, Pageable pageable) {
         List<Article> content = queryFactory
-                .selectFrom(article)
-                .leftJoin(article.stage, stage).fetchJoin()    // Fetch Join 유지 또는 필요시 제거/변경
-                .leftJoin(article.member, member).fetchJoin()    // Fetch Join 유지 또는 필요시 제거/변경
-                .leftJoin(member.company, company).fetchJoin() // Company 정보도 필요하면 Fetch Join
+                .selectFrom(article) // Article
+                .leftJoin(article.stage, stage).fetchJoin()    // WHERE 조건 때문에 stage 필요
+                .leftJoin(article.member, member).fetchJoin()    // member가 DTO에 필요
                 .where(
                         stage.project.id.eq(projectId),
                         article.isDeleted.isFalse(),
@@ -121,14 +126,20 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
         JPAQuery<Long> countQuery = queryFactory
                 .select(article.count())
                 .from(article)
-                .join(article.stage, stage) // where 조건에서 stage 사용하므로 필요
-                .join(article.member, member) // where 조건에서 member 사용하면 필요 (searchCondition 확인)
-                .where(
-                        stage.project.id.eq(projectId),
-                        article.isDeleted.isFalse(),
-                        stageIdEq(request.getStageId()),
-                        searchCondition(request.getSearchType(), request.getKeyword())
-                );
+                .join(article.stage, stage);
+
+        if (request.getSearchType() == SearchType.AUTHOR && StringUtils.hasText(request.getKeyword())) {
+            countQuery.join(article.member, member);
+        }
+
+        countQuery.where(
+            stage.project.id.eq(projectId),
+            article.isDeleted.isFalse(),
+            stageIdEq(request.getStageId()),
+            searchCondition(request.getSearchType(), request.getKeyword()),
+            articleStatusEq(request.getStatus()),
+            priorityTypeEq(request.getPriorityType())
+        );
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }

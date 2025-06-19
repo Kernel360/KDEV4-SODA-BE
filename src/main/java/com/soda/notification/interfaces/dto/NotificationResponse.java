@@ -1,9 +1,9 @@
-package com.soda.notification.dto;
+package com.soda.notification.interfaces.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.soda.notification.entity.MemberNotification;
-import com.soda.notification.entity.Notification;
-import com.soda.notification.enums.NotificationType;
+import com.soda.notification.domain.MemberNotification;
+import com.soda.notification.domain.Notification;
+import com.soda.notification.domain.NotificationType;
 import lombok.Builder;
 import lombok.Getter;
 

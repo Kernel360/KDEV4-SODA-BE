@@ -1,6 +1,7 @@
 package com.soda.project.domain;
 
 import com.querydsl.core.Tuple;
+import com.soda.project.interfaces.dto.MyProjectListResponse;
 import com.soda.project.interfaces.dto.ProjectListResponse;
 import com.soda.project.interfaces.dto.ProjectSearchCondition;
 import org.springframework.data.domain.Page;
@@ -15,9 +16,11 @@ public interface ProjectProvider {
 
     Page<ProjectListResponse> searchProjects(ProjectSearchCondition projectSearchCondition, Pageable pageable);
 
-    Page<Tuple> findMyProjectsData(ProjectSearchCondition projectSearchCondition, Long userId, Pageable pageable);
+    Page<MyProjectListResponse> findMyProjectsData(ProjectSearchCondition projectSearchCondition, Long userId, Pageable pageable);
 
     Page<Tuple> findMyCompanyProjectsData(Long userId, Long companyId, Pageable pageable);
 
     void delete(Project project);
+
+    Optional<Project> findById(Long projectId);
 }

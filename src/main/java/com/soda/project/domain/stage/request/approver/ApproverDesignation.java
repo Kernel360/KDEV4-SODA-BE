@@ -3,10 +3,7 @@ package com.soda.project.domain.stage.request.approver;
 import com.soda.common.BaseEntity;
 import com.soda.member.domain.member.Member;
 import com.soda.project.domain.stage.request.Request;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +15,9 @@ import java.util.stream.Collectors;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Table(name = "approver_designation", indexes = {
+        @Index(name = "idx_approver_member_request", columnList = "member_id, request_id")
+})
 public class ApproverDesignation extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,12 +1,16 @@
 package com.soda.project.interfaces.stage.article.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@NoArgsConstructor // Jackson 역직렬화를 위한 기본 생성자 추가
+@AllArgsConstructor // Builder 패턴을 위한 모든 필드 생성자 추가
 public class MyArticleListResponse {
 
     private Long projectId;

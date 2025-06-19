@@ -131,7 +131,7 @@ public class ArticleFacade {
             "':page:' + #pageable.pageNumber + " +
             "':size:' + #pageable.pageSize + " +
             "':sort:' +"
-            + "T(com.soda.global.util.CacheKeyHelper).generateSortKey(#pageable.sort)",
+            + "T(com.soda.common.cache.CacheKeyHelper).generateSortKey(#pageable.sort)",
         cacheManager = "myCacheManager",
         unless = "#result == null or !#result.hasContent()"
     )

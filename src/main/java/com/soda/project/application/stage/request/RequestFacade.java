@@ -1,6 +1,6 @@
 package com.soda.project.application.stage.request;
 
-import com.soda.common.CacheEvictionHelper;
+import com.soda.common.cacheHelper.CacheEvictionHelper;
 import com.soda.global.log.data.annotation.LoggableEntityAction;
 import com.soda.member.domain.member.Member;
 import com.soda.member.domain.member.MemberService;

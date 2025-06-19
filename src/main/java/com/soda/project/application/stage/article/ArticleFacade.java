@@ -21,7 +21,6 @@ import com.soda.project.domain.stage.article.vote.VoteService;
 import com.soda.project.interfaces.stage.article.dto.*;
 import com.soda.project.interfaces.stage.article.vote.*;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +31,6 @@ import org.springframework.util.CollectionUtils;
 import java.util.Collections;
 import java.util.List;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -48,6 +46,7 @@ public class ArticleFacade {
     private final VoteValidator voteValidator;
 
     private final ArticleResponseBuilder articleResponseBuilder;
+    private final ArticleCacheEvictionHelper articleCacheEvictionHelper;
 
     @LoggableEntityAction(action = "CREATE", entityClass = Article.class)
     @Transactional
@@ -69,6 +68,8 @@ public class ArticleFacade {
                 request.getParentArticleId(),
                 request.getLinkList()
         );
+
+        articleCacheEvictionHelper.evictMyArticlesCacheForUser(userId);
         return ArticleCreateResponse.fromEntity(createdArticle);
     }
 
@@ -99,7 +100,10 @@ public class ArticleFacade {
         Article article = articleService.validateArticle(articleId);
 
         articleValidator.validateUpdatePermission(member, userRole, article);
+
+        Long writerId = article.getMember().getId();
         articleService.deleteArticle(article);
+        articleCacheEvictionHelper.evictMyArticlesCacheForUser(writerId);
     }
 
     @LoggableEntityAction(action = "UPDATE", entityClass = Article.class)
@@ -112,6 +116,9 @@ public class ArticleFacade {
         articleValidator.validateUpdatePermission(member, userRole, article);
         articleValidator.validateLinkSize(request.getLinkList());
 
+        Long writerId = article.getMember().getId();
+        articleCacheEvictionHelper.evictMyArticlesCacheForUser(writerId);
+
         Article updatedArticle = articleService.updateArticle(article, request.getTitle(), request.getContent(),
                 request.getPriority(), request.getDeadLine(), request.getLinkList(), stage);
         return ArticleModifyResponse.fromEntity(updatedArticle);
@@ -119,7 +126,7 @@ public class ArticleFacade {
 
     @Cacheable(
         value = "myArticles",
-        key = "'memberId:' + #memberId + " +
+        key = "'user:' + #memberId + " +
             "':projectId:' + (#projectId == null ? 'null' : #projectId.toString()) + " +
             "':page:' + #pageable.pageNumber + " +
             "':size:' + #pageable.pageSize + " +
@@ -129,12 +136,7 @@ public class ArticleFacade {
         unless = "#result == null or !#result.hasContent()"
     )
     public Page<MyArticleListResponse> getMyArticles(Long memberId, Long projectId, Pageable pageable) {
-        log.info("===> [Cache Miss] DB에서 사용자 ID {}의 '내 게시글' 목록(Tuple)을 조회합니다. projectId: {}, pageable: {}",
-            memberId, projectId, pageable);
-
         Page<Tuple> tuplePage = articleService.findMyArticlesData(memberId, projectId, pageable);
-
-        log.info("===> [Cache Miss] 조회된 Tuple 데이터를 MyArticleListResponse DTO로 변환합니다.");
         return articleResponseBuilder.buildMyArticleListPage(tuplePage);
     }
 

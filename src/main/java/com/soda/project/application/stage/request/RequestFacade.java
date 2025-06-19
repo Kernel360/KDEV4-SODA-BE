@@ -10,6 +10,8 @@ import com.soda.project.domain.stage.request.Request;
 import com.soda.project.domain.stage.request.RequestService;
 import com.soda.project.interfaces.stage.request.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,9 @@ public class RequestFacade {
 
     @LoggableEntityAction(action = "CREATE", entityClass = Request.class)
     @Transactional
+    @CacheEvict(value = "myRequests",
+            key = "'member:' + #memberId + ':page:0:size:3'",
+            cacheManager = "myCacheManager")
     public RequestCreateResponse createRequest(Long memberId, RequestCreateRequest requestCreateRequest) {
         Member member = memberService.getMemberWithProjectOrThrow(memberId);
         Stage stage = stageService.getStageOrThrow(requestCreateRequest.getStageId());
@@ -40,6 +45,9 @@ public class RequestFacade {
 
     @LoggableEntityAction(action = "CREATE", entityClass = Request.class)
     @Transactional
+    @CacheEvict(value = "myRequests",
+            key = "'member:' + #memberId + ':page:0:size:3'",
+            cacheManager = "myCacheManager")
     public RequestCreateResponse createReRequest(Long memberId, Long requestId, ReRequestCreateRequest reRequestCreateRequest) {
         Member member = memberService.getMemberWithProjectOrThrow(memberId);
         Request parentRequest = requestService.getRequestOrThrow(requestId);
@@ -52,6 +60,9 @@ public class RequestFacade {
 
     @LoggableEntityAction(action = "UPDATE", entityClass = Request.class)
     @Transactional
+    @CacheEvict(value = "myRequests",
+            key = "'member:' + #memberId + ':page:0:size:3'",
+            cacheManager = "myCacheManager")
     public RequestUpdateResponse updateRequest(Long memberId, Long requestId, RequestUpdateRequest requestUpdateRequest) {
         Request request = requestService.getRequestOrThrow(requestId);
         requestValidator.validaRequestWriter(memberId, request);
@@ -61,6 +72,9 @@ public class RequestFacade {
 
     @LoggableEntityAction(action = "DELETE", entityClass = Request.class)
     @Transactional
+    @CacheEvict(value = "myRequests",
+            key = "'member:' + #memberId + ':page:0:size:3'",
+            cacheManager = "myCacheManager")
     public RequestDeleteResponse deleteRequest(Long memberId, Long requestId) {
         Request request = requestService.getRequestOrThrow(requestId);
         requestValidator.validaRequestWriter(memberId, request);
@@ -72,6 +86,13 @@ public class RequestFacade {
         return requestService.findRequests(projectId, condition, pageable);
     }
 
+    @Cacheable(value = "myRequests",
+            key = "'member:' + #memberId + " +
+                    "':page:' + #pageable.pageNumber + " +
+                    "':size:' + #pageable.pageSize",
+            cacheManager = "myCacheManager",
+            condition = "#pageable.pageNumber == 0 and #pageable.pageSize == 3",
+            unless = "#result == null or !#result.hasContent()")
     public Page<RequestDTO> findMemberRequests(Long memberId, GetMemberRequestCondition condition, Pageable pageable) {
         return requestService.findMemberRequests(memberId, condition, pageable);
     }

@@ -7,12 +7,14 @@ import com.soda.project.interfaces.stage.common.file.dto.FileDTO;
 import com.soda.project.interfaces.stage.common.link.dto.LinkDTO;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
+@NoArgsConstructor
 public class RequestDTO {
     private Long requestId;
     private Long projectId;

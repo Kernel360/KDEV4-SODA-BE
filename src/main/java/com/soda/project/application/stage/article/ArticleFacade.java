@@ -21,6 +21,7 @@ import com.soda.project.domain.stage.article.vote.VoteService;
 import com.soda.project.interfaces.stage.article.dto.*;
 import com.soda.project.interfaces.stage.article.vote.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,10 +47,15 @@ public class ArticleFacade {
     private final VoteValidator voteValidator;
 
     private final ArticleResponseBuilder articleResponseBuilder;
-    private final ArticleCacheEvictionHelper articleCacheEvictionHelper;
 
     @LoggableEntityAction(action = "CREATE", entityClass = Article.class)
     @Transactional
+    @CacheEvict(
+        value = "myArticles",
+        key = "'member:' + #userId + " +
+            "':page:0:size:3:sort:createdAt_DESC'",
+        cacheManager = "myCacheManager"
+    )
     public ArticleCreateResponse createArticle(ArticleCreateRequest request, Long userId, String userRole) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Project project = projectService.getValidProject(request.getProjectId());
@@ -68,8 +74,6 @@ public class ArticleFacade {
                 request.getParentArticleId(),
                 request.getLinkList()
         );
-
-        articleCacheEvictionHelper.evictMyArticlesCacheForUser(userId);
         return ArticleCreateResponse.fromEntity(createdArticle);
     }
 
@@ -95,6 +99,12 @@ public class ArticleFacade {
 
     @LoggableEntityAction(action = "DELETE", entityClass = Article.class)
     @Transactional
+    @CacheEvict(
+        value = "myArticles",
+        key = "'member:' + #userId + " +
+            "':page:0:size:3:sort:createdAt_DESC'",
+        cacheManager = "myCacheManager"
+    )
     public void deleteArticle(Long projectId, Long userId, String userRole, Long articleId) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Article article = articleService.validateArticle(articleId);
@@ -103,11 +113,16 @@ public class ArticleFacade {
 
         Long writerId = article.getMember().getId();
         articleService.deleteArticle(article);
-        articleCacheEvictionHelper.evictMyArticlesCacheForUser(writerId);
     }
 
     @LoggableEntityAction(action = "UPDATE", entityClass = Article.class)
     @Transactional
+    @CacheEvict(
+        value = "myArticles",
+        key = "'member:' + #userId + " +
+            "':page:0:size:3:sort:createdAt_DESC'",
+        cacheManager = "myCacheManager"
+    )
     public ArticleModifyResponse updateArticle(Long userId, String userRole, Long articleId, ArticleModifyRequest request) {
         Member member = memberService.findByIdAndIsDeletedFalse(userId);
         Article article = articleService.validateArticle(articleId);
@@ -117,7 +132,6 @@ public class ArticleFacade {
         articleValidator.validateLinkSize(request.getLinkList());
 
         Long writerId = article.getMember().getId();
-        articleCacheEvictionHelper.evictMyArticlesCacheForUser(writerId);
 
         Article updatedArticle = articleService.updateArticle(article, request.getTitle(), request.getContent(),
                 request.getPriority(), request.getDeadLine(), request.getLinkList(), stage);
@@ -126,13 +140,13 @@ public class ArticleFacade {
 
     @Cacheable(
         value = "myArticles",
-        key = "'user:' + #memberId + " +
-            "':projectId:' + (#projectId == null ? 'null' : #projectId.toString()) + " +
+        key = "'member:' + #memberId + " +
             "':page:' + #pageable.pageNumber + " +
             "':size:' + #pageable.pageSize + " +
             "':sort:' +"
-            + "T(com.soda.common.cache.CacheKeyHelper).generateSortKey(#pageable.sort)",
+            + "T(com.soda.common.cacheHelper.CacheKeyHelper).generateSortKey(#pageable.sort)",
         cacheManager = "myCacheManager",
+        condition = "#pageable.pageNumber == 0 and #pageable.pageSize == 3",
         unless = "#result == null or !#result.hasContent()"
     )
     public Page<MyArticleListResponse> getMyArticles(Long memberId, Long projectId, Pageable pageable) {

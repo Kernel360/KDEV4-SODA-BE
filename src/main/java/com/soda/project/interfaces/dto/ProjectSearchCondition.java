@@ -1,6 +1,7 @@
 package com.soda.project.interfaces.dto;
 
 import com.soda.project.domain.ProjectStatus;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,9 +9,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ProjectSearchCondition {
-
     private ProjectStatus status;
     private String keyword;
-
 }
